@@ -530,6 +530,8 @@ def updateParserApplications(parser):
                                     'or "MESONH"). Needs the --stopScopes argument for AROME.')
     gApplications.add_argument('--addIncludes', default=False, action='store_true',
                                help='Add .h includes in the file and remove the INCLUDE statement')
+    gApplications.add_argument('--addSubmodulePHYEX', default=False, action='store_true',
+                               help='Add SUBMODULE and INTERFACE of subroutines in PHYEX')
     gApplications.add_argument('--mnhExpand', default=False, action='store_true',
                                help='Apply the mnh_expand directives with DO loops')
     gApplications.add_argument('--mnhExpandConcurrent', default=False, action='store_true',
@@ -796,6 +798,8 @@ def applyTransfoApplications(pft, arg, args, simplify, parserOptions, stopScopes
         pft.addMPPDB_CHECKS()
     elif arg == '--addPrints':
         pft.addMPPDB_CHECKS(printsMode=True)
+    elif arg == '--addSubmodulePHYEX':
+        pft.addSubmodulePHYEX()
     # mnhExpand must be before inlineContainedSubroutines as inlineContainedSubroutines
     # can change variable names used by mnh_expand directives
     assert not (args.mnhExpand and args.mnhExpandConcurrent), \
