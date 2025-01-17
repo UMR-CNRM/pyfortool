@@ -418,6 +418,14 @@ class Applications():
             modEndStmt = modNode.find('.//{*}end-module-stmt')
             modNode.remove(modStmt)
             modNode.remove(modEndStmt)
+            #   And Change the subroutine statements to module-subroutine statements
+            subroutines = modNode.findall('.//{*}subroutine-stmt')
+            for sub in subroutines:
+                prefix = createElem('prefix')
+                prefix.text = 'MODULE'
+                sub.text=''
+                sub.insert(0,prefix)
+                prefix.tail=' SUBROUTINE '
             progUnit.insert(1,modNode)
             
             self.insert(1,progUnit)
