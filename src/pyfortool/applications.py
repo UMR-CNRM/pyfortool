@@ -316,9 +316,10 @@ class Applications():
         """
         Convert MODULE to SUBMODULE statements and add INTERFACE of SUBROUTINEs of PHYEX
         ==> Applied only on MODE_
-        ==> Not applied if:
-            - an INTERFACE already exists
-            - no subroutine is present in the module
+        ==> Not applied :
+            - if an INTERFACE already exists
+            - if no subroutine is present in the module
+            - to CONTAINS routines
         1) Create interface statement if any
         2) Add subroutines declaration (with MODULE statement)
         3) Add SUBMODULE statements and convert SUBROUTINE to MODULE SUBROUTINE statements
@@ -344,8 +345,10 @@ class Applications():
             newMod.append(interfaceStmt)
             
             # For all subroutines, copy the declaration into the interface construct
+            subsModified = []
             for scope in scopes[1:]:
-                if (scope.path.split('/')[1][:3] == 'sub'):
+                if sum('sub' in s for s in scope.path.split('/')) == 1: # exclude contained subroutines (sub:sub)
+                    subsModified.append(scope.path.split('/')[-1].split(':')[1][:])
                     subroutineDecl = createElem('module-unit')
                     # MODULE SUBROUTINE statement
                     subroutineStmt = copy.deepcopy(scope[0])
@@ -369,7 +372,7 @@ class Applications():
                     endStmt.text = 'END SUBROUTINE ' + subName + '\n'
                     subroutineDecl.append(endStmt)
                     interfaceStmt.insert(1,subroutineDecl)
-                    
+
             # Add the new module with interfaces only
             newMod.append(createElem('end-program-unit',text='END MODULE ' + moduleName, tail='\n'))
             self[0].insert(0,newMod)
@@ -421,11 +424,13 @@ class Applications():
             #   And Change the subroutine statements to module-subroutine statements
             subroutines = modNode.findall('.//{*}subroutine-stmt')
             for sub in subroutines:
-                prefix = createElem('prefix')
-                prefix.text = 'MODULE'
-                sub.text=''
-                sub.insert(0,prefix)
-                prefix.tail=' SUBROUTINE '
+                subName = sub.find('.//{*}N/{*}n').text
+                if sub.find('.//{*}N/{*}n').text in subsModified:
+                    prefix = createElem('prefix')
+                    prefix.text = 'MODULE'
+                    sub.text=''
+                    sub.insert(0,prefix)
+                    prefix.tail=' SUBROUTINE '
             progUnit.insert(1,modNode)
             
             self.insert(1,progUnit)
