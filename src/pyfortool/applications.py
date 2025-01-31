@@ -421,6 +421,17 @@ class Applications():
             modEndStmt = modNode.find('.//{*}end-module-stmt')
             modNode.remove(modStmt)
             modNode.remove(modEndStmt)
+            
+            #   Remove possible PUBLIC and PRIVATE statements
+            publicStmts = modNode.findall('.//{*}public-stmt')
+            privateStmts = modNode.findall('.//{*}private-stmt')
+            if len(publicStmts)>0:
+                for publicStmt in publicStmts:
+                    modNode.remove(publicStmt)
+            if len(privateStmts)>0:
+                for privateStmt in privateStmts:
+                    modNode.remove(privateStmt)
+            
             #   And Change the subroutine statements to module-subroutine statements
             subroutines = modNode.findall('.//{*}subroutine-stmt')
             for sub in subroutines:
