@@ -1187,7 +1187,7 @@ class Applications():
                             'GY_V_M': 0, 'GY_M_V': 0, 'GY_W_VW': 0, 'GY_M_M': 0,
                             'GX_V_UV': 0, 'GY_U_UV': 0}
         scopes = self.getScopes()
-        if scopes[0].path.split('/')[-1].split(':')[1][:4] == 'MODD':
+        if len(scopes) == 0 or scopes[0].path.split('/')[-1].split(':')[1][:4] == 'MODD':
             return
         for scope in scopes:
             if 'sub:' in scope.path and 'func' not in scope.path \
