@@ -192,7 +192,8 @@ def getArgs(parser):
                         extra = line.split(':=:')[1]
                 else:
                     extra = line
-            arguments.extend(shlex.split(extra))
+            index = arguments.index('--optsByEnv')
+            arguments = arguments[:index] + shlex.split(extra) + arguments[index + 2:]  # keep order
 
         # Compute the ordered list
         updateCnt = False
