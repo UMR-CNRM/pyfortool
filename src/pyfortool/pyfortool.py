@@ -16,12 +16,12 @@ from pyfortool.util import (debugDecor, tostring, tofortran, fortran2xml,
 
 
 @debugDecor
-def conservativePYFT(filename, parser, parserOptions, wrapH,
+def conservativePYFT(filename, parserOptions, wrapH,
                      tree=None, verbosity=None, clsPYFT=None):
     """
     Return a conservative PYFT object usable for tree manipulation
     :param filename: name of the file to open
-    :param parser, parserOptions, wrapH: see the PYFT class
+    :param parserOptions, wrapH: see the PYFT class
     :param tree: Tree instance or None
     :param verbosity: if not None, sets the verbosity level
     :param clsPYFT: PYFT class to use
@@ -34,7 +34,7 @@ def conservativePYFT(filename, parser, parserOptions, wrapH,
         options.append('-no-include')
     if clsPYFT is None:
         clsPYFT = PYFT
-    pft = clsPYFT(filename, parser=parser, parserOptions=options, wrapH=wrapH,
+    pft = clsPYFT(filename, parserOptions=options, wrapH=wrapH,
                   tree=tree, verbosity=verbosity)
     return pft
 
@@ -65,12 +65,11 @@ class PYFT(PYFTscope):
     PARALLEL_FILE_LOCKS = None  # Can be updated by setParallel
 
     @updateTree('signal')
-    def __init__(self, filename, output=None, parser=None, parserOptions=None, verbosity=None,
+    def __init__(self, filename, output=None, parserOptions=None, verbosity=None,
                  wrapH=False, tree=None, enableCache=False):
         """
         :param filename: Input file name containing FORTRAN code
         :param output: Output file name, None to replace input file
-        :param parser: path to the fxtran parser
         :param parserOptions: dictionnary holding the parser options
         :param verbosity: if not None, sets the verbosity level
         :param wrapH: if True, content of .h file is put in a .F90 file (to force
@@ -88,7 +87,6 @@ class PYFT(PYFTscope):
         self._originalName = filename
         assert os.path.exists(filename), 'Input filename must exist'
         self._output = output
-        self._parser = 'fxtran' if parser is None else parser
         tree = Tree() if tree is None else tree
         if self.SHARED_TREE is not None:
             assert tree is not None, 'tree must be None if setParallel has been called'
@@ -102,7 +100,7 @@ class PYFT(PYFTscope):
         for option in self.MANDATORY_FXTRAN_OPTIONS:
             if option not in self._parserOptions:
                 self._parserOptions.append(option)
-        includesRemoved, xml = fortran2xml(self._filename, self._parser, self._parserOptions, wrapH)
+        includesRemoved, xml = fortran2xml(self._filename, self._parserOptions, wrapH)
         super().__init__(xml, enableCache=enableCache, tree=tree)
         if includesRemoved:
             self.tree.signal(self)

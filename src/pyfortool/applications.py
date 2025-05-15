@@ -509,12 +509,12 @@ class Applications():
                     scope.insertStatement(scope.indent(ifMPPDBend), first=False)
 
     @debugDecor
-    def addStack(self, model, stopScopes, parser=None, parserOptions=None, wrapH=False):
+    def addStack(self, model, stopScopes, parserOptions=None, wrapH=False):
         """
         Add specific allocations of local arrays on the fly for GPU
         :param model : 'MESONH' or 'AROME' for specific objects related to the allocator or stack
         :param stopScopes: scope paths where we stop to add stack
-        :param parser, parserOptions, wrapH: see the PYFT class
+        :param parserOptions, wrapH: see the PYFT class
 
         Stacks are added to all routines called by the scopes listed in stopScopes
         """
@@ -554,7 +554,7 @@ class Applications():
                     scope.addArgInTree('YDSTACK', 'TYPE (STACK) :: YDSTACK', -1,
                                        stopScopes, moduleVarList=[('STACK_MOD', ['STACK', 'SOF'])],
                                        otherNames=['YLSTACK'],
-                                       parser=parser, parserOptions=parserOptions, wrapH=wrapH)
+                                       parserOptions=parserOptions, wrapH=wrapH)
 
                     # Copy the stack to a local variable and use it for call statements
                     # this operation must be done after the call to addArgInTree
@@ -614,11 +614,11 @@ class Applications():
 
     @debugDecor
     @updateVarList
-    def removeIJDim(self, stopScopes, parser=None, parserOptions=None, wrapH=False, simplify=False):
+    def removeIJDim(self, stopScopes, parserOptions=None, wrapH=False, simplify=False):
         """
         Transform routines to be called in a loop on columns
         :param stopScopes: scope paths where we stop to add the D argument (if needed)
-        :param parser, parserOptions, wrapH: see the PYFT class
+        :param parserOptions, wrapH: see the PYFT class
         :param simplify: try to simplify code (remove useless dimensions in call)
 
         ComputeInSingleColumn :
@@ -860,7 +860,7 @@ class Applications():
             if len(indexRemoved) > 0:
                 scope.addArgInTree('D', 'TYPE(DIMPHYEX_t) :: D',
                                    0, stopScopes, moduleVarList=[('MODD_DIMPHYEX', ['DIMPHYEX_t'])],
-                                   parser=parser, parserOptions=parserOptions, wrapH=wrapH)
+                                   parserOptions=parserOptions, wrapH=wrapH)
             # Check loop index presence at declaration of the scope
             scope.addVar([[scope.path, loopIndex, 'INTEGER :: ' + loopIndex, None]
                           for loopIndex in indexRemoved

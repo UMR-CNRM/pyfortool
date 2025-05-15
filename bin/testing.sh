@@ -234,10 +234,18 @@ if [ ${force} -eq 1 -o $(get_statuses "${SHA}" | grep -w "${context}" | wc -l) -
         exec "${WORKDIR}/pyfortool/bin/testing.sh" $allargs
       fi
     fi
-    log 1 "Installing/updating pyfortool"
-    ${WORKDIR}/pyfortool/bin/INSTALL.sh
   fi
-  . "${WORKDIR}/pyfortool/bin/env.sh"
+
+  #Install pyfortool in a virtual env
+  log 1 "Installing pyfortool"
+  TEMPDIR=$(mktemp -d)
+  trap "\rm -rf $TEMPDIR" EXIT
+  cd $TEMPDIR
+  python3 -m venv pyfortool.env
+  . pyfortool.env/bin/activate
+  cd ${WORKDIR}/pyfortool
+  pip install .
+  pip install pylint flake8
 
   #Enable the gihub project pages
   if [ $enableghpages -eq 1 ]; then
@@ -271,7 +279,7 @@ if [ ${force} -eq 1 -o $(get_statuses "${SHA}" | grep -w "${context}" | wc -l) -
   log 1 "Check pylint"
   set +e
   score=$(pylint -d R0912,C0209,R0915,R1702,C0302,R0913,R0914,W1202,R0904,R0902 \
-          --persistent=n -f parseable src/pyfortool/ bin/pyfortool* | \
+          --persistent=n -f parseable src/pyfortool/ | \
           grep 'Your code has been rated at' | cut -d\  -f 7 | cut -d/ -f 1)
   set -e
   if [ $(python3 -c "print(0 if ${score} >= 9.8 else 1)") -ne 0 ]; then
@@ -284,7 +292,7 @@ if [ ${force} -eq 1 -o $(get_statuses "${SHA}" | grep -w "${context}" | wc -l) -
   #Check flake8
   log 1 "Check flake8"
   set +e
-  score=$(flake8 bin/pyfortool* src/pyfortool/ | wc -l)
+  score=$(flake8 src/pyfortool/ | wc -l)
   retval=$?
   set -e
   if [ $retval -ne 0 ]; then
@@ -302,24 +310,19 @@ if [ ${force} -eq 1 -o $(get_statuses "${SHA}" | grep -w "${context}" | wc -l) -
   cd examples
   log 1 "Test examples"
   set +e
-  if [ "$(stat -L -c %d:%i $(which pyfortool))" != "$(stat -L -c %d:%i ../bin/pyfortool)" ]; then
+  if [ "$(stat -L -c %d:%i $(python3 -c 'import pyfortool; print(pyfortool.__file__)'))" != \
+       "$(stat -L -c %d:%i ../src/pyfortool/__init__.py)" ]; then
     ret=1
-    log 0 "  test examples: ERROR (PATH not correctly set)"
+    log 0 "  test examples: ERROR (PYTHONPATH not correctly set)"
   else
-    if [ "$(stat -L -c %d:%i $(python3 -c 'import pyfortool; print(pyfortool.__file__)'))" != \
-         "$(stat -L -c %d:%i ../src/pyfortool/__init__.py)" ]; then
+    ./tests.sh 2>&1 > /dev/null
+    retval=$?
+    set -e
+    if [ ${retval} -ne 0 ]; then
       ret=1
-      log 0 "  test examples: ERROR (PYTHONPATH not correctly set)"
+      log 0 "  test examples: problem"
     else
-      ./tests.sh 2>&1 > /dev/null
-      retval=$?
-      set -e
-      if [ ${retval} -ne 0 ]; then
-        ret=1
-        log 0 "  test examples: problem"
-      else
-        log 0 "  test examples: OK"
-      fi
+      log 0 "  test examples: OK"
     fi
   fi
   set -e

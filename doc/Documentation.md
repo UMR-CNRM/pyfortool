@@ -16,13 +16,13 @@ the same as the INPUT source code if no manipulation is performed.
 
 DEPENDENCIES:
 
- - [fxtran](https://github.com/pmarguinaud/fxtran) must be installed.
+ - [pyfxtran](https://github.com/SebastienRietteMTO/pyfxtran) must be installed (```pip install pyfxtran```).
  - PyForTool needs, at least, version 3.8 of python
 
 LIMITATIONS:
 
  - Depending on where there are put, pre-processor directives can break
-   the parsing by fxtran
+   the parsing by (py)fxtran
  - Other encoding than UTF-8 is not supported
 
 Content of this documentation:
@@ -56,15 +56,12 @@ The order of the arguments matters: transformation are done in that specific ord
 
 ### Parser options
 
-**--parser=PATH** can be used to specify the full path to the fxtran executable.
-Usefull if one wants to use a specific version.
-
 **--parserOption=OPTIONS** the list of available options can be found in the fxtran
 documentation. If no option is provided, the defaults one will be used (the
 list of default options can be seen with "pyfortool -h"). In case this option
 is used, the default options will be replaced by the ones specified.
 
-**--wrapH** Wrap .h file content into a MODULE to enable the parsing by fxtran.
+**--wrapH** Wrap .h file content into a MODULE to enable the parsing by (py)fxtran.
 
 ### Input and output
 

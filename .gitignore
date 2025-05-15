@@ -12,3 +12,4 @@ site/fxtran
 # Package building
 src/pyfortool.egg-info/
 dist/
+build/

@@ -1357,7 +1357,7 @@ class Variables():
     @updateVarList
     def addArgInTree(self, varName, declStmt, pos, stopScopes, moduleVarList=None,
                      otherNames=None,
-                     parser=None, parserOptions=None, wrapH=False):
+                     parserOptions=None, wrapH=False):
         """
         Adds an argument to the routine and propagates it upward until we encounter a scope
         where the variable exists or a scope in stopScopes
@@ -1373,7 +1373,7 @@ class Variables():
                               use moduleVarList to not add module variables
         :param otherNames: None or list of other variable names that can be used
                            These variables are used first
-        :param parser, parserOptions, wrapH: see the PYFT class
+        :param parserOptions, wrapH: see the PYFT class
 
         Argument is inserted only on paths leading to one of scopes listed in stopScopes
         """
@@ -1450,7 +1450,7 @@ class Variables():
                                 pft = None
                             else:
                                 pft = pyfortool.pyfortool.conservativePYFT(
-                                          filename, parser, parserOptions, wrapH, tree=self.tree,
+                                          filename, parserOptions, wrapH, tree=self.tree,
                                           clsPYFT=self._mainScope.__class__)
                                 xml = pft
                             scopeInterface = xml.getScopeNode(scopePathInterface)
@@ -1487,7 +1487,7 @@ class Variables():
                                     pft = None
                                 else:
                                     pft = pyfortool.pyfortool.conservativePYFT(
-                                              filename, parser, parserOptions, wrapH,
+                                              filename, parserOptions, wrapH,
                                               tree=self.tree,
                                               clsPYFT=self._mainScope.__class__)
                                     xml = pft
@@ -1496,7 +1496,7 @@ class Variables():
                                 scopeUp.addArgInTree(
                                     varName, declStmt, pos,
                                     stopScopes, moduleVarList, otherNames,
-                                    parser=parser, parserOptions=parserOptions,
+                                    parserOptions=parserOptions,
                                     wrapH=wrapH)
                                 # Add the argument to calls (subroutine or function)
                                 name = self.path.split('/')[-1].split(':')[1].upper()
