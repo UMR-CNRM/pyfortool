@@ -80,12 +80,12 @@ Introduction</h1>
 <p>This package supposes that the original source code is written using UTF-8 encoding. If not, some special characters could be altered by the double conversion. Apart from this, the resulting FORTRAN source code is exactly the same as the INPUT source code if no manipulation is performed.</p>
 <p>DEPENDENCIES:</p>
 <ul>
-<li><a href="https://github.com/pmarguinaud/fxtran">fxtran</a> must be installed.</li>
+<li><a href="https://github.com/SebastienRietteMTO/pyfxtran">pyfxtran</a> must be installed (<code>pip install pyfxtran</code>).</li>
 <li>PyForTool needs, at least, version 3.8 of python</li>
 </ul>
 <p>LIMITATIONS:</p>
 <ul>
-<li>Depending on where there are put, pre-processor directives can break the parsing by fxtran</li>
+<li>Depending on where there are put, pre-processor directives can break the parsing by (py)fxtran</li>
 <li>Other encoding than UTF-8 is not supported</li>
 </ul>
 <p>Content of this documentation:</p>
@@ -110,9 +110,8 @@ Tool options</h1>
 <p>The order of the arguments matters: transformation are done in that specific order.</p>
 <h2><a class="anchor" id="autotoc_md4"></a>
 Parser options</h2>
-<p><b>&ndash;parser=PATH</b> can be used to specify the full path to the fxtran executable. Usefull if one wants to use a specific version.</p>
 <p><b>&ndash;parserOption=OPTIONS</b> the list of available options can be found in the fxtran documentation. If no option is provided, the defaults one will be used (the list of default options can be seen with "pyfortool -h"). In case this option is used, the default options will be replaced by the ones specified.</p>
-<p><b>&ndash;wrapH</b> Wrap .h file content into a MODULE to enable the parsing by fxtran.</p>
+<p><b>&ndash;wrapH</b> Wrap .h file content into a MODULE to enable the parsing by (py)fxtran.</p>
 <h2><a class="anchor" id="autotoc_md5"></a>
 Input and output</h2>
 <p><b>&ndash;renamefF</b> transforms in upper case the file extension.</p>

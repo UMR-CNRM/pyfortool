@@ -97,8 +97,8 @@ Functions</h2></td></tr>
 <tr class="separator:a0962d0f53caca89353fed5ebaeb3378a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a88faa6d9ed7b847ea8fa4253297a4195" id="r_a88faa6d9ed7b847ea8fa4253297a4195"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepyfortool_1_1util.html#a88faa6d9ed7b847ea8fa4253297a4195">printInfos</a> ()</td></tr>
 <tr class="separator:a88faa6d9ed7b847ea8fa4253297a4195"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afbebc2b598a1479d9ee77cf5188c8aae" id="r_afbebc2b598a1479d9ee77cf5188c8aae"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepyfortool_1_1util.html#afbebc2b598a1479d9ee77cf5188c8aae">fortran2xml</a> (fortranSource, parser='fxtran', parserOptions=None, wrapH=False)</td></tr>
-<tr class="separator:afbebc2b598a1479d9ee77cf5188c8aae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a38cababd3c55d251f604d82e2d342eca" id="r_a38cababd3c55d251f604d82e2d342eca"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepyfortool_1_1util.html#a38cababd3c55d251f604d82e2d342eca">fortran2xml</a> (fortranSource, parserOptions=None, wrapH=False)</td></tr>
+<tr class="separator:a38cababd3c55d251f604d82e2d342eca"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab1e019e0c4fb38eeabada9a062b87456" id="r_ab1e019e0c4fb38eeabada9a062b87456"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepyfortool_1_1util.html#ab1e019e0c4fb38eeabada9a062b87456">tostring</a> (doc)</td></tr>
 <tr class="separator:ab1e019e0c4fb38eeabada9a062b87456"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acb39c8bab58198c7c6f3e4b78944dc10" id="r_acb39c8bab58198c7c6f3e4b78944dc10"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepyfortool_1_1util.html#acb39c8bab58198c7c6f3e4b78944dc10">tofortran</a> (doc)</td></tr>
@@ -153,7 +153,7 @@ Variables</h2></td></tr>
 <pre class="fragment">Helper function to iterate on all text fragment and join them
 :param doc: xml fragment
 </pre> 
-<p class="definition">Definition at line <a class="el" href="util_8py_source.html#l00297">297</a> of file <a class="el" href="util_8py_source.html">util.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="util_8py_source.html#l00293">293</a> of file <a class="el" href="util_8py_source.html">util.py</a>.</p>
 
 </div>
 </div>
@@ -179,8 +179,8 @@ and count number of calls and time spent
 
 </div>
 </div>
-<a id="afbebc2b598a1479d9ee77cf5188c8aae" name="afbebc2b598a1479d9ee77cf5188c8aae"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afbebc2b598a1479d9ee77cf5188c8aae">&#9670;&#160;</a></span>fortran2xml()</h2>
+<a id="a38cababd3c55d251f604d82e2d342eca" name="a38cababd3c55d251f604d82e2d342eca"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a38cababd3c55d251f604d82e2d342eca">&#9670;&#160;</a></span>fortran2xml()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -190,12 +190,6 @@ and count number of calls and time spent
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname"><em>fortranSource</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>parser</em> = <code>'fxtran'</code>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -218,7 +212,6 @@ and count number of calls and time spent
 </div><div class="memdoc">
 <pre class="fragment">:param fortranSource: a string containing a fortran source code
                       or a filename
-:param parser: path to the fxtran parser
 :param parserOptions: dictionnary holding the parser options
 :param wrapH: if True, content of .h file is put in a .F90 file (to force
               fxtran to recognize it as free form) inside a module (to
@@ -248,7 +241,7 @@ and count number of calls and time spent
 <pre class="fragment">:param elem: element
 :return: True if element is a construct
 </pre> 
-<p class="definition">Definition at line <a class="el" href="util_8py_source.html#l00327">327</a> of file <a class="el" href="util_8py_source.html">util.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="util_8py_source.html#l00323">323</a> of file <a class="el" href="util_8py_source.html">util.py</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -280,7 +273,7 @@ Here is the caller graph for this function:</div>
 <pre class="fragment">:param e: element
 :return: True if element is executable
 </pre> 
-<p class="definition">Definition at line <a class="el" href="util_8py_source.html#l00313">313</a> of file <a class="el" href="util_8py_source.html">util.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="util_8py_source.html#l00309">309</a> of file <a class="el" href="util_8py_source.html">util.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -312,7 +305,7 @@ Here is the call graph for this function:</div>
 <pre class="fragment">:param string: string to test for intergerness
 :return: True if s represent a real
 </pre> 
-<p class="definition">Definition at line <a class="el" href="util_8py_source.html#l00266">266</a> of file <a class="el" href="util_8py_source.html">util.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="util_8py_source.html#l00262">262</a> of file <a class="el" href="util_8py_source.html">util.py</a>.</p>
 
 </div>
 </div>
@@ -336,7 +329,7 @@ Here is the call graph for this function:</div>
 <pre class="fragment">:param string: string to test for intergerness
 :return: True if s represent an int
 </pre> 
-<p class="definition">Definition at line <a class="el" href="util_8py_source.html#l00253">253</a> of file <a class="el" href="util_8py_source.html">util.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="util_8py_source.html#l00249">249</a> of file <a class="el" href="util_8py_source.html">util.py</a>.</p>
 
 </div>
 </div>
@@ -358,7 +351,7 @@ Here is the call graph for this function:</div>
 <pre class="fragment">:param elem: element
 :return: True if element is a statement
 </pre> 
-<p class="definition">Definition at line <a class="el" href="util_8py_source.html#l00335">335</a> of file <a class="el" href="util_8py_source.html">util.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="util_8py_source.html#l00331">331</a> of file <a class="el" href="util_8py_source.html">util.py</a>.</p>
 
 </div>
 </div>
@@ -379,7 +372,7 @@ Here is the call graph for this function:</div>
 </div><div class="memdoc">
 <pre class="fragment">Helper function which returns the entity name enclosed in a N tag
 </pre> 
-<p class="definition">Definition at line <a class="el" href="util_8py_source.html#l00290">290</a> of file <a class="el" href="util_8py_source.html">util.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="util_8py_source.html#l00286">286</a> of file <a class="el" href="util_8py_source.html">util.py</a>.</p>
 
 </div>
 </div>
@@ -401,7 +394,7 @@ Here is the call graph for this function:</div>
 <pre class="fragment">:param e: element
 :return: True if e is non code (comment, text...)
 </pre> 
-<p class="definition">Definition at line <a class="el" href="util_8py_source.html#l00305">305</a> of file <a class="el" href="util_8py_source.html">util.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="util_8py_source.html#l00301">301</a> of file <a class="el" href="util_8py_source.html">util.py</a>.</p>
 
 </div>
 </div>
@@ -488,7 +481,7 @@ Here is the call graph for this function:</div>
 <pre class="fragment">:param elem: ET Element
 :return: the tag without the namespace
 </pre> 
-<p class="definition">Definition at line <a class="el" href="util_8py_source.html#l00282">282</a> of file <a class="el" href="util_8py_source.html">util.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="util_8py_source.html#l00278">278</a> of file <a class="el" href="util_8py_source.html">util.py</a>.</p>
 
 </div>
 </div>
@@ -510,7 +503,7 @@ Here is the call graph for this function:</div>
 <pre class="fragment">:param doc: an ET object
 :return: a string representing the FORTRAN source code
 </pre> 
-<p class="definition">Definition at line <a class="el" href="util_8py_source.html#l00232">232</a> of file <a class="el" href="util_8py_source.html">util.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="util_8py_source.html#l00228">228</a> of file <a class="el" href="util_8py_source.html">util.py</a>.</p>
 
 </div>
 </div>
@@ -532,7 +525,7 @@ Here is the call graph for this function:</div>
 <pre class="fragment">:param doc: an ET object
 :return: xml as a string
 </pre> 
-<p class="definition">Definition at line <a class="el" href="util_8py_source.html#l00224">224</a> of file <a class="el" href="util_8py_source.html">util.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="util_8py_source.html#l00220">220</a> of file <a class="el" href="util_8py_source.html">util.py</a>.</p>
 
 </div>
 </div>
