@@ -245,7 +245,7 @@ if [ ${force} -eq 1 -o $(get_statuses "${SHA}" | grep -w "${context}" | wc -l) -
   . pyfortool.env/bin/activate
   cd ${WORKDIR}/pyfortool
   pip install .
-  pip install pylint flake8
+  pip install pylint flake8==7.1.1
 
   #Enable the gihub project pages
   if [ $enableghpages -eq 1 ]; then
@@ -310,20 +310,14 @@ if [ ${force} -eq 1 -o $(get_statuses "${SHA}" | grep -w "${context}" | wc -l) -
   cd examples
   log 1 "Test examples"
   set +e
-  if [ "$(stat -L -c %d:%i $(python3 -c 'import pyfortool; print(pyfortool.__file__)'))" != \
-       "$(stat -L -c %d:%i ../src/pyfortool/__init__.py)" ]; then
+  ./tests.sh 2>&1 > /dev/null
+  retval=$?
+  set -e
+  if [ ${retval} -ne 0 ]; then
     ret=1
-    log 0 "  test examples: ERROR (PYTHONPATH not correctly set)"
+    log 0 "  test examples: problem"
   else
-    ./tests.sh 2>&1 > /dev/null
-    retval=$?
-    set -e
-    if [ ${retval} -ne 0 ]; then
-      ret=1
-      log 0 "  test examples: problem"
-    else
-      log 0 "  test examples: OK"
-    fi
+    log 0 "  test examples: OK"
   fi
   set -e
 
