@@ -239,13 +239,22 @@ if [ ${force} -eq 1 -o $(get_statuses "${SHA}" | grep -w "${context}" | wc -l) -
   #Install pyfortool in a virtual env
   log 1 "Installing pyfortool"
   TEMPDIR=$(mktemp -d)
-  trap "\rm -rf $TEMPDIR" EXIT
+  trap "\rm -rf $TEMPDIR; exit_error \$?" EXIT
   cd $TEMPDIR
   python3 -m venv pyfortool.env
   . pyfortool.env/bin/activate
   cd ${WORKDIR}/pyfortool
-  pip install .
-  pip install pylint flake8==7.1.1
+  set +e
+  pip install . && pip install pylint flake8==7.1.1
+  result=$?
+  set -e
+  log 1 "virtual env installation"
+  if [ ${result} -ne 0 ]; then
+    ret=1
+    log 0 "  virtual env: error"
+  else
+    log 0 "  virtual env: OK"
+  fi
 
   #Enable the gihub project pages
   if [ $enableghpages -eq 1 ]; then
