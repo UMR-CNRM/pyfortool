@@ -18,13 +18,14 @@ var searchData=
   ['_5fgetnodepath_15',['_getNodePath',['../classpyfortool_1_1scope_1_1PYFTscope.html#ac3277b30653d4e1636a745dcc588c41e',1,'pyfortool::scope::PYFTscope']]],
   ['_5fincinscope_16',['_incInScope',['../classpyfortool_1_1tree_1_1Tree.html#a7e5b81259f2fa180cbadf4a9eaaf079e',1,'pyfortool::tree::Tree']]],
   ['_5floopvarphyex_17',['_loopVarPHYEX',['../namespacepyfortool_1_1applications.html#ae0e1ed0c92e16717633ce1e220ff825a',1,'pyfortool::applications']]],
-  ['_5fnodesincase_18',['_nodesInCase',['../namespacepyfortool_1_1statements.html#a9472f2dbfd3dac27de7e4ba552a4567c',1,'pyfortool::statements']]],
-  ['_5fnodesindo_19',['_nodesInDo',['../namespacepyfortool_1_1statements.html#a3ab0c344e7a3e5d50fdd668f1eb294e1',1,'pyfortool::statements']]],
-  ['_5fnodesinif_20',['_nodesInIf',['../namespacepyfortool_1_1statements.html#a2aa730418d36ebcdf6d358e515c117aa',1,'pyfortool::statements']]],
-  ['_5fnodesinwhere_21',['_nodesInWhere',['../namespacepyfortool_1_1statements.html#a939c6c3a8604f46aab50a503b3bbedc9',1,'pyfortool::statements']]],
-  ['_5fnormalizescopevar_22',['_normalizeScopeVar',['../classpyfortool_1_1variables_1_1Variables.html#a52cb671d5fe7c0218a6e819a0b383bf5',1,'pyfortool::variables::Variables']]],
-  ['_5fnormalizeuniqvar_23',['_normalizeUniqVar',['../classpyfortool_1_1variables_1_1Variables.html#adb598123892010ce83555ca4dd02ad2c',1,'pyfortool::variables::Variables']]],
-  ['_5frecurlist_24',['_recurList',['../classpyfortool_1_1tree_1_1Tree.html#a7b316c264655487133f41491c1a9da62',1,'pyfortool::tree::Tree']]],
-  ['_5frename_25',['_rename',['../classpyfortool_1_1pyfortool_1_1PYFT.html#adadda2836473595449d2ce499c7723cb',1,'pyfortool::pyfortool::PYFT']]],
-  ['_5fvirtual_26',['_virtual',['../classpyfortool_1_1scope_1_1ElementView.html#a7a1db7bc1c5100e0e9b813edf25d9239',1,'pyfortool::scope::ElementView']]]
+  ['_5fmnh_5fexpand_5fvar_18',['_mnh_expand_var',['../classpyfortool_1_1applications_1_1Applications.html#afd21fd68864bcfad99cba32f6cdc6dff',1,'pyfortool::applications::Applications']]],
+  ['_5fnodesincase_19',['_nodesInCase',['../namespacepyfortool_1_1statements.html#a9472f2dbfd3dac27de7e4ba552a4567c',1,'pyfortool::statements']]],
+  ['_5fnodesindo_20',['_nodesInDo',['../namespacepyfortool_1_1statements.html#a3ab0c344e7a3e5d50fdd668f1eb294e1',1,'pyfortool::statements']]],
+  ['_5fnodesinif_21',['_nodesInIf',['../namespacepyfortool_1_1statements.html#a2aa730418d36ebcdf6d358e515c117aa',1,'pyfortool::statements']]],
+  ['_5fnodesinwhere_22',['_nodesInWhere',['../namespacepyfortool_1_1statements.html#a939c6c3a8604f46aab50a503b3bbedc9',1,'pyfortool::statements']]],
+  ['_5fnormalizescopevar_23',['_normalizeScopeVar',['../classpyfortool_1_1variables_1_1Variables.html#a52cb671d5fe7c0218a6e819a0b383bf5',1,'pyfortool::variables::Variables']]],
+  ['_5fnormalizeuniqvar_24',['_normalizeUniqVar',['../classpyfortool_1_1variables_1_1Variables.html#adb598123892010ce83555ca4dd02ad2c',1,'pyfortool::variables::Variables']]],
+  ['_5frecurlist_25',['_recurList',['../classpyfortool_1_1tree_1_1Tree.html#a7b316c264655487133f41491c1a9da62',1,'pyfortool::tree::Tree']]],
+  ['_5frename_26',['_rename',['../classpyfortool_1_1pyfortool_1_1PYFT.html#adadda2836473595449d2ce499c7723cb',1,'pyfortool::pyfortool::PYFT']]],
+  ['_5fvirtual_27',['_virtual',['../classpyfortool_1_1scope_1_1ElementView.html#a7a1db7bc1c5100e0e9b813edf25d9239',1,'pyfortool::scope::ElementView']]]
 ];

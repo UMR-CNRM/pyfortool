@@ -209,6 +209,14 @@ an error message and raise an exception.
 **--checkOpInCall=Warn\|Err** if a call argument is an operation, issue a warning
 if option is 'Warn'; otherwise issue an error message and raise an exception.
 
+**--checkUnusedLocalVar=Warn\|Err** if a local variable is unused, issue a warning
+if option is 'Warn'; otherwise issue an error message and raise an exception.
+
+**--checkPHYEXUnusedLocalVar=Warn\|Err** if a local variable is unused (excluding
+variables needed for mnh_expand directives, issue a warning if option is 'Warn';
+otherwise issue an error message and raise an exception.
+
+
 ### Dealing with statements
 
 **--removeCall CALLNAME** removes call statements. The argument is the subprogram name.
