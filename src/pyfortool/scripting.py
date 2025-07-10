@@ -590,6 +590,13 @@ def updateParserChecks(parser):
     gChecks.add_argument('--checkOpInCall', choices={'Warn', 'Err'}, default=None,
                          help='Send a warning or raise an error if a call argument is an '
                               'operation.')
+    gChecks.add_argument('--checkUnusedLocalVar', choices={'Warn', 'Err'}, default=None,
+                         help='Send a warning or raise an error if some local '
+                              'variables are unused.')
+    gChecks.add_argument('--checkPHYEXUnusedLocalVar', choices={'Warn', 'Err'}, default=None,
+                         help='Send a warning or raise an error if some local '
+                              'variables are unused (excluding variables needed '
+                              'for mnh_expand directives).')
 
 
 def updateParserStatements(parser):
@@ -910,6 +917,10 @@ def applyTransfoChecks(pft, arg, args):
         pft.checkIntent(args.checkINTENT == 'Err')
     elif arg == '--checkOpInCall':
         pft.checkOpInCall(args.checkOpInCall == 'Err')
+    elif arg == '--checkUnusedLocalVar':
+        pft.checkUnusedLocalVar(args.checkUnusedLocalVar == 'Err')
+    elif arg == '--checkPHYEXUnusedLocalVar':
+        pft.checkPHYEXUnusedLocalVar(args.checkPHYEXUnusedLocalVar == 'Err')
 
 
 def applyTransfoStatements(pft, arg, args, simplify):

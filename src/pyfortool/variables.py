@@ -656,7 +656,7 @@ class Variables():
     @debugDecor
     def showUnusedVar(self):
         """
-        Displays on stdout a list of unued variables
+        Displays on stdout a list of unused variables
         """
         scopes = self.getScopes(excludeKinds=['type'])
         varUsed = self.isVarUsed([(scope.path, v['n'])
@@ -668,6 +668,38 @@ class Variables():
             if len(varList) != 0:
                 print(f'Some variables declared in {scope.path} are unused:')
                 print('  - ' + ('\n  - '.join(varList)))
+
+    @debugDecor
+    def checkUnusedLocalVar(self,  mustRaise=False, excludeList=None):
+        """
+        :param mustRaise: True to raise
+        :param excludeList: list of variable names to exclude from the check
+        Issue a logging.warning if there are unused local variables
+        If mustRaise is True, issue a logging.error instead and raise an error
+        """
+
+        if excludeList is None:
+            excludeList = []
+        else:
+            excludeList = [v.upper() for v in excludeList]
+        scopes = self.getScopes(excludeKinds=['type'])
+        # We do not check dummy args, module variables
+        varUsed = self.isVarUsed([(scope.path, v['n'])
+                                  for scope in scopes
+                                  for v in self.varList
+                                  if v['n'].upper() not in excludeList and
+                                     (not v['arg']) and
+                                     v['scopePath'].split('/')[-1].split(':')[0] != 'module' and
+                                     v['scopePath'] == scope.path])
+        for scope in scopes:
+            for var in [k[1].upper() for (k, v) in varUsed.items()
+                        if (not v) and k[0] == scope.path]:
+                message = f"The {var} variable is not used in file " + \
+                          f"'{scope.getFileName()}' for {scope.path}."
+                if mustRaise:
+                    logging.error(message)
+                    raise PYFTError(message)
+                logging.warning(message)
 
     @debugDecor
     def removeUnusedLocalVar(self, excludeList=None, simplify=False):
@@ -1333,7 +1365,7 @@ class Variables():
                     # We look for the variable name in these 'N' nodes.
                     for nodeN in nodesN:
                         if dummyAreAlwaysUsed:
-                            # No need to check if the variable is a dummy argument; because if it is
+                            # No need to  if the variable is a dummy argument; because if it is
                             # one it will be found in the argument list of the subroutine/function
                             # and will be considered as used
                             usedVar[scopePath].append(n2name(nodeN).upper())
