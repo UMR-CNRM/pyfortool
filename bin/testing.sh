@@ -152,7 +152,7 @@ function send_mail {
   message="$1"
   if [ "$MAIL" != "" ]; then
     if command -v mail; then
-      mail -s "$context" "$MAIL" <<EOF
+      mail -s "pyfortool $context" "$MAIL" <<EOF
 $(echo -e ${message})
 EOF
     else
@@ -164,7 +164,7 @@ EOF
   fi
 }
 
-header="${context}\n\n$(date)"
+header="pyfortool ${context}\n\n$(date)"
 message=""
 function report {
   error=$1

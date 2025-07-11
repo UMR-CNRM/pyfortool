@@ -687,10 +687,10 @@ class Variables():
         varUsed = self.isVarUsed([(scope.path, v['n'])
                                   for scope in scopes
                                   for v in self.varList
-                                  if v['n'].upper() not in excludeList and
-                                     (not v['arg']) and
-                                     v['scopePath'].split('/')[-1].split(':')[0] != 'module' and
-                                     v['scopePath'] == scope.path])
+                                  if (v['n'].upper() not in excludeList and
+                                      (not v['arg']) and
+                                      v['scopePath'].split('/')[-1].split(':')[0] != 'module' and
+                                      v['scopePath'] == scope.path)])
         for scope in scopes:
             for var in [k[1].upper() for (k, v) in varUsed.items()
                         if (not v) and k[0] == scope.path]:

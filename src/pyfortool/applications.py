@@ -1345,7 +1345,8 @@ class Applications():
                                                            elem in previousComputeStmt,
                                                            nbzshugradwk, arrayDim,
                                                            dimWorkingVar)
-                                    (newCallStmt, newComputeStmt, nbzshugradwk, newFuncName) =result
+                                    (newCallStmt, newComputeStmt,
+                                     nbzshugradwk, newFuncName) = result
                                     subToInclude.add(newFuncName)
                                     # Update the list of elements to check if there are still
                                     # remaining function to convert within the new call-stmt
@@ -1409,7 +1410,7 @@ class Applications():
 
                 # Add the use statements
                 moduleVars = []
-                for sub in subToInclude:
+                for sub in sorted(subToInclude):
                     if re.match(r'[MD][XYZ][MF](2D)?_PHY', sub):
                         moduleVars.append((scope.path, 'MODE_SHUMAN_PHY', sub))
                     else:
