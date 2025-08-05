@@ -1136,7 +1136,7 @@ class Applications():
             # Detect if the workingItem contains expressions, if so:
             # create a compute statement embedded by mnh_expand directives
             opE = workingItem.findall('.//{*}op-E')
-            scope.addArrayParenthesesInNode(workingItem)
+            scope.removeArrayParenthesesInNode(workingItem)
             computeStmt = []
             dimSuffVar = str(zshugradwkDim) + 'D'
             dimSuffRoutine, dimSuffVar, mnhExpandArrayIndexes = \

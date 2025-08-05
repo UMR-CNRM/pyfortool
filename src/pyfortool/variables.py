@@ -852,6 +852,32 @@ class Variables():
                             sectionSubscript = createElem('section-subscript', text=':', tail=', ')
                             sectionSubscriptLT.append(sectionSubscript)
                         sectionSubscript.tail = None  # last one
+    @debugDecor
+    def removeArrayParenthesesInNode(self, node):
+        """
+        Look for arrays and remove parenthesis if no index selection A(:,:) => A
+        :param node: xml node in which ':' must be removed
+        """
+        # Loop on variables
+        for namedE in node.findall('.//{*}named-E'):
+            if namedE.find('./{*}R-LT'):  # parentheses
+                if not self.isNodeInProcedure(namedE, ('ALLOCATED', 'ASSOCIATED', 'PRESENT')):
+                    # Pointer/allocatable used in ALLOCATED/ASSOCIATED must not be modified
+                    # Array in present must not be modified
+                    nodeN = namedE.find('./{*}N')
+                    var = self.varList.findVar(n2name(nodeN))
+                    if var is not None and var['as'] is not None and len(var['as']) > 0 and \
+                       not ((var['pointer'] or var['allocatable']) and self.isNodeInCall(namedE)):
+                        arrayR = namedE.findall('./{*}R-LT')
+                        for a in arrayR:
+                            sectionSubscriptLT = a.findall('.//{*}section-subscript-LT')
+                            for ss in sectionSubscriptLT:
+                                lowerBound = ss.findall('.//{*}lower-bound')
+                                if len(lowerBound) == 0:
+                                    # Node to be removed <f:R-LT><f:array-R><f:section-subscript-LT>...
+                                    par=self.getParent(ss,level=2)
+                                    parOfpar=self.getParent(par)
+                                    parOfpar.remove(par)
 
     @debugDecor
     @updateVarList
