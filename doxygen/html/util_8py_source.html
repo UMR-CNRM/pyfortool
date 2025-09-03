@@ -133,7 +133,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>        <span class="keywordflow">if</span> t0 <span class="keywordflow">is</span> <span class="keywordflow">not</span> <span class="keywordtype">None</span>:</div>
 <div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>            <span class="comment"># We test with t0 instead of the log level in case level evolved during func call</span></div>
 <div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>            <span class="keywordflow">if</span> func.__name__ <span class="keywordflow">not</span> <span class="keywordflow">in</span> debugStats:</div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>                debugStats[func.__name__] = dict(nb=0, totalTime=0)</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>                debugStats[func.__name__] = {<span class="stringliteral">&#39;nb&#39;</span>: 0, <span class="stringliteral">&#39;totalTime&#39;</span>: 0}</div>
 <div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>            debugStats[func.__name__][<span class="stringliteral">&#39;nb&#39;</span>] += 1</div>
 <div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>            duration = time.time() - t0</div>
 <div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>            debugStats[func.__name__][<span class="stringliteral">&#39;totalTime&#39;</span>] += duration</div>
