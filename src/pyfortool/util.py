@@ -49,7 +49,7 @@ def debugDecor(func):
         if t0 is not None:
             # We test with t0 instead of the log level in case level evolved during func call
             if func.__name__ not in debugStats:
-                debugStats[func.__name__] = dict(nb=0, totalTime=0)
+                debugStats[func.__name__] = {'nb': 0, 'totalTime': 0}
             debugStats[func.__name__]['nb'] += 1
             duration = time.time() - t0
             debugStats[func.__name__]['totalTime'] += duration

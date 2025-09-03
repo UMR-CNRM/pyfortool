@@ -852,6 +852,7 @@ class Variables():
                             sectionSubscript = createElem('section-subscript', text=':', tail=', ')
                             sectionSubscriptLT.append(sectionSubscript)
                         sectionSubscript.tail = None  # last one
+
     @debugDecor
     def removeArrayParenthesesInNode(self, node):
         """
@@ -874,9 +875,9 @@ class Variables():
                             for ss in sectionSubscriptLT:
                                 lowerBound = ss.findall('.//{*}lower-bound')
                                 if len(lowerBound) == 0:
-                                    # Node to be removed <f:R-LT><f:array-R><f:section-subscript-LT>...
-                                    par=self.getParent(ss,level=2)
-                                    parOfpar=self.getParent(par)
+                                    # Node to be removed <f:R-LT><f:array-R><f:section-subscript-LT>
+                                    par = self.getParent(ss, level=2)
+                                    parOfpar = self.getParent(par)
                                     parOfpar.remove(par)
 
     @debugDecor
