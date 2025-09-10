@@ -93,11 +93,6 @@ USE MODI_GRADIENT_U
 USE MODI_GRADIENT_V
 USE MODI_GRADIENT_W
 USE MODI_SHUMAN
-USE MODE_SHUMAN_PHY
-USE MODE_GRADIENT_M_PHY, ONLY: GZ_M_W_PHY
-USE MODE_GRADIENT_W_PHY, ONLY: GZ_W_M_PHY, GZ_W_M_PHY
-USE MODE_GRADIENT_V_PHY, ONLY: GY_V_M_PHY
-USE MODE_GRADIENT_U_PHY, ONLY: GX_U_M_PHY
 USE MODE_COEFJ, ONLY: COEFJ
 #ifdef MNH_OPENACC
 USE MODI_GET_HALO
@@ -107,6 +102,25 @@ USE MODE_TRIDIAG_W, ONLY: TRIDIAG_W
 !
 USE MODI_SECOND_MNH
 USE MODE_MPPDB
+USE MODE_SHUMAN_PHY, ONLY:DXF2D_PHY
+USE MODE_SHUMAN_PHY, ONLY:DXM_PHY
+USE MODE_SHUMAN_PHY, ONLY:DYF2D_PHY
+USE MODE_SHUMAN_PHY, ONLY:DYM_PHY
+USE MODE_SHUMAN_PHY, ONLY:DZF_PHY
+USE MODE_GRADIENT_U_PHY, ONLY:GX_U_M_PHY
+USE MODE_GRADIENT_V_PHY, ONLY:GY_V_M_PHY
+USE MODE_GRADIENT_M_PHY, ONLY:GZ_M_W_PHY
+USE MODE_GRADIENT_W_PHY, ONLY:GZ_W_M_PHY
+USE MODE_SHUMAN_PHY, ONLY:MXF2D_PHY
+USE MODE_SHUMAN_PHY, ONLY:MXF_PHY
+USE MODE_SHUMAN_PHY, ONLY:MXM2D_PHY
+USE MODE_SHUMAN_PHY, ONLY:MXM_PHY
+USE MODE_SHUMAN_PHY, ONLY:MYF2D_PHY
+USE MODE_SHUMAN_PHY, ONLY:MYF_PHY
+USE MODE_SHUMAN_PHY, ONLY:MYM2D_PHY
+USE MODE_SHUMAN_PHY, ONLY:MYM_PHY
+USE MODE_SHUMAN_PHY, ONLY:MZF_PHY
+USE MODE_SHUMAN_PHY, ONLY:MZM_PHY
 !
 IMPLICIT NONE
 !
@@ -248,7 +262,7 @@ ZDIRSINZW(:,:) = SQRT( 1. - PDIRCOSZW(:,:)**2 )
 !$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT)
 !$acc end kernels
 !
-CALL GX_U_M_PHY(D, OFLAT,PUM(:, :, :),PDXX(:, :, :),PDZZ(:, :, :),PDZX(:, :, :), ZGX_U_M3D_WORK1)
+CALL GX_U_M_PHY(D, OFLAT,PUM,PDXX,PDZZ,PDZX, ZGX_U_M3D_WORK1)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
 GX_U_M_PUM(:, :, :) = ZGX_U_M3D_WORK1(:, :, :)
@@ -256,7 +270,7 @@ GX_U_M_PUM(:, :, :) = ZGX_U_M3D_WORK1(:, :, :)
 !$acc end kernels
 !
 IF (.NOT. O2D) THEN
-  CALL GY_V_M_PHY(D, OFLAT,PVM(:, :, :),PDYY(:, :, :),PDZZ(:, :, :),PDZY(:, :, :), ZGY_V_M3D_WORK1)
+  CALL GY_V_M_PHY(D, OFLAT,PVM,PDYY,PDZZ,PDZY, ZGY_V_M3D_WORK1)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
 GY_V_M_PVM(:, :, :) = ZGY_V_M3D_WORK1(:, :, :)
@@ -264,7 +278,7 @@ GY_V_M_PVM(:, :, :) = ZGY_V_M3D_WORK1(:, :, :)
 !$acc end kernels
 !
 END IF
-CALL GZ_W_M_PHY(D, PWM(:, :, :),PDZZ(:, :, :), ZGZ_W_M3D_WORK1)
+CALL GZ_W_M_PHY(D, PWM,PDZZ, ZGZ_W_M3D_WORK1)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
 GZ_W_M_PWM(:, :, :) = ZGZ_W_M3D_WORK1(:, :, :)
@@ -272,7 +286,7 @@ GZ_W_M_PWM(:, :, :) = ZGZ_W_M3D_WORK1(:, :, :)
 !$acc end kernels
 !
 !
-CALL MZF_PHY(D, PDZZ(:, :, :), ZMZF3D_WORK1)
+CALL MZF_PHY(D, PDZZ, ZMZF3D_WORK1)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
 ZMZF_DZZ(:, :, :) = ZMZF3D_WORK1(:, :, :)
@@ -567,7 +581,7 @@ END IF
 !
 ! Complete the U tendency
 IF (.NOT. OFLAT) THEN
-  CALL MXF_PHY(D, PDXX(:, :, :), ZMXF3D_WORK1)
+  CALL MXF_PHY(D, PDXX, ZMXF3D_WORK1)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
 ZSHUGRADWK1_3D(:, :, :) = PRHODJ(:, :, :) * ZFLX(:, :, :) / ZMXF3D_WORK1(:, :, :)
@@ -575,7 +589,7 @@ ZSHUGRADWK1_3D(:, :, :) = PRHODJ(:, :, :) * ZFLX(:, :, :) / ZMXF3D_WORK1(:, :, :
 !$acc end kernels
 !
 CALL DXM_PHY(D, ZSHUGRADWK1_3D, ZDXM3D_WORK1)
-CALL MZM_PHY(D, PDXX(:, :, :), ZMZM3D_WORK1)
+CALL MZM_PHY(D, PDXX, ZMZM3D_WORK1)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
 ZSHUGRADWK2_3D(:, :, :) = PRHODJ(:, :, :)*ZFLX(:, :, :)
@@ -606,7 +620,7 @@ PRUS(:,:,:)=PRUS(:, :, :)                                            &
 !$acc end kernels
 !
 ELSE
-  CALL MXF_PHY(D, PDXX(:, :, :), ZMXF3D_WORK1)
+  CALL MXF_PHY(D, PDXX, ZMXF3D_WORK1)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
 ZSHUGRADWK1_3D(:, :, :) = PRHODJ(:, :, :) * ZFLX(:, :, :) / ZMXF3D_WORK1(:, :, :)
@@ -765,7 +779,7 @@ END IF
 ! Complete the V tendency
 IF (.NOT. O2D) THEN
   IF (.NOT. OFLAT) THEN
-    CALL MYF_PHY(D, PDYY(:, :, :), ZMYF3D_WORK1)
+    CALL MYF_PHY(D, PDYY, ZMYF3D_WORK1)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
 ZSHUGRADWK1_3D(:, :, :) = PRHODJ(:, :, :) * ZFLX(:, :, :) / ZMYF3D_WORK1(:, :, :)
@@ -773,7 +787,7 @@ ZSHUGRADWK1_3D(:, :, :) = PRHODJ(:, :, :) * ZFLX(:, :, :) / ZMYF3D_WORK1(:, :, :
 !$acc end kernels
 !
 CALL DYM_PHY(D, ZSHUGRADWK1_3D, ZDYM3D_WORK1)
-CALL MZM_PHY(D, PDYY(:, :, :), ZMZM3D_WORK1)
+CALL MZM_PHY(D, PDYY, ZMZM3D_WORK1)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
 ZSHUGRADWK2_3D(:, :, :) = PRHODJ(:, :, :)*ZFLX(:, :, :)
@@ -805,7 +819,7 @@ PRVS(:,:,:)=PRVS(:, :, :)                                          &
 !$acc end kernels
 !
 ELSE
-    CALL MYF_PHY(D, PDYY(:, :, :), ZMYF3D_WORK1)
+    CALL MYF_PHY(D, PDYY, ZMYF3D_WORK1)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
 ZSHUGRADWK1_3D(:, :, :) = PRHODJ(:, :, :) * ZFLX(:, :, :) / ZMYF3D_WORK1(:, :, :)
@@ -970,7 +984,7 @@ ZDFDDWDZ(:,:,1:IKB) = 0.
 !
 CALL TRIDIAG_W(PWM,ZFLX,ZDFDDWDZ,PTSTEP,ZMZF_DZZ,PRHODJ,ZWP)
 !
-CALL MZM_PHY(D, PRHODJ(:,:,:), ZMZM3D_WORK1)
+CALL MZM_PHY(D, PRHODJ, ZMZM3D_WORK1)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
 PRWS(:, :, :) = PRWS(:,:,:) + ZMZM3D_WORK1(:, :, :)*(ZWP(:,:,:)-PWM(:,:,:))/PTSTEP
@@ -980,7 +994,7 @@ PRWS(:, :, :) = PRWS(:,:,:) + ZMZM3D_WORK1(:, :, :)*(ZWP(:,:,:)-PWM(:,:,:))/PTST
 !
 !* recomputes flux using guess of W
 !
-CALL GZ_W_M_PHY(D, ZWP(:, :, :),PDZZ(:, :, :), ZGZ_W_M3D_WORK1)
+CALL GZ_W_M_PHY(D, ZWP,PDZZ, ZGZ_W_M3D_WORK1)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
 GZ_W_M_ZWP(:, :, :) = ZGZ_W_M3D_WORK1(:, :, :)
@@ -1025,13 +1039,13 @@ IF (TLES%LLES_CALL .AND. KSPLT==1) THEN
   CALL LES_MEAN_SUBGRID( ZFLX, TLES%X_LES_SUBGRID_W2 ) 
   CALL LES_MEAN_SUBGRID( -ZWORK, TLES%X_LES_RES_ddxa_W_SBG_UaW , .TRUE.)
   CALL LES_MEAN_SUBGRID( GZ_M_M(PTHLM,PDZZ)*ZFLX, TLES%X_LES_RES_ddxa_Thl_SBG_UaW , .TRUE.)
-  CALL GZ_M_W_PHY(D, PTHLM(:, :, :),PDZZ(:, :, :), ZGZ_M_W3D_WORK1)
+  CALL GZ_M_W_PHY(D, PTHLM,PDZZ, ZGZ_M_W3D_WORK1)
 CALL MZF_PHY(D, ZGZ_M_W3D_WORK1, ZMZF3D_WORK1)
 CALL LES_MEAN_SUBGRID(ZFLX(:, :, :)*ZMZF3D_WORK1(:, :, :),TLES%X_LES_RES_ddz_Thl_SBG_W2)  
 IF (KRR>=1) THEN
     CALL LES_MEAN_SUBGRID( GZ_M_M(PRM(:,:,:,1),PDZZ)*ZFLX, &
                            TLES%X_LES_RES_ddxa_Rt_SBG_UaW , .TRUE.)
-    CALL GZ_M_W_PHY(D, PRM(:,:,:,1),PDZZ(:, :, :), ZGZ_M_W3D_WORK1)
+    CALL GZ_M_W_PHY(D, PRM(:,:,:,1),PDZZ, ZGZ_M_W3D_WORK1)
 CALL MZF_PHY(D, ZGZ_M_W3D_WORK1, ZMZF3D_WORK1)
 CALL LES_MEAN_SUBGRID(ZFLX(:, :, :)*ZMZF3D_WORK1(:, :, :), &
                            TLES%X_LES_RES_ddz_Rt_SBG_W2)  
@@ -1039,7 +1053,7 @@ END IF
   DO JSV=1,KSV
     CALL LES_MEAN_SUBGRID( GZ_M_M(PSVM(:,:,:,JSV),PDZZ)*ZFLX, &
                            TLES%X_LES_RES_ddxa_Sv_SBG_UaW(:,:,:,JSV) , .TRUE.)
-    CALL GZ_M_W_PHY(D, PSVM(:,:,:,JSV),PDZZ(:, :, :), ZGZ_M_W3D_WORK1)
+    CALL GZ_M_W_PHY(D, PSVM(:,:,:,JSV),PDZZ, ZGZ_M_W3D_WORK1)
 CALL MZF_PHY(D, ZGZ_M_W3D_WORK1, ZMZF3D_WORK1)
 CALL LES_MEAN_SUBGRID(ZFLX(:, :, :)*ZMZF3D_WORK1(:, :, :), &
                            TLES%X_LES_RES_ddz_Sv_SBG_W2(:,:,:,JSV))  

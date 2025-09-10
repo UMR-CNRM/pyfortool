@@ -7,9 +7,9 @@ from functools import wraps
 import logging
 import tempfile
 import os
-import subprocess
 import time
 import re
+import pyfxtran
 
 from pyfortool import NAMESPACE
 
@@ -49,7 +49,7 @@ def debugDecor(func):
         if t0 is not None:
             # We test with t0 instead of the log level in case level evolved during func call
             if func.__name__ not in debugStats:
-                debugStats[func.__name__] = dict(nb=0, totalTime=0)
+                debugStats[func.__name__] = {'nb': 0, 'totalTime': 0}
             debugStats[func.__name__]['nb'] += 1
             duration = time.time() - t0
             debugStats[func.__name__]['totalTime'] += duration
@@ -128,11 +128,10 @@ class PYFTError(Exception):
 # Conversions
 
 
-def fortran2xml(fortranSource, parser='fxtran', parserOptions=None, wrapH=False):
+def fortran2xml(fortranSource, parserOptions=None, wrapH=False):
     """
     :param fortranSource: a string containing a fortran source code
                           or a filename
-    :param parser: path to the fxtran parser
     :param parserOptions: dictionnary holding the parser options
     :param wrapH: if True, content of .h file is put in a .F90 file (to force
                   fxtran to recognize it as free form) inside a module (to
@@ -154,7 +153,7 @@ def fortran2xml(fortranSource, parser='fxtran', parserOptions=None, wrapH=False)
     with tempfile.NamedTemporaryFile(buffering=0, suffix='.F90') as file:
         if os.path.exists(fortranSource):
             # tempfile not needed in this case if wrapH is False but I found easier to write code
-            # like this to have only one subprocess call and automatic
+            # like this to have only one pyfxtran use and automatic
             # deletion of the temporary file
             filename = fortranSource
             if wrapH and filename.endswith('.h'):
@@ -177,10 +176,7 @@ def fortran2xml(fortranSource, parser='fxtran', parserOptions=None, wrapH=False)
         else:
             filename = file.name
             file.write(fortranSource.encode('UTF-8'))
-        xml = subprocess.run([parser, filename,
-                             '-o', '-'] + parserOptions,
-                             stdout=subprocess.PIPE, check=True,
-                             encoding='UTF-8').stdout
+        xml = pyfxtran.run(filename, ['-o', '-'] + parserOptions)
         xml = ET.fromstring(xml, parser=ET.XMLParser(encoding='UTF-8'))
         if renamed:
             xml.find('./{*}file').attrib['name'] = fortranSource

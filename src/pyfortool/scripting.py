@@ -29,7 +29,7 @@ def task(filename):
     allArgs, orderedOptions = allFileArgs[filename]
     try:
         # Opening and reading of the FORTRAN file
-        with PYFT(filename, filename, parser=allArgs.parser,
+        with PYFT(filename, filename,
                   parserOptions=getParserOptions(allArgs), verbosity=allArgs.logLevel,
                   wrapH=allArgs.wrapH,
                   enableCache=allArgs.enableCache) as pft:
@@ -129,7 +129,7 @@ def main():
 
     try:
         # Opening and reading of the FORTRAN file
-        pft = PYFT(args.INPUT, args.OUTPUT, parser=args.parser, parserOptions=parserOptions,
+        pft = PYFT(args.INPUT, args.OUTPUT, parserOptions=parserOptions,
                    verbosity=args.logLevel, wrapH=args.wrapH, tree=descTree,
                    enableCache=args.enableCache)
         if args.restrictScope != '':
@@ -192,7 +192,8 @@ def getArgs(parser):
                         extra = line.split(':=:')[1]
                 else:
                     extra = line
-            arguments.extend(shlex.split(extra))
+            index = arguments.index('--optsByEnv')
+            arguments = arguments[:index] + shlex.split(extra) + arguments[index + 2:]  # keep order
 
         # Compute the ordered list
         updateCnt = False
@@ -235,7 +236,7 @@ def getDescTree(args, cls=Tree):
     parserOptions = getParserOptions(args)
     if args.descTree:
         descTree = cls(tree=args.tree, descTreeFile=args.descTree,
-                       parser=args.parser, parserOptions=parserOptions,
+                       parserOptions=parserOptions,
                        wrapH=args.wrapH, verbosity=args.logLevel)
     else:
         descTree = None
@@ -363,8 +364,6 @@ def updateParserFxtran(parser):
     Updates an argparse parser with fxtran arguments
     """
     gParser = parser.add_argument_group('fxtran parser relative options')
-    gParser.add_argument('--parser', default=None, type=str,
-                         help='Path to the fxtran parser binary')
     gParser.add_argument('--parserOption', nargs='*', action='append',
                          help='Option to pass to fxtran, defaults ' +
                               f'to {PYFT.DEFAULT_FXTRAN_OPTIONS}')
@@ -593,6 +592,13 @@ def updateParserChecks(parser):
     gChecks.add_argument('--checkOpInCall', choices={'Warn', 'Err'}, default=None,
                          help='Send a warning or raise an error if a call argument is an '
                               'operation.')
+    gChecks.add_argument('--checkUnusedLocalVar', choices={'Warn', 'Err'}, default=None,
+                         help='Send a warning or raise an error if some local '
+                              'variables are unused.')
+    gChecks.add_argument('--checkPHYEXUnusedLocalVar', choices={'Warn', 'Err'}, default=None,
+                         help='Send a warning or raise an error if some local '
+                              'variables are unused (excluding variables needed '
+                              'for mnh_expand directives).')
 
 
 def updateParserStatements(parser):
@@ -765,7 +771,6 @@ def applyTransfoVariables(pft, arg, args, simplify, parserOptions, stopScopes):
     elif arg == '--addArgInTree':
         for varName, declStmt, pos in args.addArgInTree:
             pft.addArgInTree(varName, declStmt, int(pos), stopScopes,
-                             parser=args.parser,
                              parserOptions=parserOptions,
                              wrapH=args.wrapH)
 
@@ -782,7 +787,7 @@ def applyTransfoApplications(pft, arg, args, simplify, parserOptions, stopScopes
     """
     if arg == '--addStack':
         pft.addStack(args.addStack, stopScopes,
-                     parser=args.parser, parserOptions=parserOptions,
+                     parserOptions=parserOptions,
                      wrapH=args.wrapH)
     elif arg == '--deleteDrHook':
         pft.deleteDrHook(**simplify)
@@ -822,7 +827,7 @@ def applyTransfoApplications(pft, arg, args, simplify, parserOptions, stopScopes
         pft.expandAllArraysPHYEX(concurrent=True)
     elif arg == '--removeIJDim':
         pft.removeIJDim(stopScopes,
-                        parser=args.parser, parserOptions=parserOptions,
+                        parserOptions=parserOptions,
                         wrapH=args.wrapH, **simplify)
     elif arg == '--shumanFUNCtoCALL':
         pft.shumanFUNCtoCALL()
@@ -916,6 +921,10 @@ def applyTransfoChecks(pft, arg, args):
         pft.checkIntent(args.checkINTENT == 'Err')
     elif arg == '--checkOpInCall':
         pft.checkOpInCall(args.checkOpInCall == 'Err')
+    elif arg == '--checkUnusedLocalVar':
+        pft.checkUnusedLocalVar(args.checkUnusedLocalVar == 'Err')
+    elif arg == '--checkPHYEXUnusedLocalVar':
+        pft.checkPHYEXUnusedLocalVar(args.checkPHYEXUnusedLocalVar == 'Err')
 
 
 def applyTransfoStatements(pft, arg, args, simplify):

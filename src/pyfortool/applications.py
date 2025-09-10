@@ -5,6 +5,7 @@ for high-to-moderate level transformation
 
 import copy
 import os
+import re
 
 from pyfortool.util import debugDecor, alltext, n2name, isStmt, PYFTError, tag, noParallel, tostring
 from pyfortool.expressions import createExpr, createExprPart, createElem, simplifyExpr
@@ -651,12 +652,12 @@ class Applications():
                     scope.insertStatement(scope.indent(ifMPPDBend), first=False)
 
     @debugDecor
-    def addStack(self, model, stopScopes, parser=None, parserOptions=None, wrapH=False):
+    def addStack(self, model, stopScopes, parserOptions=None, wrapH=False):
         """
         Add specific allocations of local arrays on the fly for GPU
         :param model : 'MESONH' or 'AROME' for specific objects related to the allocator or stack
         :param stopScopes: scope paths where we stop to add stack
-        :param parser, parserOptions, wrapH: see the PYFT class
+        :param parserOptions, wrapH: see the PYFT class
 
         Stacks are added to all routines called by the scopes listed in stopScopes
         """
@@ -696,7 +697,7 @@ class Applications():
                     scope.addArgInTree('YDSTACK', 'TYPE (STACK) :: YDSTACK', -1,
                                        stopScopes, moduleVarList=[('STACK_MOD', ['STACK', 'SOF'])],
                                        otherNames=['YLSTACK'],
-                                       parser=parser, parserOptions=parserOptions, wrapH=wrapH)
+                                       parserOptions=parserOptions, wrapH=wrapH)
 
                     # Copy the stack to a local variable and use it for call statements
                     # this operation must be done after the call to addArgInTree
@@ -756,11 +757,11 @@ class Applications():
 
     @debugDecor
     @updateVarList
-    def removeIJDim(self, stopScopes, parser=None, parserOptions=None, wrapH=False, simplify=False):
+    def removeIJDim(self, stopScopes, parserOptions=None, wrapH=False, simplify=False):
         """
         Transform routines to be called in a loop on columns
         :param stopScopes: scope paths where we stop to add the D argument (if needed)
-        :param parser, parserOptions, wrapH: see the PYFT class
+        :param parserOptions, wrapH: see the PYFT class
         :param simplify: try to simplify code (remove useless dimensions in call)
 
         ComputeInSingleColumn :
@@ -1002,11 +1003,25 @@ class Applications():
             if len(indexRemoved) > 0:
                 scope.addArgInTree('D', 'TYPE(DIMPHYEX_t) :: D',
                                    0, stopScopes, moduleVarList=[('MODD_DIMPHYEX', ['DIMPHYEX_t'])],
-                                   parser=parser, parserOptions=parserOptions, wrapH=wrapH)
+                                   parserOptions=parserOptions, wrapH=wrapH)
             # Check loop index presence at declaration of the scope
             scope.addVar([[scope.path, loopIndex, 'INTEGER :: ' + loopIndex, None]
                           for loopIndex in indexRemoved
                           if scope.varList.findVar(loopIndex, exactScope=True) is None])
+
+    def _mnh_expand_var(self):
+        """
+        :return: the list the variables needed by the mnh_expand directives
+        """
+
+        result = []
+        # Look for variables needed for the mnh_expand directives
+        for node in self.findall('.//{*}C'):
+            if node.text.startswith('!$mnh_expand_array(') or \
+               node.text.startswith('!$mnh_expand_where('):
+                elems = node.text.split('(')[1].split(')')[0].split(',')
+                result.extend([v.strip().upper() for v in [e.split('=')[0] for e in elems]])
+        return result
 
     @debugDecor
     def removePHYEXUnusedLocalVar(self, excludeList=None, simplify=False):
@@ -1020,15 +1035,24 @@ class Applications():
                          we also delete it)
         """
 
-        # Look for variables needed for the mnh_expand directives
-        for node in self.findall('.//{*}C'):
-            if node.text.startswith('!$mnh_expand_array(') or \
-               node.text.startswith('!$mnh_expand_where('):
-                if excludeList is None:
-                    excludeList = []
-                elems = node.text.split('(')[1].split(')')[0].split(',')
-                excludeList.extend([v.strip().upper() for v in [e.split('=')[0] for e in elems]])
-        return self.removeUnusedLocalVar(excludeList=excludeList, simplify=simplify)
+        if excludeList is None:
+            excludeList = []
+        return self.removeUnusedLocalVar(excludeList=excludeList + self._mnh_expand_var(),
+                                         simplify=simplify)
+
+    @debugDecor
+    def checkPHYEXUnusedLocalVar(self,  mustRaise=False, excludeList=None):
+        """
+        :param mustRaise: True to raise
+        :param excludeList: list of variable names to exclude from the check
+        Issue a logging.warning if there are unused local variables
+        If mustRaise is True, issue a logging.error instead and raise an error
+        """
+
+        if excludeList is None:
+            excludeList = []
+        return self.checkUnusedLocalVar(mustRaise=mustRaise,
+                                        excludeList=excludeList + self._mnh_expand_var())
 
     @debugDecor
     def expandAllArraysPHYEX(self, concurrent=False):
@@ -1254,7 +1278,7 @@ class Applications():
             # Detect if the workingItem contains expressions, if so:
             # create a compute statement embedded by mnh_expand directives
             opE = workingItem.findall('.//{*}op-E')
-            scope.addArrayParenthesesInNode(workingItem)
+            scope.removeArrayParenthesesInNode(workingItem)
             computeStmt = []
             dimSuffVar = str(zshugradwkDim) + 'D'
             dimSuffRoutine, dimSuffVar, mnhExpandArrayIndexes = \
@@ -1297,9 +1321,12 @@ class Applications():
             if zshugradwkDim == 1:
                 dimSuffRoutine = '2D'
             workingVar = 'Z' + funcName + dimSuffVar + '_WORK' + str(localShumansCount[funcName])
-            gpuGradientImplementation = '_PHY(D, '
             if funcName in ('GY_U_UV', 'GX_V_UV'):
                 gpuGradientImplementation = '_DEVICE('
+                newFuncName = funcName + dimSuffRoutine + '_DEVICE'
+            else:
+                gpuGradientImplementation = '_PHY(D, '
+                newFuncName = funcName + dimSuffRoutine + '_PHY'
             callStmt = createExpr("CALL " + funcName + dimSuffRoutine +
                                   gpuGradientImplementation + alltext(workingItem) +
                                   ", " + workingVar + ")")[0]
@@ -1320,7 +1347,7 @@ class Applications():
             if not scope.varList.findVar(workingVar):
                 scope.addVar([[scope.path, workingVar, dimWorkingVar + workingVar, None]])
 
-            return callStmt, computeStmt, nbzshugradwk
+            return callStmt, computeStmt, nbzshugradwk, newFuncName
 
         shumansGradients = {'MZM': 0, 'MXM': 0, 'MYM': 0, 'MZF': 0, 'MXF': 0, 'MYF': 0,
                             'DZM': 0, 'DXM': 0, 'DYM': 0, 'DZF': 0, 'DXF': 0, 'DYF': 0,
@@ -1329,7 +1356,7 @@ class Applications():
                             'GY_V_M': 0, 'GY_M_V': 0, 'GY_W_VW': 0, 'GY_M_M': 0,
                             'GX_V_UV': 0, 'GY_U_UV': 0}
         scopes = self.getScopes()
-        if scopes[0].path.split('/')[-1].split(':')[1][:4] == 'MODD':
+        if len(scopes) == 0 or scopes[0].path.split('/')[-1].split(':')[1][:4] == 'MODD':
             return
         for scope in scopes:
             if 'sub:' in scope.path and 'func' not in scope.path \
@@ -1357,6 +1384,7 @@ class Applications():
                                 foundStmtandCalls[str(stmt)] = [stmt, 1]
 
                 # For each a-stmt and call-stmt containing at least 1 shuman/gradient function
+                subToInclude = set()
                 for stmt in foundStmtandCalls:
                     localShumansGradients = copy.deepcopy(shumansGradients)
                     elemToLookFor = [foundStmtandCalls[stmt][0]]
@@ -1454,12 +1482,14 @@ class Applications():
                                         foundStmtandCalls[stmt][0].tail = '\n'
 
                                     # Transform the function into a call statement
+                                    result = FUNCtoROUTINE(scope, elem, el,
+                                                           localShumansGradients,
+                                                           elem in previousComputeStmt,
+                                                           nbzshugradwk, arrayDim,
+                                                           dimWorkingVar)
                                     (newCallStmt, newComputeStmt,
-                                     nbzshugradwk) = FUNCtoROUTINE(scope, elem, el,
-                                                                   localShumansGradients,
-                                                                   elem in previousComputeStmt,
-                                                                   nbzshugradwk, arrayDim,
-                                                                   dimWorkingVar)
+                                     nbzshugradwk, newFuncName) = result
+                                    subToInclude.add(newFuncName)
                                     # Update the list of elements to check if there are still
                                     # remaining function to convert within the new call-stmt
                                     elemToLookFor.append(newCallStmt)
@@ -1519,6 +1549,17 @@ class Applications():
                 # For all saved intermediate newComputeStmt, add parenthesis around all variables
                 for stmt in computeStmtforParenthesis:
                     scope.addArrayParenthesesInNode(stmt)
+
+                # Add the use statements
+                moduleVars = []
+                for sub in sorted(subToInclude):
+                    if re.match(r'[MD][XYZ][MF](2D)?_PHY', sub):
+                        moduleVars.append((scope.path, 'MODE_SHUMAN_PHY', sub))
+                    else:
+                        for kind in ('M', 'U', 'V', 'W'):
+                            if re.match(r'G[XYZ]_' + kind + r'_[MUVW]{1,2}_PHY', sub):
+                                moduleVars.append((scope.path, f'MODE_GRADIENT_{kind}_PHY', sub))
+                scope.addModuleVar(moduleVars)
 
     @debugDecor
     @noParallel

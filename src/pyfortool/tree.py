@@ -50,18 +50,17 @@ class Tree():
     Class to browse the Tree
     """
     def __init__(self, tree=None, descTreeFile=None,
-                 parser=None, parserOptions=None, wrapH=False,
+                 parserOptions=None, wrapH=False,
                  verbosity=None):
         """
         :param tree: list of directories composing the tree or None
         :param descTreeFile: filename where the description of the tree will be stored
-        :param parser, parserOptions, wrapH: see the PYFT class
+        :param parserOptions, wrapH: see the PYFT class
         :param verbosity: if not None, sets the verbosity level
         """
         # Options
         self._tree = [] if tree is None else tree
         self._descTreeFile = descTreeFile
-        self._parser = parser
         self._parserOptions = parserOptions
         self._wrapH = wrapH
         self._verbosity = verbosity
@@ -93,7 +92,6 @@ class Tree():
         """
         return {'tree': self._tree,
                 'descTreeFile': self._descTreeFile,
-                'parser': self._parser,
                 'parserOptions': self._parserOptions,
                 'wrapH': self._wrapH,
                 'verbosity': self._verbosity,
@@ -114,7 +112,6 @@ class Tree():
         """
         self._tree = content['tree']
         self._descTreeFile = content['descTreeFile']
-        self._parser = content['parser']
         self._parserOptions = content['parserOptions']
         self._wrapH = content['wrapH']
         self._verbosity = content['verbosity']
@@ -456,7 +453,7 @@ class Tree():
                 filename = pft.getFileName()
                 mustClose = False
             else:
-                pft = pyfortool.pyfortool.conservativePYFT(file, self._parser, self._parserOptions,
+                pft = pyfortool.pyfortool.conservativePYFT(file, self._parserOptions,
                                                            self._wrapH, verbosity=self._verbosity)
                 filename = file
                 mustClose = True

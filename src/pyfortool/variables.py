@@ -656,7 +656,7 @@ class Variables():
     @debugDecor
     def showUnusedVar(self):
         """
-        Displays on stdout a list of unued variables
+        Displays on stdout a list of unused variables
         """
         scopes = self.getScopes(excludeKinds=['type'])
         varUsed = self.isVarUsed([(scope.path, v['n'])
@@ -668,6 +668,38 @@ class Variables():
             if len(varList) != 0:
                 print(f'Some variables declared in {scope.path} are unused:')
                 print('  - ' + ('\n  - '.join(varList)))
+
+    @debugDecor
+    def checkUnusedLocalVar(self,  mustRaise=False, excludeList=None):
+        """
+        :param mustRaise: True to raise
+        :param excludeList: list of variable names to exclude from the check
+        Issue a logging.warning if there are unused local variables
+        If mustRaise is True, issue a logging.error instead and raise an error
+        """
+
+        if excludeList is None:
+            excludeList = []
+        else:
+            excludeList = [v.upper() for v in excludeList]
+        scopes = self.getScopes(excludeKinds=['type'])
+        # We do not check dummy args, module variables
+        varUsed = self.isVarUsed([(scope.path, v['n'])
+                                  for scope in scopes
+                                  for v in self.varList
+                                  if (v['n'].upper() not in excludeList and
+                                      (not v['arg']) and
+                                      v['scopePath'].split('/')[-1].split(':')[0] != 'module' and
+                                      v['scopePath'] == scope.path)])
+        for scope in scopes:
+            for var in [k[1].upper() for (k, v) in varUsed.items()
+                        if (not v) and k[0] == scope.path]:
+                message = f"The {var} variable is not used in file " + \
+                          f"'{scope.getFileName()}' for {scope.path}."
+                if mustRaise:
+                    logging.error(message)
+                    raise PYFTError(message)
+                logging.warning(message)
 
     @debugDecor
     def removeUnusedLocalVar(self, excludeList=None, simplify=False):
@@ -820,6 +852,33 @@ class Variables():
                             sectionSubscript = createElem('section-subscript', text=':', tail=', ')
                             sectionSubscriptLT.append(sectionSubscript)
                         sectionSubscript.tail = None  # last one
+
+    @debugDecor
+    def removeArrayParenthesesInNode(self, node):
+        """
+        Look for arrays and remove parenthesis if no index selection A(:,:) => A
+        :param node: xml node in which ':' must be removed
+        """
+        # Loop on variables
+        for namedE in node.findall('.//{*}named-E'):
+            if namedE.find('./{*}R-LT'):  # parentheses
+                if not self.isNodeInProcedure(namedE, ('ALLOCATED', 'ASSOCIATED', 'PRESENT')):
+                    # Pointer/allocatable used in ALLOCATED/ASSOCIATED must not be modified
+                    # Array in present must not be modified
+                    nodeN = namedE.find('./{*}N')
+                    var = self.varList.findVar(n2name(nodeN))
+                    if var is not None and var['as'] is not None and len(var['as']) > 0 and \
+                       not ((var['pointer'] or var['allocatable']) and self.isNodeInCall(namedE)):
+                        arrayR = namedE.findall('./{*}R-LT')
+                        for a in arrayR:
+                            sectionSubscriptLT = a.findall('.//{*}section-subscript-LT')
+                            for ss in sectionSubscriptLT:
+                                lowerBound = ss.findall('.//{*}lower-bound')
+                                if len(lowerBound) == 0:
+                                    # Node to be removed <f:R-LT><f:array-R><f:section-subscript-LT>
+                                    par = self.getParent(ss, level=2)
+                                    parOfpar = self.getParent(par)
+                                    parOfpar.remove(par)
 
     @debugDecor
     @updateVarList
@@ -1336,7 +1395,7 @@ class Variables():
                     # We look for the variable name in these 'N' nodes.
                     for nodeN in nodesN:
                         if dummyAreAlwaysUsed:
-                            # No need to check if the variable is a dummy argument; because if it is
+                            # No need to  if the variable is a dummy argument; because if it is
                             # one it will be found in the argument list of the subroutine/function
                             # and will be considered as used
                             usedVar[scopePath].append(n2name(nodeN).upper())
@@ -1360,7 +1419,7 @@ class Variables():
     @updateVarList
     def addArgInTree(self, varName, declStmt, pos, stopScopes, moduleVarList=None,
                      otherNames=None,
-                     parser=None, parserOptions=None, wrapH=False):
+                     parserOptions=None, wrapH=False):
         """
         Adds an argument to the routine and propagates it upward until we encounter a scope
         where the variable exists or a scope in stopScopes
@@ -1376,7 +1435,7 @@ class Variables():
                               use moduleVarList to not add module variables
         :param otherNames: None or list of other variable names that can be used
                            These variables are used first
-        :param parser, parserOptions, wrapH: see the PYFT class
+        :param parserOptions, wrapH: see the PYFT class
 
         Argument is inserted only on paths leading to one of scopes listed in stopScopes
         """
@@ -1453,7 +1512,7 @@ class Variables():
                                 pft = None
                             else:
                                 pft = pyfortool.pyfortool.conservativePYFT(
-                                          filename, parser, parserOptions, wrapH, tree=self.tree,
+                                          filename, parserOptions, wrapH, tree=self.tree,
                                           clsPYFT=self._mainScope.__class__)
                                 xml = pft
                             scopeInterface = xml.getScopeNode(scopePathInterface)
@@ -1490,7 +1549,7 @@ class Variables():
                                     pft = None
                                 else:
                                     pft = pyfortool.pyfortool.conservativePYFT(
-                                              filename, parser, parserOptions, wrapH,
+                                              filename, parserOptions, wrapH,
                                               tree=self.tree,
                                               clsPYFT=self._mainScope.__class__)
                                     xml = pft
@@ -1499,7 +1558,7 @@ class Variables():
                                 scopeUp.addArgInTree(
                                     varName, declStmt, pos,
                                     stopScopes, moduleVarList, otherNames,
-                                    parser=parser, parserOptions=parserOptions,
+                                    parserOptions=parserOptions,
                                     wrapH=wrapH)
                                 # Add the argument to calls (subroutine or function)
                                 name = self.path.split('/')[-1].split(':')[1].upper()
