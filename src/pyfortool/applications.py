@@ -353,11 +353,12 @@ class Applications():
                     subroutineDecl = createElem('module-unit')
                     # MODULE SUBROUTINE statement
                     subroutineStmt = copy.deepcopy(scope[0])
+                    declType = subroutineStmt.text # FUNCTION or SUBROUTINE
                     prefix = createElem('prefix')
                     prefix.text = 'MODULE'
                     subroutineStmt.text=''
                     subroutineStmt.insert(0,prefix)
-                    prefix.tail=' SUBROUTINE '
+                    prefix.tail=' ' + declType
                     subroutineDecl.append(subroutineStmt)
                     # USE statements
                     for use in scope.findall('.//{*}use-stmt'):
@@ -368,9 +369,18 @@ class Applications():
                         subroutineDecl.append(createExpr(self.varSpec2stmt(var, True))[0])
                     for external in scope.findall('./{*}external-stmt'):
                          subroutineDecl.append(copy.deepcopy(external))
-                    endStmt = createElem('end-subroutine-stmt')
+                    if 'SUBROUTINE' in declType:
+                        endStmt = createElem('end-subroutine-stmt')
+                        declName = subroutineStmt.find('./{*}subroutine-N/{*}N/{*}n').text
+                    elif 'FUNCTION' in declType:
+                        endStmt = createElem('end-function-stmt')
+                        declName = subroutineStmt.find('./{*}function-N/{*}N/{*}n').text
+                    else:
+                        raise PYFTError('declType in addSubmodulePHYEX not handled')
+                        
+                    declName
                     subName = scope.path.split('/')[1][4:]
-                    endStmt.text = 'END SUBROUTINE ' + subName + '\n'
+                    endStmt.text = 'END '+ declType + declName + '\n'
                     subroutineDecl.append(endStmt)
                     interfaceStmt.insert(1,subroutineDecl)
 
