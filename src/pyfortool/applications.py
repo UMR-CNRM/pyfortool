@@ -1286,7 +1286,7 @@ class Applications():
             # create a compute statement embedded by mnh_expand directives
             opE = workingItem.findall('.//{*}op-E')
             scope.removeArrayParenthesesInNode(workingItem)
-            computeStmt = []
+            computeStmt, remaningArgsofFunc = [], ''
             dimSuffVar = str(zshugradwkDim) + 'D'
             dimSuffRoutine, dimSuffVar, mnhExpandArrayIndexes = \
                 getDimsAndMNHExpandIndexes(zshugradwkDim, dimWorkingVar)
@@ -1312,8 +1312,18 @@ class Applications():
                 # Insert the directives and the compute statement
                 mnhOpenDir = "!$mnh_expand_array(" + mnhExpandArrayIndexes + ")"
                 mnhCloseDir = "!$mnh_end_expand_array(" + mnhExpandArrayIndexes + ")"
-                computeStmt = createExpr(computingVarName + " = " + alltext(workingItem))[0]
+                # workingItem[0] is to avoid getting elements unnecessary in gradient calls
+                # such as , PDZZ in GZ_U_UW(PIMPL*ZRES + PEXPL*PUM, PDZZ)
+                workingComputeItem = workingItem[0]
+                # Only the first argument is saved; multiple arguments is not handled
+                if len(workingItem) == 2:
+                    remaningArgsofFunc = ',' + alltext(workingItem[1])
+                elif len(workingItem) > 2:
+                    raise PYFTError('ShumanFUNCtoCALL: expected maximum 1 argument in shuman ' +
+                                    'function to transform')
+                computeStmt = createExpr(computingVarName + " = " + alltext(workingComputeItem))[0]
                 workingItem = computeStmt.find('.//{*}E-1')
+
                 parStmt.insert(indexForCall, createElem('C', text='!$acc kernels', tail='\n'))
                 parStmt.insert(indexForCall + 1, createElem('C', text=mnhOpenDir, tail='\n'))
                 parStmt.insert(indexForCall + 2, computeStmt)
@@ -1334,8 +1344,8 @@ class Applications():
             else:
                 gpuGradientImplementation = '_PHY(D, '
                 newFuncName = funcName + dimSuffRoutine + '_PHY'
-            callStmt = createExpr("CALL " + funcName + dimSuffRoutine +
-                                  gpuGradientImplementation + alltext(workingItem) +
+            callStmt = createExpr("CALL " + funcName + dimSuffRoutine + gpuGradientImplementation
+                                  + alltext(workingItem) + remaningArgsofFunc +
                                   ", " + workingVar + ")")[0]
             parStmt.insert(indexForCall, callStmt)
 
