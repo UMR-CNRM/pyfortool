@@ -1259,7 +1259,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l01137" name="l01137"></a><span class="lineno"> 1137</span>            <span class="comment"># create a compute statement embedded by mnh_expand directives</span></div>
 <div class="line"><a id="l01138" name="l01138"></a><span class="lineno"> 1138</span>            opE = workingItem.findall(<span class="stringliteral">&#39;.//{*}op-E&#39;</span>)</div>
 <div class="line"><a id="l01139" name="l01139"></a><span class="lineno"> 1139</span>            scope.removeArrayParenthesesInNode(workingItem)</div>
-<div class="line"><a id="l01140" name="l01140"></a><span class="lineno"> 1140</span>            computeStmt = []</div>
+<div class="line"><a id="l01140" name="l01140"></a><span class="lineno"> 1140</span>            computeStmt, remaningArgsofFunc = [], <span class="stringliteral">&#39;&#39;</span></div>
 <div class="line"><a id="l01141" name="l01141"></a><span class="lineno"> 1141</span>            dimSuffVar = str(zshugradwkDim) + <span class="stringliteral">&#39;D&#39;</span></div>
 <div class="line"><a id="l01142" name="l01142"></a><span class="lineno"> 1142</span>            dimSuffRoutine, dimSuffVar, mnhExpandArrayIndexes = \</div>
 <div class="line"><a id="l01143" name="l01143"></a><span class="lineno"> 1143</span>                getDimsAndMNHExpandIndexes(zshugradwkDim, dimWorkingVar)</div>
@@ -1285,376 +1285,386 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l01163" name="l01163"></a><span class="lineno"> 1163</span>                <span class="comment"># Insert the directives and the compute statement</span></div>
 <div class="line"><a id="l01164" name="l01164"></a><span class="lineno"> 1164</span>                mnhOpenDir = <span class="stringliteral">&quot;!$mnh_expand_array(&quot;</span> + mnhExpandArrayIndexes + <span class="stringliteral">&quot;)&quot;</span></div>
 <div class="line"><a id="l01165" name="l01165"></a><span class="lineno"> 1165</span>                mnhCloseDir = <span class="stringliteral">&quot;!$mnh_end_expand_array(&quot;</span> + mnhExpandArrayIndexes + <span class="stringliteral">&quot;)&quot;</span></div>
-<div class="line"><a id="l01166" name="l01166"></a><span class="lineno"> 1166</span>                computeStmt = createExpr(computingVarName + <span class="stringliteral">&quot; = &quot;</span> + alltext(workingItem))[0]</div>
-<div class="line"><a id="l01167" name="l01167"></a><span class="lineno"> 1167</span>                workingItem = computeStmt.find(<span class="stringliteral">&#39;.//{*}E-1&#39;</span>)</div>
-<div class="line"><a id="l01168" name="l01168"></a><span class="lineno"> 1168</span>                parStmt.insert(indexForCall, createElem(<span class="stringliteral">&#39;C&#39;</span>, text=<span class="stringliteral">&#39;!$acc kernels&#39;</span>, tail=<span class="stringliteral">&#39;\n&#39;</span>))</div>
-<div class="line"><a id="l01169" name="l01169"></a><span class="lineno"> 1169</span>                parStmt.insert(indexForCall + 1, createElem(<span class="stringliteral">&#39;C&#39;</span>, text=mnhOpenDir, tail=<span class="stringliteral">&#39;\n&#39;</span>))</div>
-<div class="line"><a id="l01170" name="l01170"></a><span class="lineno"> 1170</span>                parStmt.insert(indexForCall + 2, computeStmt)</div>
-<div class="line"><a id="l01171" name="l01171"></a><span class="lineno"> 1171</span>                parStmt.insert(indexForCall + 3, createElem(<span class="stringliteral">&#39;C&#39;</span>, text=mnhCloseDir, tail=<span class="stringliteral">&#39;\n&#39;</span>))</div>
-<div class="line"><a id="l01172" name="l01172"></a><span class="lineno"> 1172</span>                parStmt.insert(indexForCall + 4, createElem(<span class="stringliteral">&#39;C&#39;</span>,</div>
-<div class="line"><a id="l01173" name="l01173"></a><span class="lineno"> 1173</span>                               text=<span class="stringliteral">&#39;!$acc end kernels&#39;</span>, tail=<span class="stringliteral">&#39;\n&#39;</span>))</div>
-<div class="line"><a id="l01174" name="l01174"></a><span class="lineno"> 1174</span>                parStmt.insert(indexForCall + 5, createElem(<span class="stringliteral">&#39;C&#39;</span>,</div>
-<div class="line"><a id="l01175" name="l01175"></a><span class="lineno"> 1175</span>                               text=<span class="stringliteral">&#39;!&#39;</span>, tail=<span class="stringliteral">&#39;\n&#39;</span>))  <span class="comment"># To increase readibility</span></div>
-<div class="line"><a id="l01176" name="l01176"></a><span class="lineno"> 1176</span>                indexForCall += 6</div>
+<div class="line"><a id="l01166" name="l01166"></a><span class="lineno"> 1166</span>                <span class="comment"># workingItem[0] is to avoid getting elements unnecessary in gradient calls</span></div>
+<div class="line"><a id="l01167" name="l01167"></a><span class="lineno"> 1167</span>                <span class="comment"># such as , PDZZ in GZ_U_UW(PIMPL*ZRES + PEXPL*PUM, PDZZ)</span></div>
+<div class="line"><a id="l01168" name="l01168"></a><span class="lineno"> 1168</span>                workingComputeItem = workingItem[0]</div>
+<div class="line"><a id="l01169" name="l01169"></a><span class="lineno"> 1169</span>                <span class="comment"># Only the first argument is saved; multiple arguments is not handled</span></div>
+<div class="line"><a id="l01170" name="l01170"></a><span class="lineno"> 1170</span>                <span class="keywordflow">if</span> len(workingItem) == 2:</div>
+<div class="line"><a id="l01171" name="l01171"></a><span class="lineno"> 1171</span>                    remaningArgsofFunc = <span class="stringliteral">&#39;,&#39;</span> + alltext(workingItem[1])</div>
+<div class="line"><a id="l01172" name="l01172"></a><span class="lineno"> 1172</span>                <span class="keywordflow">elif</span> len(workingItem) &gt; 2:</div>
+<div class="line"><a id="l01173" name="l01173"></a><span class="lineno"> 1173</span>                    <span class="keywordflow">raise</span> <a class="code hl_class" href="classpyfortool_1_1util_1_1PYFTError.html">PYFTError</a>(<span class="stringliteral">&#39;ShumanFUNCtoCALL: expected maximum 1 argument in shuman &#39;</span> +</div>
+<div class="line"><a id="l01174" name="l01174"></a><span class="lineno"> 1174</span>                                    <span class="stringliteral">&#39;function to transform&#39;</span>)</div>
+<div class="line"><a id="l01175" name="l01175"></a><span class="lineno"> 1175</span>                computeStmt = createExpr(computingVarName + <span class="stringliteral">&quot; = &quot;</span> + alltext(workingComputeItem))[0]</div>
+<div class="line"><a id="l01176" name="l01176"></a><span class="lineno"> 1176</span>                workingItem = computeStmt.find(<span class="stringliteral">&#39;.//{*}E-1&#39;</span>)</div>
 <div class="line"><a id="l01177" name="l01177"></a><span class="lineno"> 1177</span> </div>
-<div class="line"><a id="l01178" name="l01178"></a><span class="lineno"> 1178</span>            <span class="comment"># Add the new CALL statement</span></div>
-<div class="line"><a id="l01179" name="l01179"></a><span class="lineno"> 1179</span>            <span class="keywordflow">if</span> zshugradwkDim == 1:</div>
-<div class="line"><a id="l01180" name="l01180"></a><span class="lineno"> 1180</span>                dimSuffRoutine = <span class="stringliteral">&#39;2D&#39;</span></div>
-<div class="line"><a id="l01181" name="l01181"></a><span class="lineno"> 1181</span>            workingVar = <span class="stringliteral">&#39;Z&#39;</span> + funcName + dimSuffVar + <span class="stringliteral">&#39;_WORK&#39;</span> + str(localShumansCount[funcName])</div>
-<div class="line"><a id="l01182" name="l01182"></a><span class="lineno"> 1182</span>            <span class="keywordflow">if</span> funcName <span class="keywordflow">in</span> (<span class="stringliteral">&#39;GY_U_UV&#39;</span>, <span class="stringliteral">&#39;GX_V_UV&#39;</span>):</div>
-<div class="line"><a id="l01183" name="l01183"></a><span class="lineno"> 1183</span>                gpuGradientImplementation = <span class="stringliteral">&#39;_DEVICE(&#39;</span></div>
-<div class="line"><a id="l01184" name="l01184"></a><span class="lineno"> 1184</span>                newFuncName = funcName + dimSuffRoutine + <span class="stringliteral">&#39;_DEVICE&#39;</span></div>
-<div class="line"><a id="l01185" name="l01185"></a><span class="lineno"> 1185</span>            <span class="keywordflow">else</span>:</div>
-<div class="line"><a id="l01186" name="l01186"></a><span class="lineno"> 1186</span>                gpuGradientImplementation = <span class="stringliteral">&#39;_PHY(D, &#39;</span></div>
-<div class="line"><a id="l01187" name="l01187"></a><span class="lineno"> 1187</span>                newFuncName = funcName + dimSuffRoutine + <span class="stringliteral">&#39;_PHY&#39;</span></div>
-<div class="line"><a id="l01188" name="l01188"></a><span class="lineno"> 1188</span>            callStmt = createExpr(<span class="stringliteral">&quot;CALL &quot;</span> + funcName + dimSuffRoutine +</div>
-<div class="line"><a id="l01189" name="l01189"></a><span class="lineno"> 1189</span>                                  gpuGradientImplementation + alltext(workingItem) +</div>
-<div class="line"><a id="l01190" name="l01190"></a><span class="lineno"> 1190</span>                                  <span class="stringliteral">&quot;, &quot;</span> + workingVar + <span class="stringliteral">&quot;)&quot;</span>)[0]</div>
-<div class="line"><a id="l01191" name="l01191"></a><span class="lineno"> 1191</span>            parStmt.insert(indexForCall, callStmt)</div>
-<div class="line"><a id="l01192" name="l01192"></a><span class="lineno"> 1192</span> </div>
-<div class="line"><a id="l01193" name="l01193"></a><span class="lineno"> 1193</span>            <span class="comment"># Remove the function/gradient from the original statement</span></div>
-<div class="line"><a id="l01194" name="l01194"></a><span class="lineno"> 1194</span>            parOfgrandparItemFuncN = scope.getParent(grandparItemFuncN)</div>
-<div class="line"><a id="l01195" name="l01195"></a><span class="lineno"> 1195</span>            indexWorkingVar = list(parOfgrandparItemFuncN).index(grandparItemFuncN)</div>
-<div class="line"><a id="l01196" name="l01196"></a><span class="lineno"> 1196</span>            savedTail = grandparItemFuncN.tail</div>
-<div class="line"><a id="l01197" name="l01197"></a><span class="lineno"> 1197</span>            parOfgrandparItemFuncN.remove(grandparItemFuncN)</div>
-<div class="line"><a id="l01198" name="l01198"></a><span class="lineno"> 1198</span> </div>
-<div class="line"><a id="l01199" name="l01199"></a><span class="lineno"> 1199</span>            <span class="comment"># Add the working variable within the original statement</span></div>
-<div class="line"><a id="l01200" name="l01200"></a><span class="lineno"> 1200</span>            xmlWorkingvar = createExprPart(workingVar)</div>
-<div class="line"><a id="l01201" name="l01201"></a><span class="lineno"> 1201</span>            xmlWorkingvar.tail = savedTail</div>
-<div class="line"><a id="l01202" name="l01202"></a><span class="lineno"> 1202</span>            parOfgrandparItemFuncN.insert(indexWorkingVar, xmlWorkingvar)</div>
-<div class="line"><a id="l01203" name="l01203"></a><span class="lineno"> 1203</span> </div>
-<div class="line"><a id="l01204" name="l01204"></a><span class="lineno"> 1204</span>            <span class="comment"># Add the declaration of the shuman-gradient workingVar if not already present</span></div>
-<div class="line"><a id="l01205" name="l01205"></a><span class="lineno"> 1205</span>            <span class="keywordflow">if</span> <span class="keywordflow">not</span> scope.varList.findVar(workingVar):</div>
-<div class="line"><a id="l01206" name="l01206"></a><span class="lineno"> 1206</span>                scope.addVar([[scope.path, workingVar, dimWorkingVar + workingVar, <span class="keywordtype">None</span>]])</div>
-<div class="line"><a id="l01207" name="l01207"></a><span class="lineno"> 1207</span> </div>
-<div class="line"><a id="l01208" name="l01208"></a><span class="lineno"> 1208</span>            <span class="keywordflow">return</span> callStmt, computeStmt, nbzshugradwk, newFuncName</div>
-<div class="line"><a id="l01209" name="l01209"></a><span class="lineno"> 1209</span> </div>
-<div class="line"><a id="l01210" name="l01210"></a><span class="lineno"> 1210</span>        shumansGradients = {<span class="stringliteral">&#39;MZM&#39;</span>: 0, <span class="stringliteral">&#39;MXM&#39;</span>: 0, <span class="stringliteral">&#39;MYM&#39;</span>: 0, <span class="stringliteral">&#39;MZF&#39;</span>: 0, <span class="stringliteral">&#39;MXF&#39;</span>: 0, <span class="stringliteral">&#39;MYF&#39;</span>: 0,</div>
-<div class="line"><a id="l01211" name="l01211"></a><span class="lineno"> 1211</span>                            <span class="stringliteral">&#39;DZM&#39;</span>: 0, <span class="stringliteral">&#39;DXM&#39;</span>: 0, <span class="stringliteral">&#39;DYM&#39;</span>: 0, <span class="stringliteral">&#39;DZF&#39;</span>: 0, <span class="stringliteral">&#39;DXF&#39;</span>: 0, <span class="stringliteral">&#39;DYF&#39;</span>: 0,</div>
-<div class="line"><a id="l01212" name="l01212"></a><span class="lineno"> 1212</span>                            <span class="stringliteral">&#39;GZ_M_W&#39;</span>: 0, <span class="stringliteral">&#39;GZ_W_M&#39;</span>: 0, <span class="stringliteral">&#39;GZ_U_UW&#39;</span>: 0, <span class="stringliteral">&#39;GZ_V_VW&#39;</span>: 0,</div>
-<div class="line"><a id="l01213" name="l01213"></a><span class="lineno"> 1213</span>                            <span class="stringliteral">&#39;GX_M_U&#39;</span>: 0, <span class="stringliteral">&#39;GX_U_M&#39;</span>: 0, <span class="stringliteral">&#39;GX_W_UW&#39;</span>: 0, <span class="stringliteral">&#39;GX_M_M&#39;</span>: 0,</div>
-<div class="line"><a id="l01214" name="l01214"></a><span class="lineno"> 1214</span>                            <span class="stringliteral">&#39;GY_V_M&#39;</span>: 0, <span class="stringliteral">&#39;GY_M_V&#39;</span>: 0, <span class="stringliteral">&#39;GY_W_VW&#39;</span>: 0, <span class="stringliteral">&#39;GY_M_M&#39;</span>: 0,</div>
-<div class="line"><a id="l01215" name="l01215"></a><span class="lineno"> 1215</span>                            <span class="stringliteral">&#39;GX_V_UV&#39;</span>: 0, <span class="stringliteral">&#39;GY_U_UV&#39;</span>: 0}</div>
-<div class="line"><a id="l01216" name="l01216"></a><span class="lineno"> 1216</span>        scopes = self.getScopes()</div>
-<div class="line"><a id="l01217" name="l01217"></a><span class="lineno"> 1217</span>        <span class="keywordflow">if</span> len(scopes) == 0 <span class="keywordflow">or</span> scopes[0].path.split(<span class="stringliteral">&#39;/&#39;</span>)[-1].split(<span class="stringliteral">&#39;:&#39;</span>)[1][:4] == <span class="stringliteral">&#39;MODD&#39;</span>:</div>
-<div class="line"><a id="l01218" name="l01218"></a><span class="lineno"> 1218</span>            <span class="keywordflow">return</span></div>
-<div class="line"><a id="l01219" name="l01219"></a><span class="lineno"> 1219</span>        <span class="keywordflow">for</span> scope <span class="keywordflow">in</span> scopes:</div>
-<div class="line"><a id="l01220" name="l01220"></a><span class="lineno"> 1220</span>            <span class="keywordflow">if</span> <span class="stringliteral">&#39;sub:&#39;</span> <span class="keywordflow">in</span> scope.path <span class="keywordflow">and</span> <span class="stringliteral">&#39;func&#39;</span> <span class="keywordflow">not</span> <span class="keywordflow">in</span> scope.path \</div>
-<div class="line"><a id="l01221" name="l01221"></a><span class="lineno"> 1221</span>               <span class="keywordflow">and</span> <span class="stringliteral">&#39;interface&#39;</span> <span class="keywordflow">not</span> <span class="keywordflow">in</span> scope.path:</div>
-<div class="line"><a id="l01222" name="l01222"></a><span class="lineno"> 1222</span>                <span class="comment"># Init : look for all a-stmt and call-stmt which contains a shuman or</span></div>
-<div class="line"><a id="l01223" name="l01223"></a><span class="lineno"> 1223</span>                <span class="comment"># gradients function, and save it into a list foundStmtandCalls</span></div>
-<div class="line"><a id="l01224" name="l01224"></a><span class="lineno"> 1224</span>                foundStmtandCalls, computeStmtforParenthesis = {}, []</div>
-<div class="line"><a id="l01225" name="l01225"></a><span class="lineno"> 1225</span>                aStmt = scope.findall(<span class="stringliteral">&#39;.//{*}a-stmt&#39;</span>)</div>
-<div class="line"><a id="l01226" name="l01226"></a><span class="lineno"> 1226</span>                callStmts = scope.findall(<span class="stringliteral">&#39;.//{*}call-stmt&#39;</span>)</div>
-<div class="line"><a id="l01227" name="l01227"></a><span class="lineno"> 1227</span>                aStmtandCallStmts = aStmt + callStmts</div>
-<div class="line"><a id="l01228" name="l01228"></a><span class="lineno"> 1228</span>                <span class="keywordflow">for</span> stmt <span class="keywordflow">in</span> aStmtandCallStmts:</div>
-<div class="line"><a id="l01229" name="l01229"></a><span class="lineno"> 1229</span>                    elemN = stmt.findall(<span class="stringliteral">&#39;.//{*}n&#39;</span>)</div>
-<div class="line"><a id="l01230" name="l01230"></a><span class="lineno"> 1230</span>                    <span class="keywordflow">for</span> el <span class="keywordflow">in</span> elemN:</div>
-<div class="line"><a id="l01231" name="l01231"></a><span class="lineno"> 1231</span>                        <span class="keywordflow">if</span> alltext(el) <span class="keywordflow">in</span> list(shumansGradients):</div>
-<div class="line"><a id="l01232" name="l01232"></a><span class="lineno"> 1232</span>                            <span class="comment"># Expand the single-line if-stmt necessary</span></div>
-<div class="line"><a id="l01233" name="l01233"></a><span class="lineno"> 1233</span>                            <span class="comment"># to add all the new lines further.</span></div>
-<div class="line"><a id="l01234" name="l01234"></a><span class="lineno"> 1234</span>                            parStmt = scope.getParent(stmt)</div>
-<div class="line"><a id="l01235" name="l01235"></a><span class="lineno"> 1235</span>                            <span class="keywordflow">if</span> tag(parStmt) == <span class="stringliteral">&#39;action-stmt&#39;</span>:</div>
-<div class="line"><a id="l01236" name="l01236"></a><span class="lineno"> 1236</span>                                scope.changeIfStatementsInIfConstructs(</div>
-<div class="line"><a id="l01237" name="l01237"></a><span class="lineno"> 1237</span>                                    singleItem=scope.getParent(parStmt))</div>
-<div class="line"><a id="l01238" name="l01238"></a><span class="lineno"> 1238</span> </div>
-<div class="line"><a id="l01239" name="l01239"></a><span class="lineno"> 1239</span>                            <span class="keywordflow">if</span> str(stmt) <span class="keywordflow">in</span> foundStmtandCalls:</div>
-<div class="line"><a id="l01240" name="l01240"></a><span class="lineno"> 1240</span>                                foundStmtandCalls[str(stmt)][1] += 1</div>
-<div class="line"><a id="l01241" name="l01241"></a><span class="lineno"> 1241</span>                            <span class="keywordflow">else</span>:</div>
-<div class="line"><a id="l01242" name="l01242"></a><span class="lineno"> 1242</span>                                foundStmtandCalls[str(stmt)] = [stmt, 1]</div>
-<div class="line"><a id="l01243" name="l01243"></a><span class="lineno"> 1243</span> </div>
-<div class="line"><a id="l01244" name="l01244"></a><span class="lineno"> 1244</span>                <span class="comment"># For each a-stmt and call-stmt containing at least 1 shuman/gradient function</span></div>
-<div class="line"><a id="l01245" name="l01245"></a><span class="lineno"> 1245</span>                subToInclude = set()</div>
-<div class="line"><a id="l01246" name="l01246"></a><span class="lineno"> 1246</span>                <span class="keywordflow">for</span> stmt <span class="keywordflow">in</span> foundStmtandCalls:</div>
-<div class="line"><a id="l01247" name="l01247"></a><span class="lineno"> 1247</span>                    localShumansGradients = copy.deepcopy(shumansGradients)</div>
-<div class="line"><a id="l01248" name="l01248"></a><span class="lineno"> 1248</span>                    elemToLookFor = [foundStmtandCalls[stmt][0]]</div>
-<div class="line"><a id="l01249" name="l01249"></a><span class="lineno"> 1249</span>                    previousComputeStmt = []</div>
-<div class="line"><a id="l01250" name="l01250"></a><span class="lineno"> 1250</span>                    maxnbZshugradwk = 0</div>
-<div class="line"><a id="l01251" name="l01251"></a><span class="lineno"> 1251</span> </div>
-<div class="line"><a id="l01252" name="l01252"></a><span class="lineno"> 1252</span>                    <span class="keywordflow">while</span> len(elemToLookFor) &gt; 0:</div>
-<div class="line"><a id="l01253" name="l01253"></a><span class="lineno"> 1253</span>                        nbzshugradwk = 0</div>
-<div class="line"><a id="l01254" name="l01254"></a><span class="lineno"> 1254</span>                        <span class="keywordflow">for</span> elem <span class="keywordflow">in</span> elemToLookFor:</div>
-<div class="line"><a id="l01255" name="l01255"></a><span class="lineno"> 1255</span>                            elemN = elem.findall(<span class="stringliteral">&#39;.//{*}n&#39;</span>)</div>
-<div class="line"><a id="l01256" name="l01256"></a><span class="lineno"> 1256</span>                            <span class="keywordflow">for</span> el <span class="keywordflow">in</span> elemN:</div>
-<div class="line"><a id="l01257" name="l01257"></a><span class="lineno"> 1257</span>                                <span class="keywordflow">if</span> alltext(el) <span class="keywordflow">in</span> list(localShumansGradients.keys()):</div>
-<div class="line"><a id="l01258" name="l01258"></a><span class="lineno"> 1258</span>                                    <span class="comment"># Check the dimensions of the stmt objects in which the</span></div>
-<div class="line"><a id="l01259" name="l01259"></a><span class="lineno"> 1259</span>                                    <span class="comment"># function exist for handling selecting-index</span></div>
-<div class="line"><a id="l01260" name="l01260"></a><span class="lineno"> 1260</span>                                    <span class="comment"># shuman-function use</span></div>
-<div class="line"><a id="l01261" name="l01261"></a><span class="lineno"> 1261</span>                                    <span class="comment"># 1) if the stmt is from an a-astmt, check E1</span></div>
-<div class="line"><a id="l01262" name="l01262"></a><span class="lineno"> 1262</span>                                    nodeE1var = foundStmtandCalls[stmt][0].findall(</div>
-<div class="line"><a id="l01263" name="l01263"></a><span class="lineno"> 1263</span>                                                <span class="stringliteral">&#39;.//{*}E-1/{*}named-E/{*}N&#39;</span>)</div>
-<div class="line"><a id="l01264" name="l01264"></a><span class="lineno"> 1264</span>                                    <span class="keywordflow">if</span> len(nodeE1var) &gt; 0:</div>
-<div class="line"><a id="l01265" name="l01265"></a><span class="lineno"> 1265</span>                                        var = scope.varList.findVar(alltext(nodeE1var[0]))</div>
-<div class="line"><a id="l01266" name="l01266"></a><span class="lineno"> 1266</span>                                        allSubscripts = foundStmtandCalls[stmt][0].findall(</div>
-<div class="line"><a id="l01267" name="l01267"></a><span class="lineno"> 1267</span>                                                            <span class="stringliteral">&#39;.//{*}E-1//{*}named-E/{*}R-LT/&#39;</span> +</div>
-<div class="line"><a id="l01268" name="l01268"></a><span class="lineno"> 1268</span>                                                            <span class="stringliteral">&#39;{*}array-R/{*}section-subscript-LT&#39;</span>)</div>
-<div class="line"><a id="l01269" name="l01269"></a><span class="lineno"> 1269</span>                                    <span class="comment"># 2) if the stmt is from a call-stmt,</span></div>
-<div class="line"><a id="l01270" name="l01270"></a><span class="lineno"> 1270</span>                                    <span class="comment">#    check the first &lt;named-E&gt;&lt;N&gt; in the function</span></div>
-<div class="line"><a id="l01271" name="l01271"></a><span class="lineno"> 1271</span>                                    <span class="keywordflow">else</span>:</div>
-<div class="line"><a id="l01272" name="l01272"></a><span class="lineno"> 1272</span>                                        elPar = scope.getParent(el, level=2)  <span class="comment"># MXM(...)</span></div>
-<div class="line"><a id="l01273" name="l01273"></a><span class="lineno"> 1273</span>                                        callVar = elPar.findall(<span class="stringliteral">&#39;.//{*}named-E/{*}N&#39;</span>)</div>
-<div class="line"><a id="l01274" name="l01274"></a><span class="lineno"> 1274</span>                                        <span class="keywordflow">if</span> alltext(el)[0] == <span class="stringliteral">&#39;G&#39;</span>:</div>
-<div class="line"><a id="l01275" name="l01275"></a><span class="lineno"> 1275</span>                                            <span class="comment"># If it is a gradient, the array on which the gradient</span></div>
-<div class="line"><a id="l01276" name="l01276"></a><span class="lineno"> 1276</span>                                            <span class="comment"># is applied is the last argument</span></div>
-<div class="line"><a id="l01277" name="l01277"></a><span class="lineno"> 1277</span> </div>
-<div class="line"><a id="l01278" name="l01278"></a><span class="lineno"> 1278</span>                                            <span class="comment"># callVar[-1] is array on which the gradient is applied</span></div>
-<div class="line"><a id="l01279" name="l01279"></a><span class="lineno"> 1279</span>                                            var = scope.varList.findVar(alltext(callVar[-1]))</div>
-<div class="line"><a id="l01280" name="l01280"></a><span class="lineno"> 1280</span>                                            shumanIsCalledOn = scope.getParent(callVar[-1])</div>
-<div class="line"><a id="l01281" name="l01281"></a><span class="lineno"> 1281</span>                                        <span class="keywordflow">else</span>:</div>
-<div class="line"><a id="l01282" name="l01282"></a><span class="lineno"> 1282</span>                                            <span class="comment"># Shumans</span></div>
-<div class="line"><a id="l01283" name="l01283"></a><span class="lineno"> 1283</span>                                            var, inested = <span class="keywordtype">None</span>, 0</div>
-<div class="line"><a id="l01284" name="l01284"></a><span class="lineno"> 1284</span>                                            <span class="comment"># pylint: disable-next=unsubscriptable-object</span></div>
-<div class="line"><a id="l01285" name="l01285"></a><span class="lineno"> 1285</span>                                            <span class="keywordflow">while</span> <span class="keywordflow">not</span> var <span class="keywordflow">or</span> len(var[<span class="stringliteral">&#39;as&#39;</span>]) == 0:</div>
-<div class="line"><a id="l01286" name="l01286"></a><span class="lineno"> 1286</span>                                                <span class="comment"># While the var is not an array already declared</span></div>
-<div class="line"><a id="l01287" name="l01287"></a><span class="lineno"> 1287</span>                                                <span class="comment"># callVar[0] is the first array on which the</span></div>
-<div class="line"><a id="l01288" name="l01288"></a><span class="lineno"> 1288</span>                                                <span class="comment"># function is applied</span></div>
-<div class="line"><a id="l01289" name="l01289"></a><span class="lineno"> 1289</span>                                                var = scope.varList.findVar(</div>
-<div class="line"><a id="l01290" name="l01290"></a><span class="lineno"> 1290</span>                                                           alltext(callVar[inested]))</div>
-<div class="line"><a id="l01291" name="l01291"></a><span class="lineno"> 1291</span>                                                inested += 1</div>
-<div class="line"><a id="l01292" name="l01292"></a><span class="lineno"> 1292</span>                                            shumanIsCalledOn = scope.getParent(callVar[inested-1])</div>
-<div class="line"><a id="l01293" name="l01293"></a><span class="lineno"> 1293</span>                                        allSubscripts = shumanIsCalledOn.findall(</div>
-<div class="line"><a id="l01294" name="l01294"></a><span class="lineno"> 1294</span>                                                            <span class="stringliteral">&#39;.//{*}R-LT/{*}array-R/&#39;</span> +</div>
-<div class="line"><a id="l01295" name="l01295"></a><span class="lineno"> 1295</span>                                                            <span class="stringliteral">&#39;{*}section-subscript-LT&#39;</span>)</div>
-<div class="line"><a id="l01296" name="l01296"></a><span class="lineno"> 1296</span> </div>
-<div class="line"><a id="l01297" name="l01297"></a><span class="lineno"> 1297</span>                                    <span class="comment"># if var: # Protection in case of nested functions,</span></div>
-<div class="line"><a id="l01298" name="l01298"></a><span class="lineno"> 1298</span>                                    <span class="comment"># var is not an array but None</span></div>
-<div class="line"><a id="l01299" name="l01299"></a><span class="lineno"> 1299</span>                                    arrayDim = len(var[<span class="stringliteral">&#39;as&#39;</span>])</div>
-<div class="line"><a id="l01300" name="l01300"></a><span class="lineno"> 1300</span> </div>
-<div class="line"><a id="l01301" name="l01301"></a><span class="lineno"> 1301</span>                                    <span class="comment"># Look for subscripts in case of array sub-selection</span></div>
-<div class="line"><a id="l01302" name="l01302"></a><span class="lineno"> 1302</span>                                    <span class="comment"># (such as 1 or IKB)</span></div>
-<div class="line"><a id="l01303" name="l01303"></a><span class="lineno"> 1303</span>                                    <span class="keywordflow">if</span> len(allSubscripts) &gt; 0:</div>
-<div class="line"><a id="l01304" name="l01304"></a><span class="lineno"> 1304</span>                                        <span class="keywordflow">for</span> subLT <span class="keywordflow">in</span> allSubscripts:</div>
-<div class="line"><a id="l01305" name="l01305"></a><span class="lineno"> 1305</span>                                            <span class="keywordflow">for</span> sub <span class="keywordflow">in</span> subLT:</div>
-<div class="line"><a id="l01306" name="l01306"></a><span class="lineno"> 1306</span>                                                lowerBound = sub.findall(<span class="stringliteral">&#39;.//{*}lower-bound&#39;</span>)</div>
-<div class="line"><a id="l01307" name="l01307"></a><span class="lineno"> 1307</span>                                                <span class="keywordflow">if</span> len(lowerBound) &gt; 0:</div>
-<div class="line"><a id="l01308" name="l01308"></a><span class="lineno"> 1308</span>                                                    <span class="keywordflow">if</span> len(sub.findall(<span class="stringliteral">&#39;.//{*}upper-bound&#39;</span>)) &gt; 0:</div>
-<div class="line"><a id="l01309" name="l01309"></a><span class="lineno"> 1309</span>                                                        <span class="comment"># For protection: not handled with</span></div>
-<div class="line"><a id="l01310" name="l01310"></a><span class="lineno"> 1310</span>                                                        <span class="comment">#                 lower:upper bounds</span></div>
-<div class="line"><a id="l01311" name="l01311"></a><span class="lineno"> 1311</span>                                                        <span class="keywordflow">raise</span> <a class="code hl_class" href="classpyfortool_1_1util_1_1PYFTError.html">PYFTError</a>(<span class="stringliteral">&#39;ShumanFUNCtoCALL does &#39;</span> +</div>
-<div class="line"><a id="l01312" name="l01312"></a><span class="lineno"> 1312</span>                                                                        <span class="stringliteral">&#39;not handle conversion &#39;</span> +</div>
-<div class="line"><a id="l01313" name="l01313"></a><span class="lineno"> 1313</span>                                                                        <span class="stringliteral">&#39;to routine of array &#39;</span> +</div>
-<div class="line"><a id="l01314" name="l01314"></a><span class="lineno"> 1314</span>                                                                        <span class="stringliteral">&#39;subselection lower:upper&#39;</span> +</div>
-<div class="line"><a id="l01315" name="l01315"></a><span class="lineno"> 1315</span>                                                                        <span class="stringliteral">&#39;: how to set up the &#39;</span> +</div>
-<div class="line"><a id="l01316" name="l01316"></a><span class="lineno"> 1316</span>                                                                        <span class="stringliteral">&#39;shape of intermediate &#39;</span> +</div>
-<div class="line"><a id="l01317" name="l01317"></a><span class="lineno"> 1317</span>                                                                        <span class="stringliteral">&#39;arrays ?&#39;</span>)</div>
-<div class="line"><a id="l01318" name="l01318"></a><span class="lineno"> 1318</span>                                                    <span class="comment"># Handle change of dimensions for</span></div>
-<div class="line"><a id="l01319" name="l01319"></a><span class="lineno"> 1319</span>                                                    <span class="comment"># selecting index for the working arrays</span></div>
-<div class="line"><a id="l01320" name="l01320"></a><span class="lineno"> 1320</span>                                                    arrayDim -= 1</div>
-<div class="line"><a id="l01321" name="l01321"></a><span class="lineno"> 1321</span> </div>
-<div class="line"><a id="l01322" name="l01322"></a><span class="lineno"> 1322</span>                                    <span class="comment"># Build the dimensions declaration in case of</span></div>
-<div class="line"><a id="l01323" name="l01323"></a><span class="lineno"> 1323</span>                                    <span class="comment"># working/intermediate variable needed</span></div>
-<div class="line"><a id="l01324" name="l01324"></a><span class="lineno"> 1324</span>                                    dimWorkingVar = <span class="stringliteral">&#39;&#39;</span></div>
-<div class="line"><a id="l01325" name="l01325"></a><span class="lineno"> 1325</span>                                    <span class="keywordflow">if</span> var:</div>
-<div class="line"><a id="l01326" name="l01326"></a><span class="lineno"> 1326</span>                                        dimWorkingVar = <span class="stringliteral">&#39;REAL, DIMENSION(&#39;</span></div>
-<div class="line"><a id="l01327" name="l01327"></a><span class="lineno"> 1327</span>                                        <span class="keywordflow">for</span> dims <span class="keywordflow">in</span> var[<span class="stringliteral">&#39;as&#39;</span>][:arrayDim]:</div>
-<div class="line"><a id="l01328" name="l01328"></a><span class="lineno"> 1328</span>                                            dimWorkingVar += dims[1] + <span class="stringliteral">&#39;,&#39;</span></div>
-<div class="line"><a id="l01329" name="l01329"></a><span class="lineno"> 1329</span>                                        dimWorkingVar = dimWorkingVar[:-1] + <span class="stringliteral">&#39;) ::&#39;</span></div>
-<div class="line"><a id="l01330" name="l01330"></a><span class="lineno"> 1330</span> </div>
-<div class="line"><a id="l01331" name="l01331"></a><span class="lineno"> 1331</span>                                    <span class="comment"># Add existing working variable with the name of the function</span></div>
-<div class="line"><a id="l01332" name="l01332"></a><span class="lineno"> 1332</span>                                    localShumansGradients[alltext(el)] += 1</div>
-<div class="line"><a id="l01333" name="l01333"></a><span class="lineno"> 1333</span> </div>
-<div class="line"><a id="l01334" name="l01334"></a><span class="lineno"> 1334</span>                                    <span class="comment"># To be sure that ending !comments after the statement is</span></div>
-<div class="line"><a id="l01335" name="l01335"></a><span class="lineno"> 1335</span>                                    <span class="comment"># not impacting the placement of the last !mnh_expand_array</span></div>
-<div class="line"><a id="l01336" name="l01336"></a><span class="lineno"> 1336</span>                                    <span class="keywordflow">if</span> foundStmtandCalls[stmt][0].tail:</div>
-<div class="line"><a id="l01337" name="l01337"></a><span class="lineno"> 1337</span>                                        foundStmtandCalls[stmt][0].tail = \</div>
-<div class="line"><a id="l01338" name="l01338"></a><span class="lineno"> 1338</span>                                            foundStmtandCalls[stmt][0].tail.replace(<span class="stringliteral">&#39;\n&#39;</span>, <span class="stringliteral">&#39;&#39;</span>) + <span class="stringliteral">&#39;\n&#39;</span></div>
-<div class="line"><a id="l01339" name="l01339"></a><span class="lineno"> 1339</span>                                    <span class="keywordflow">else</span>:</div>
-<div class="line"><a id="l01340" name="l01340"></a><span class="lineno"> 1340</span>                                        foundStmtandCalls[stmt][0].tail = <span class="stringliteral">&#39;\n&#39;</span></div>
-<div class="line"><a id="l01341" name="l01341"></a><span class="lineno"> 1341</span> </div>
-<div class="line"><a id="l01342" name="l01342"></a><span class="lineno"> 1342</span>                                    <span class="comment"># Transform the function into a call statement</span></div>
-<div class="line"><a id="l01343" name="l01343"></a><span class="lineno"> 1343</span>                                    result = FUNCtoROUTINE(scope, elem, el,</div>
-<div class="line"><a id="l01344" name="l01344"></a><span class="lineno"> 1344</span>                                                           localShumansGradients,</div>
-<div class="line"><a id="l01345" name="l01345"></a><span class="lineno"> 1345</span>                                                           elem <span class="keywordflow">in</span> previousComputeStmt,</div>
-<div class="line"><a id="l01346" name="l01346"></a><span class="lineno"> 1346</span>                                                           nbzshugradwk, arrayDim,</div>
-<div class="line"><a id="l01347" name="l01347"></a><span class="lineno"> 1347</span>                                                           dimWorkingVar)</div>
-<div class="line"><a id="l01348" name="l01348"></a><span class="lineno"> 1348</span>                                    (newCallStmt, newComputeStmt,</div>
-<div class="line"><a id="l01349" name="l01349"></a><span class="lineno"> 1349</span>                                     nbzshugradwk, newFuncName) = result</div>
-<div class="line"><a id="l01350" name="l01350"></a><span class="lineno"> 1350</span>                                    subToInclude.add(newFuncName)</div>
-<div class="line"><a id="l01351" name="l01351"></a><span class="lineno"> 1351</span>                                    <span class="comment"># Update the list of elements to check if there are still</span></div>
-<div class="line"><a id="l01352" name="l01352"></a><span class="lineno"> 1352</span>                                    <span class="comment"># remaining function to convert within the new call-stmt</span></div>
-<div class="line"><a id="l01353" name="l01353"></a><span class="lineno"> 1353</span>                                    elemToLookFor.append(newCallStmt)</div>
-<div class="line"><a id="l01354" name="l01354"></a><span class="lineno"> 1354</span> </div>
-<div class="line"><a id="l01355" name="l01355"></a><span class="lineno"> 1355</span>                                    <span class="comment"># If a new intermediate compute statement was created, it needs</span></div>
-<div class="line"><a id="l01356" name="l01356"></a><span class="lineno"> 1356</span>                                    <span class="comment"># to be checked and add Parenthesis to arrays for mnh_expand</span></div>
-<div class="line"><a id="l01357" name="l01357"></a><span class="lineno"> 1357</span>                                    <span class="keywordflow">if</span> len(newComputeStmt) &gt; 0:</div>
-<div class="line"><a id="l01358" name="l01358"></a><span class="lineno"> 1358</span>                                        elemToLookFor.append(newComputeStmt)</div>
-<div class="line"><a id="l01359" name="l01359"></a><span class="lineno"> 1359</span>                                        computeStmtforParenthesis.append(newComputeStmt)</div>
-<div class="line"><a id="l01360" name="l01360"></a><span class="lineno"> 1360</span>                                        <span class="comment"># Allow to save that this newComputeStmt comes with 2</span></div>
-<div class="line"><a id="l01361" name="l01361"></a><span class="lineno"> 1361</span>                                        <span class="comment"># extra lines before and after</span></div>
-<div class="line"><a id="l01362" name="l01362"></a><span class="lineno"> 1362</span>                                        <span class="comment"># (mnh_expand and acc directives)</span></div>
-<div class="line"><a id="l01363" name="l01363"></a><span class="lineno"> 1363</span>                                        previousComputeStmt.append(newComputeStmt)</div>
-<div class="line"><a id="l01364" name="l01364"></a><span class="lineno"> 1364</span>                                    <span class="keywordflow">break</span></div>
-<div class="line"><a id="l01365" name="l01365"></a><span class="lineno"> 1365</span>                        <span class="comment"># Check in old and new objects if there are still</span></div>
-<div class="line"><a id="l01366" name="l01366"></a><span class="lineno"> 1366</span>                        <span class="comment"># remaining shuman/gradients functions</span></div>
-<div class="line"><a id="l01367" name="l01367"></a><span class="lineno"> 1367</span>                        elemToLookForNew = []</div>
-<div class="line"><a id="l01368" name="l01368"></a><span class="lineno"> 1368</span>                        <span class="keywordflow">for</span> i <span class="keywordflow">in</span> elemToLookFor:</div>
-<div class="line"><a id="l01369" name="l01369"></a><span class="lineno"> 1369</span>                            nodeNs = i.findall(<span class="stringliteral">&#39;.//{*}n&#39;</span>)</div>
-<div class="line"><a id="l01370" name="l01370"></a><span class="lineno"> 1370</span>                            <span class="keywordflow">if</span> len(nodeNs) &gt; 0:</div>
-<div class="line"><a id="l01371" name="l01371"></a><span class="lineno"> 1371</span>                                <span class="keywordflow">for</span> nnn <span class="keywordflow">in</span> nodeNs:</div>
-<div class="line"><a id="l01372" name="l01372"></a><span class="lineno"> 1372</span>                                    <span class="keywordflow">if</span> alltext(nnn) <span class="keywordflow">in</span> list(localShumansGradients):</div>
-<div class="line"><a id="l01373" name="l01373"></a><span class="lineno"> 1373</span>                                        elemToLookForNew.append(i)</div>
-<div class="line"><a id="l01374" name="l01374"></a><span class="lineno"> 1374</span>                                        <span class="keywordflow">break</span></div>
-<div class="line"><a id="l01375" name="l01375"></a><span class="lineno"> 1375</span>                        elemToLookFor = elemToLookForNew</div>
-<div class="line"><a id="l01376" name="l01376"></a><span class="lineno"> 1376</span>                        <span class="comment"># Save the maximum number of necessary intermediate</span></div>
-<div class="line"><a id="l01377" name="l01377"></a><span class="lineno"> 1377</span>                        <span class="comment"># computing variables ZSHUGRADWK</span></div>
-<div class="line"><a id="l01378" name="l01378"></a><span class="lineno"> 1378</span>                        <span class="keywordflow">if</span> nbzshugradwk &gt; maxnbZshugradwk:</div>
-<div class="line"><a id="l01379" name="l01379"></a><span class="lineno"> 1379</span>                            maxnbZshugradwk = nbzshugradwk</div>
-<div class="line"><a id="l01380" name="l01380"></a><span class="lineno"> 1380</span> </div>
-<div class="line"><a id="l01381" name="l01381"></a><span class="lineno"> 1381</span>                    <span class="comment"># Add parenthesis around all variables</span></div>
-<div class="line"><a id="l01382" name="l01382"></a><span class="lineno"> 1382</span>                    scope.addArrayParenthesesInNode(foundStmtandCalls[stmt][0])</div>
-<div class="line"><a id="l01383" name="l01383"></a><span class="lineno"> 1383</span> </div>
-<div class="line"><a id="l01384" name="l01384"></a><span class="lineno"> 1384</span>                    <span class="comment"># For the last compute statement, add mnh_expand and acc</span></div>
-<div class="line"><a id="l01385" name="l01385"></a><span class="lineno"> 1385</span>                    <span class="comment"># kernels if not call statement</span></div>
-<div class="line"><a id="l01386" name="l01386"></a><span class="lineno"> 1386</span>                    <span class="keywordflow">if</span> tag(foundStmtandCalls[stmt][0]) != <span class="stringliteral">&#39;call-stmt&#39;</span>:</div>
-<div class="line"><a id="l01387" name="l01387"></a><span class="lineno"> 1387</span>                        <span class="comment"># get mnhExpandArrayIndexes</span></div>
-<div class="line"><a id="l01388" name="l01388"></a><span class="lineno"> 1388</span>                        <span class="comment"># Here dimSuffRoutine, dimSuffVar are not used</span></div>
-<div class="line"><a id="l01389" name="l01389"></a><span class="lineno"> 1389</span>                        dimSuffRoutine, dimSuffVar, mnhExpandArrayIndexes = \</div>
-<div class="line"><a id="l01390" name="l01390"></a><span class="lineno"> 1390</span>                            getDimsAndMNHExpandIndexes(arrayDim, dimWorkingVar)</div>
-<div class="line"><a id="l01391" name="l01391"></a><span class="lineno"> 1391</span> </div>
-<div class="line"><a id="l01392" name="l01392"></a><span class="lineno"> 1392</span>                        parStmt = scope.getParent(foundStmtandCalls[stmt][0])</div>
-<div class="line"><a id="l01393" name="l01393"></a><span class="lineno"> 1393</span>                        indexForCall = list(parStmt).index(foundStmtandCalls[stmt][0])</div>
-<div class="line"><a id="l01394" name="l01394"></a><span class="lineno"> 1394</span>                        mnhOpenDir = <span class="stringliteral">&quot;!$mnh_expand_array(&quot;</span> + mnhExpandArrayIndexes + <span class="stringliteral">&quot;)&quot;</span></div>
-<div class="line"><a id="l01395" name="l01395"></a><span class="lineno"> 1395</span>                        mnhCloseDir = <span class="stringliteral">&quot;!$mnh_end_expand_array(&quot;</span> + mnhExpandArrayIndexes + <span class="stringliteral">&quot;)&quot;</span></div>
-<div class="line"><a id="l01396" name="l01396"></a><span class="lineno"> 1396</span>                        parStmt.insert(indexForCall,</div>
-<div class="line"><a id="l01397" name="l01397"></a><span class="lineno"> 1397</span>                                       createElem(<span class="stringliteral">&#39;C&#39;</span>, text=<span class="stringliteral">&quot;!$acc kernels&quot;</span>, tail=<span class="stringliteral">&#39;\n&#39;</span>))</div>
-<div class="line"><a id="l01398" name="l01398"></a><span class="lineno"> 1398</span>                        parStmt.insert(indexForCall + 1,</div>
-<div class="line"><a id="l01399" name="l01399"></a><span class="lineno"> 1399</span>                                       createElem(<span class="stringliteral">&#39;C&#39;</span>, text=mnhOpenDir, tail=<span class="stringliteral">&#39;\n&#39;</span>))</div>
-<div class="line"><a id="l01400" name="l01400"></a><span class="lineno"> 1400</span>                        parStmt.insert(indexForCall + 3,</div>
-<div class="line"><a id="l01401" name="l01401"></a><span class="lineno"> 1401</span>                                       createElem(<span class="stringliteral">&#39;C&#39;</span>, text=mnhCloseDir, tail=<span class="stringliteral">&#39;\n&#39;</span>))</div>
-<div class="line"><a id="l01402" name="l01402"></a><span class="lineno"> 1402</span>                        parStmt.insert(indexForCall + 4,</div>
-<div class="line"><a id="l01403" name="l01403"></a><span class="lineno"> 1403</span>                                       createElem(<span class="stringliteral">&#39;C&#39;</span>, text=<span class="stringliteral">&quot;!$acc end kernels&quot;</span>, tail=<span class="stringliteral">&#39;\n&#39;</span>))</div>
-<div class="line"><a id="l01404" name="l01404"></a><span class="lineno"> 1404</span>                        parStmt.insert(indexForCall + 5,</div>
-<div class="line"><a id="l01405" name="l01405"></a><span class="lineno"> 1405</span>                                       createElem(<span class="stringliteral">&#39;C&#39;</span>, text=<span class="stringliteral">&quot;!&quot;</span>, tail=<span class="stringliteral">&#39;\n&#39;</span>))  <span class="comment"># For readibility</span></div>
-<div class="line"><a id="l01406" name="l01406"></a><span class="lineno"> 1406</span> </div>
-<div class="line"><a id="l01407" name="l01407"></a><span class="lineno"> 1407</span>                <span class="comment"># For all saved intermediate newComputeStmt, add parenthesis around all variables</span></div>
-<div class="line"><a id="l01408" name="l01408"></a><span class="lineno"> 1408</span>                <span class="keywordflow">for</span> stmt <span class="keywordflow">in</span> computeStmtforParenthesis:</div>
-<div class="line"><a id="l01409" name="l01409"></a><span class="lineno"> 1409</span>                    scope.addArrayParenthesesInNode(stmt)</div>
-<div class="line"><a id="l01410" name="l01410"></a><span class="lineno"> 1410</span> </div>
-<div class="line"><a id="l01411" name="l01411"></a><span class="lineno"> 1411</span>                <span class="comment"># Add the use statements</span></div>
-<div class="line"><a id="l01412" name="l01412"></a><span class="lineno"> 1412</span>                moduleVars = []</div>
-<div class="line"><a id="l01413" name="l01413"></a><span class="lineno"> 1413</span>                <span class="keywordflow">for</span> sub <span class="keywordflow">in</span> sorted(subToInclude):</div>
-<div class="line"><a id="l01414" name="l01414"></a><span class="lineno"> 1414</span>                    <span class="keywordflow">if</span> re.match(<span class="stringliteral">r&#39;[MD][XYZ][MF](2D)?_PHY&#39;</span>, sub):</div>
-<div class="line"><a id="l01415" name="l01415"></a><span class="lineno"> 1415</span>                        moduleVars.append((scope.path, <span class="stringliteral">&#39;MODE_SHUMAN_PHY&#39;</span>, sub))</div>
-<div class="line"><a id="l01416" name="l01416"></a><span class="lineno"> 1416</span>                    <span class="keywordflow">else</span>:</div>
-<div class="line"><a id="l01417" name="l01417"></a><span class="lineno"> 1417</span>                        <span class="keywordflow">for</span> kind <span class="keywordflow">in</span> (<span class="stringliteral">&#39;M&#39;</span>, <span class="stringliteral">&#39;U&#39;</span>, <span class="stringliteral">&#39;V&#39;</span>, <span class="stringliteral">&#39;W&#39;</span>):</div>
-<div class="line"><a id="l01418" name="l01418"></a><span class="lineno"> 1418</span>                            <span class="keywordflow">if</span> re.match(<span class="stringliteral">r&#39;G[XYZ]_&#39;</span> + kind + <span class="stringliteral">r&#39;_[MUVW]{1,2}_PHY&#39;</span>, sub):</div>
-<div class="line"><a id="l01419" name="l01419"></a><span class="lineno"> 1419</span>                                moduleVars.append((scope.path, f<span class="stringliteral">&#39;MODE_GRADIENT_{kind}_PHY&#39;</span>, sub))</div>
-<div class="line"><a id="l01420" name="l01420"></a><span class="lineno"> 1420</span>                scope.addModuleVar(moduleVars)</div>
-<div class="line"><a id="l01421" name="l01421"></a><span class="lineno"> 1421</span> </div>
+<div class="line"><a id="l01178" name="l01178"></a><span class="lineno"> 1178</span>                parStmt.insert(indexForCall, createElem(<span class="stringliteral">&#39;C&#39;</span>, text=<span class="stringliteral">&#39;!$acc kernels&#39;</span>, tail=<span class="stringliteral">&#39;\n&#39;</span>))</div>
+<div class="line"><a id="l01179" name="l01179"></a><span class="lineno"> 1179</span>                parStmt.insert(indexForCall + 1, createElem(<span class="stringliteral">&#39;C&#39;</span>, text=mnhOpenDir, tail=<span class="stringliteral">&#39;\n&#39;</span>))</div>
+<div class="line"><a id="l01180" name="l01180"></a><span class="lineno"> 1180</span>                parStmt.insert(indexForCall + 2, computeStmt)</div>
+<div class="line"><a id="l01181" name="l01181"></a><span class="lineno"> 1181</span>                parStmt.insert(indexForCall + 3, createElem(<span class="stringliteral">&#39;C&#39;</span>, text=mnhCloseDir, tail=<span class="stringliteral">&#39;\n&#39;</span>))</div>
+<div class="line"><a id="l01182" name="l01182"></a><span class="lineno"> 1182</span>                parStmt.insert(indexForCall + 4, createElem(<span class="stringliteral">&#39;C&#39;</span>,</div>
+<div class="line"><a id="l01183" name="l01183"></a><span class="lineno"> 1183</span>                               text=<span class="stringliteral">&#39;!$acc end kernels&#39;</span>, tail=<span class="stringliteral">&#39;\n&#39;</span>))</div>
+<div class="line"><a id="l01184" name="l01184"></a><span class="lineno"> 1184</span>                parStmt.insert(indexForCall + 5, createElem(<span class="stringliteral">&#39;C&#39;</span>,</div>
+<div class="line"><a id="l01185" name="l01185"></a><span class="lineno"> 1185</span>                               text=<span class="stringliteral">&#39;!&#39;</span>, tail=<span class="stringliteral">&#39;\n&#39;</span>))  <span class="comment"># To increase readibility</span></div>
+<div class="line"><a id="l01186" name="l01186"></a><span class="lineno"> 1186</span>                indexForCall += 6</div>
+<div class="line"><a id="l01187" name="l01187"></a><span class="lineno"> 1187</span> </div>
+<div class="line"><a id="l01188" name="l01188"></a><span class="lineno"> 1188</span>            <span class="comment"># Add the new CALL statement</span></div>
+<div class="line"><a id="l01189" name="l01189"></a><span class="lineno"> 1189</span>            <span class="keywordflow">if</span> zshugradwkDim == 1:</div>
+<div class="line"><a id="l01190" name="l01190"></a><span class="lineno"> 1190</span>                dimSuffRoutine = <span class="stringliteral">&#39;2D&#39;</span></div>
+<div class="line"><a id="l01191" name="l01191"></a><span class="lineno"> 1191</span>            workingVar = <span class="stringliteral">&#39;Z&#39;</span> + funcName + dimSuffVar + <span class="stringliteral">&#39;_WORK&#39;</span> + str(localShumansCount[funcName])</div>
+<div class="line"><a id="l01192" name="l01192"></a><span class="lineno"> 1192</span>            <span class="keywordflow">if</span> funcName <span class="keywordflow">in</span> (<span class="stringliteral">&#39;GY_U_UV&#39;</span>, <span class="stringliteral">&#39;GX_V_UV&#39;</span>):</div>
+<div class="line"><a id="l01193" name="l01193"></a><span class="lineno"> 1193</span>                gpuGradientImplementation = <span class="stringliteral">&#39;_DEVICE(&#39;</span></div>
+<div class="line"><a id="l01194" name="l01194"></a><span class="lineno"> 1194</span>                newFuncName = funcName + dimSuffRoutine + <span class="stringliteral">&#39;_DEVICE&#39;</span></div>
+<div class="line"><a id="l01195" name="l01195"></a><span class="lineno"> 1195</span>            <span class="keywordflow">else</span>:</div>
+<div class="line"><a id="l01196" name="l01196"></a><span class="lineno"> 1196</span>                gpuGradientImplementation = <span class="stringliteral">&#39;_PHY(D, &#39;</span></div>
+<div class="line"><a id="l01197" name="l01197"></a><span class="lineno"> 1197</span>                newFuncName = funcName + dimSuffRoutine + <span class="stringliteral">&#39;_PHY&#39;</span></div>
+<div class="line"><a id="l01198" name="l01198"></a><span class="lineno"> 1198</span>            callStmt = createExpr(<span class="stringliteral">&quot;CALL &quot;</span> + funcName + dimSuffRoutine + gpuGradientImplementation</div>
+<div class="line"><a id="l01199" name="l01199"></a><span class="lineno"> 1199</span>                                  + alltext(workingItem) + remaningArgsofFunc +</div>
+<div class="line"><a id="l01200" name="l01200"></a><span class="lineno"> 1200</span>                                  <span class="stringliteral">&quot;, &quot;</span> + workingVar + <span class="stringliteral">&quot;)&quot;</span>)[0]</div>
+<div class="line"><a id="l01201" name="l01201"></a><span class="lineno"> 1201</span>            parStmt.insert(indexForCall, callStmt)</div>
+<div class="line"><a id="l01202" name="l01202"></a><span class="lineno"> 1202</span> </div>
+<div class="line"><a id="l01203" name="l01203"></a><span class="lineno"> 1203</span>            <span class="comment"># Remove the function/gradient from the original statement</span></div>
+<div class="line"><a id="l01204" name="l01204"></a><span class="lineno"> 1204</span>            parOfgrandparItemFuncN = scope.getParent(grandparItemFuncN)</div>
+<div class="line"><a id="l01205" name="l01205"></a><span class="lineno"> 1205</span>            indexWorkingVar = list(parOfgrandparItemFuncN).index(grandparItemFuncN)</div>
+<div class="line"><a id="l01206" name="l01206"></a><span class="lineno"> 1206</span>            savedTail = grandparItemFuncN.tail</div>
+<div class="line"><a id="l01207" name="l01207"></a><span class="lineno"> 1207</span>            parOfgrandparItemFuncN.remove(grandparItemFuncN)</div>
+<div class="line"><a id="l01208" name="l01208"></a><span class="lineno"> 1208</span> </div>
+<div class="line"><a id="l01209" name="l01209"></a><span class="lineno"> 1209</span>            <span class="comment"># Add the working variable within the original statement</span></div>
+<div class="line"><a id="l01210" name="l01210"></a><span class="lineno"> 1210</span>            xmlWorkingvar = createExprPart(workingVar)</div>
+<div class="line"><a id="l01211" name="l01211"></a><span class="lineno"> 1211</span>            xmlWorkingvar.tail = savedTail</div>
+<div class="line"><a id="l01212" name="l01212"></a><span class="lineno"> 1212</span>            parOfgrandparItemFuncN.insert(indexWorkingVar, xmlWorkingvar)</div>
+<div class="line"><a id="l01213" name="l01213"></a><span class="lineno"> 1213</span> </div>
+<div class="line"><a id="l01214" name="l01214"></a><span class="lineno"> 1214</span>            <span class="comment"># Add the declaration of the shuman-gradient workingVar if not already present</span></div>
+<div class="line"><a id="l01215" name="l01215"></a><span class="lineno"> 1215</span>            <span class="keywordflow">if</span> <span class="keywordflow">not</span> scope.varList.findVar(workingVar):</div>
+<div class="line"><a id="l01216" name="l01216"></a><span class="lineno"> 1216</span>                scope.addVar([[scope.path, workingVar, dimWorkingVar + workingVar, <span class="keywordtype">None</span>]])</div>
+<div class="line"><a id="l01217" name="l01217"></a><span class="lineno"> 1217</span> </div>
+<div class="line"><a id="l01218" name="l01218"></a><span class="lineno"> 1218</span>            <span class="keywordflow">return</span> callStmt, computeStmt, nbzshugradwk, newFuncName</div>
+<div class="line"><a id="l01219" name="l01219"></a><span class="lineno"> 1219</span> </div>
+<div class="line"><a id="l01220" name="l01220"></a><span class="lineno"> 1220</span>        shumansGradients = {<span class="stringliteral">&#39;MZM&#39;</span>: 0, <span class="stringliteral">&#39;MXM&#39;</span>: 0, <span class="stringliteral">&#39;MYM&#39;</span>: 0, <span class="stringliteral">&#39;MZF&#39;</span>: 0, <span class="stringliteral">&#39;MXF&#39;</span>: 0, <span class="stringliteral">&#39;MYF&#39;</span>: 0,</div>
+<div class="line"><a id="l01221" name="l01221"></a><span class="lineno"> 1221</span>                            <span class="stringliteral">&#39;DZM&#39;</span>: 0, <span class="stringliteral">&#39;DXM&#39;</span>: 0, <span class="stringliteral">&#39;DYM&#39;</span>: 0, <span class="stringliteral">&#39;DZF&#39;</span>: 0, <span class="stringliteral">&#39;DXF&#39;</span>: 0, <span class="stringliteral">&#39;DYF&#39;</span>: 0,</div>
+<div class="line"><a id="l01222" name="l01222"></a><span class="lineno"> 1222</span>                            <span class="stringliteral">&#39;GZ_M_W&#39;</span>: 0, <span class="stringliteral">&#39;GZ_W_M&#39;</span>: 0, <span class="stringliteral">&#39;GZ_U_UW&#39;</span>: 0, <span class="stringliteral">&#39;GZ_V_VW&#39;</span>: 0,</div>
+<div class="line"><a id="l01223" name="l01223"></a><span class="lineno"> 1223</span>                            <span class="stringliteral">&#39;GX_M_U&#39;</span>: 0, <span class="stringliteral">&#39;GX_U_M&#39;</span>: 0, <span class="stringliteral">&#39;GX_W_UW&#39;</span>: 0, <span class="stringliteral">&#39;GX_M_M&#39;</span>: 0,</div>
+<div class="line"><a id="l01224" name="l01224"></a><span class="lineno"> 1224</span>                            <span class="stringliteral">&#39;GY_V_M&#39;</span>: 0, <span class="stringliteral">&#39;GY_M_V&#39;</span>: 0, <span class="stringliteral">&#39;GY_W_VW&#39;</span>: 0, <span class="stringliteral">&#39;GY_M_M&#39;</span>: 0,</div>
+<div class="line"><a id="l01225" name="l01225"></a><span class="lineno"> 1225</span>                            <span class="stringliteral">&#39;GX_V_UV&#39;</span>: 0, <span class="stringliteral">&#39;GY_U_UV&#39;</span>: 0}</div>
+<div class="line"><a id="l01226" name="l01226"></a><span class="lineno"> 1226</span>        scopes = self.getScopes()</div>
+<div class="line"><a id="l01227" name="l01227"></a><span class="lineno"> 1227</span>        <span class="keywordflow">if</span> len(scopes) == 0 <span class="keywordflow">or</span> scopes[0].path.split(<span class="stringliteral">&#39;/&#39;</span>)[-1].split(<span class="stringliteral">&#39;:&#39;</span>)[1][:4] == <span class="stringliteral">&#39;MODD&#39;</span>:</div>
+<div class="line"><a id="l01228" name="l01228"></a><span class="lineno"> 1228</span>            <span class="keywordflow">return</span></div>
+<div class="line"><a id="l01229" name="l01229"></a><span class="lineno"> 1229</span>        <span class="keywordflow">for</span> scope <span class="keywordflow">in</span> scopes:</div>
+<div class="line"><a id="l01230" name="l01230"></a><span class="lineno"> 1230</span>            <span class="keywordflow">if</span> <span class="stringliteral">&#39;sub:&#39;</span> <span class="keywordflow">in</span> scope.path <span class="keywordflow">and</span> <span class="stringliteral">&#39;func&#39;</span> <span class="keywordflow">not</span> <span class="keywordflow">in</span> scope.path \</div>
+<div class="line"><a id="l01231" name="l01231"></a><span class="lineno"> 1231</span>               <span class="keywordflow">and</span> <span class="stringliteral">&#39;interface&#39;</span> <span class="keywordflow">not</span> <span class="keywordflow">in</span> scope.path:</div>
+<div class="line"><a id="l01232" name="l01232"></a><span class="lineno"> 1232</span>                <span class="comment"># Init : look for all a-stmt and call-stmt which contains a shuman or</span></div>
+<div class="line"><a id="l01233" name="l01233"></a><span class="lineno"> 1233</span>                <span class="comment"># gradients function, and save it into a list foundStmtandCalls</span></div>
+<div class="line"><a id="l01234" name="l01234"></a><span class="lineno"> 1234</span>                foundStmtandCalls, computeStmtforParenthesis = {}, []</div>
+<div class="line"><a id="l01235" name="l01235"></a><span class="lineno"> 1235</span>                aStmt = scope.findall(<span class="stringliteral">&#39;.//{*}a-stmt&#39;</span>)</div>
+<div class="line"><a id="l01236" name="l01236"></a><span class="lineno"> 1236</span>                callStmts = scope.findall(<span class="stringliteral">&#39;.//{*}call-stmt&#39;</span>)</div>
+<div class="line"><a id="l01237" name="l01237"></a><span class="lineno"> 1237</span>                aStmtandCallStmts = aStmt + callStmts</div>
+<div class="line"><a id="l01238" name="l01238"></a><span class="lineno"> 1238</span>                <span class="keywordflow">for</span> stmt <span class="keywordflow">in</span> aStmtandCallStmts:</div>
+<div class="line"><a id="l01239" name="l01239"></a><span class="lineno"> 1239</span>                    elemN = stmt.findall(<span class="stringliteral">&#39;.//{*}n&#39;</span>)</div>
+<div class="line"><a id="l01240" name="l01240"></a><span class="lineno"> 1240</span>                    <span class="keywordflow">for</span> el <span class="keywordflow">in</span> elemN:</div>
+<div class="line"><a id="l01241" name="l01241"></a><span class="lineno"> 1241</span>                        <span class="keywordflow">if</span> alltext(el) <span class="keywordflow">in</span> list(shumansGradients):</div>
+<div class="line"><a id="l01242" name="l01242"></a><span class="lineno"> 1242</span>                            <span class="comment"># Expand the single-line if-stmt necessary</span></div>
+<div class="line"><a id="l01243" name="l01243"></a><span class="lineno"> 1243</span>                            <span class="comment"># to add all the new lines further.</span></div>
+<div class="line"><a id="l01244" name="l01244"></a><span class="lineno"> 1244</span>                            parStmt = scope.getParent(stmt)</div>
+<div class="line"><a id="l01245" name="l01245"></a><span class="lineno"> 1245</span>                            <span class="keywordflow">if</span> tag(parStmt) == <span class="stringliteral">&#39;action-stmt&#39;</span>:</div>
+<div class="line"><a id="l01246" name="l01246"></a><span class="lineno"> 1246</span>                                scope.changeIfStatementsInIfConstructs(</div>
+<div class="line"><a id="l01247" name="l01247"></a><span class="lineno"> 1247</span>                                    singleItem=scope.getParent(parStmt))</div>
+<div class="line"><a id="l01248" name="l01248"></a><span class="lineno"> 1248</span> </div>
+<div class="line"><a id="l01249" name="l01249"></a><span class="lineno"> 1249</span>                            <span class="keywordflow">if</span> str(stmt) <span class="keywordflow">in</span> foundStmtandCalls:</div>
+<div class="line"><a id="l01250" name="l01250"></a><span class="lineno"> 1250</span>                                foundStmtandCalls[str(stmt)][1] += 1</div>
+<div class="line"><a id="l01251" name="l01251"></a><span class="lineno"> 1251</span>                            <span class="keywordflow">else</span>:</div>
+<div class="line"><a id="l01252" name="l01252"></a><span class="lineno"> 1252</span>                                foundStmtandCalls[str(stmt)] = [stmt, 1]</div>
+<div class="line"><a id="l01253" name="l01253"></a><span class="lineno"> 1253</span> </div>
+<div class="line"><a id="l01254" name="l01254"></a><span class="lineno"> 1254</span>                <span class="comment"># For each a-stmt and call-stmt containing at least 1 shuman/gradient function</span></div>
+<div class="line"><a id="l01255" name="l01255"></a><span class="lineno"> 1255</span>                subToInclude = set()</div>
+<div class="line"><a id="l01256" name="l01256"></a><span class="lineno"> 1256</span>                <span class="keywordflow">for</span> stmt <span class="keywordflow">in</span> foundStmtandCalls:</div>
+<div class="line"><a id="l01257" name="l01257"></a><span class="lineno"> 1257</span>                    localShumansGradients = copy.deepcopy(shumansGradients)</div>
+<div class="line"><a id="l01258" name="l01258"></a><span class="lineno"> 1258</span>                    elemToLookFor = [foundStmtandCalls[stmt][0]]</div>
+<div class="line"><a id="l01259" name="l01259"></a><span class="lineno"> 1259</span>                    previousComputeStmt = []</div>
+<div class="line"><a id="l01260" name="l01260"></a><span class="lineno"> 1260</span>                    maxnbZshugradwk = 0</div>
+<div class="line"><a id="l01261" name="l01261"></a><span class="lineno"> 1261</span> </div>
+<div class="line"><a id="l01262" name="l01262"></a><span class="lineno"> 1262</span>                    <span class="keywordflow">while</span> len(elemToLookFor) &gt; 0:</div>
+<div class="line"><a id="l01263" name="l01263"></a><span class="lineno"> 1263</span>                        nbzshugradwk = 0</div>
+<div class="line"><a id="l01264" name="l01264"></a><span class="lineno"> 1264</span>                        <span class="keywordflow">for</span> elem <span class="keywordflow">in</span> elemToLookFor:</div>
+<div class="line"><a id="l01265" name="l01265"></a><span class="lineno"> 1265</span>                            elemN = elem.findall(<span class="stringliteral">&#39;.//{*}n&#39;</span>)</div>
+<div class="line"><a id="l01266" name="l01266"></a><span class="lineno"> 1266</span>                            <span class="keywordflow">for</span> el <span class="keywordflow">in</span> elemN:</div>
+<div class="line"><a id="l01267" name="l01267"></a><span class="lineno"> 1267</span>                                <span class="keywordflow">if</span> alltext(el) <span class="keywordflow">in</span> list(localShumansGradients.keys()):</div>
+<div class="line"><a id="l01268" name="l01268"></a><span class="lineno"> 1268</span>                                    <span class="comment"># Check the dimensions of the stmt objects in which the</span></div>
+<div class="line"><a id="l01269" name="l01269"></a><span class="lineno"> 1269</span>                                    <span class="comment"># function exist for handling selecting-index</span></div>
+<div class="line"><a id="l01270" name="l01270"></a><span class="lineno"> 1270</span>                                    <span class="comment"># shuman-function use</span></div>
+<div class="line"><a id="l01271" name="l01271"></a><span class="lineno"> 1271</span>                                    <span class="comment"># 1) if the stmt is from an a-astmt, check E1</span></div>
+<div class="line"><a id="l01272" name="l01272"></a><span class="lineno"> 1272</span>                                    nodeE1var = foundStmtandCalls[stmt][0].findall(</div>
+<div class="line"><a id="l01273" name="l01273"></a><span class="lineno"> 1273</span>                                                <span class="stringliteral">&#39;.//{*}E-1/{*}named-E/{*}N&#39;</span>)</div>
+<div class="line"><a id="l01274" name="l01274"></a><span class="lineno"> 1274</span>                                    <span class="keywordflow">if</span> len(nodeE1var) &gt; 0:</div>
+<div class="line"><a id="l01275" name="l01275"></a><span class="lineno"> 1275</span>                                        var = scope.varList.findVar(alltext(nodeE1var[0]))</div>
+<div class="line"><a id="l01276" name="l01276"></a><span class="lineno"> 1276</span>                                        allSubscripts = foundStmtandCalls[stmt][0].findall(</div>
+<div class="line"><a id="l01277" name="l01277"></a><span class="lineno"> 1277</span>                                                            <span class="stringliteral">&#39;.//{*}E-1//{*}named-E/{*}R-LT/&#39;</span> +</div>
+<div class="line"><a id="l01278" name="l01278"></a><span class="lineno"> 1278</span>                                                            <span class="stringliteral">&#39;{*}array-R/{*}section-subscript-LT&#39;</span>)</div>
+<div class="line"><a id="l01279" name="l01279"></a><span class="lineno"> 1279</span>                                    <span class="comment"># 2) if the stmt is from a call-stmt,</span></div>
+<div class="line"><a id="l01280" name="l01280"></a><span class="lineno"> 1280</span>                                    <span class="comment">#    check the first &lt;named-E&gt;&lt;N&gt; in the function</span></div>
+<div class="line"><a id="l01281" name="l01281"></a><span class="lineno"> 1281</span>                                    <span class="keywordflow">else</span>:</div>
+<div class="line"><a id="l01282" name="l01282"></a><span class="lineno"> 1282</span>                                        elPar = scope.getParent(el, level=2)  <span class="comment"># MXM(...)</span></div>
+<div class="line"><a id="l01283" name="l01283"></a><span class="lineno"> 1283</span>                                        callVar = elPar.findall(<span class="stringliteral">&#39;.//{*}named-E/{*}N&#39;</span>)</div>
+<div class="line"><a id="l01284" name="l01284"></a><span class="lineno"> 1284</span>                                        <span class="keywordflow">if</span> alltext(el)[0] == <span class="stringliteral">&#39;G&#39;</span>:</div>
+<div class="line"><a id="l01285" name="l01285"></a><span class="lineno"> 1285</span>                                            <span class="comment"># If it is a gradient, the array on which the gradient</span></div>
+<div class="line"><a id="l01286" name="l01286"></a><span class="lineno"> 1286</span>                                            <span class="comment"># is applied is the last argument</span></div>
+<div class="line"><a id="l01287" name="l01287"></a><span class="lineno"> 1287</span> </div>
+<div class="line"><a id="l01288" name="l01288"></a><span class="lineno"> 1288</span>                                            <span class="comment"># callVar[-1] is array on which the gradient is applied</span></div>
+<div class="line"><a id="l01289" name="l01289"></a><span class="lineno"> 1289</span>                                            var = scope.varList.findVar(alltext(callVar[-1]))</div>
+<div class="line"><a id="l01290" name="l01290"></a><span class="lineno"> 1290</span>                                            shumanIsCalledOn = scope.getParent(callVar[-1])</div>
+<div class="line"><a id="l01291" name="l01291"></a><span class="lineno"> 1291</span>                                        <span class="keywordflow">else</span>:</div>
+<div class="line"><a id="l01292" name="l01292"></a><span class="lineno"> 1292</span>                                            <span class="comment"># Shumans</span></div>
+<div class="line"><a id="l01293" name="l01293"></a><span class="lineno"> 1293</span>                                            var, inested = <span class="keywordtype">None</span>, 0</div>
+<div class="line"><a id="l01294" name="l01294"></a><span class="lineno"> 1294</span>                                            <span class="comment"># pylint: disable-next=unsubscriptable-object</span></div>
+<div class="line"><a id="l01295" name="l01295"></a><span class="lineno"> 1295</span>                                            <span class="keywordflow">while</span> <span class="keywordflow">not</span> var <span class="keywordflow">or</span> len(var[<span class="stringliteral">&#39;as&#39;</span>]) == 0:</div>
+<div class="line"><a id="l01296" name="l01296"></a><span class="lineno"> 1296</span>                                                <span class="comment"># While the var is not an array already declared</span></div>
+<div class="line"><a id="l01297" name="l01297"></a><span class="lineno"> 1297</span>                                                <span class="comment"># callVar[0] is the first array on which the</span></div>
+<div class="line"><a id="l01298" name="l01298"></a><span class="lineno"> 1298</span>                                                <span class="comment"># function is applied</span></div>
+<div class="line"><a id="l01299" name="l01299"></a><span class="lineno"> 1299</span>                                                var = scope.varList.findVar(</div>
+<div class="line"><a id="l01300" name="l01300"></a><span class="lineno"> 1300</span>                                                           alltext(callVar[inested]))</div>
+<div class="line"><a id="l01301" name="l01301"></a><span class="lineno"> 1301</span>                                                inested += 1</div>
+<div class="line"><a id="l01302" name="l01302"></a><span class="lineno"> 1302</span>                                            shumanIsCalledOn = scope.getParent(callVar[inested-1])</div>
+<div class="line"><a id="l01303" name="l01303"></a><span class="lineno"> 1303</span>                                        allSubscripts = shumanIsCalledOn.findall(</div>
+<div class="line"><a id="l01304" name="l01304"></a><span class="lineno"> 1304</span>                                                            <span class="stringliteral">&#39;.//{*}R-LT/{*}array-R/&#39;</span> +</div>
+<div class="line"><a id="l01305" name="l01305"></a><span class="lineno"> 1305</span>                                                            <span class="stringliteral">&#39;{*}section-subscript-LT&#39;</span>)</div>
+<div class="line"><a id="l01306" name="l01306"></a><span class="lineno"> 1306</span> </div>
+<div class="line"><a id="l01307" name="l01307"></a><span class="lineno"> 1307</span>                                    <span class="comment"># if var: # Protection in case of nested functions,</span></div>
+<div class="line"><a id="l01308" name="l01308"></a><span class="lineno"> 1308</span>                                    <span class="comment"># var is not an array but None</span></div>
+<div class="line"><a id="l01309" name="l01309"></a><span class="lineno"> 1309</span>                                    arrayDim = len(var[<span class="stringliteral">&#39;as&#39;</span>])</div>
+<div class="line"><a id="l01310" name="l01310"></a><span class="lineno"> 1310</span> </div>
+<div class="line"><a id="l01311" name="l01311"></a><span class="lineno"> 1311</span>                                    <span class="comment"># Look for subscripts in case of array sub-selection</span></div>
+<div class="line"><a id="l01312" name="l01312"></a><span class="lineno"> 1312</span>                                    <span class="comment"># (such as 1 or IKB)</span></div>
+<div class="line"><a id="l01313" name="l01313"></a><span class="lineno"> 1313</span>                                    <span class="keywordflow">if</span> len(allSubscripts) &gt; 0:</div>
+<div class="line"><a id="l01314" name="l01314"></a><span class="lineno"> 1314</span>                                        <span class="keywordflow">for</span> subLT <span class="keywordflow">in</span> allSubscripts:</div>
+<div class="line"><a id="l01315" name="l01315"></a><span class="lineno"> 1315</span>                                            <span class="keywordflow">for</span> sub <span class="keywordflow">in</span> subLT:</div>
+<div class="line"><a id="l01316" name="l01316"></a><span class="lineno"> 1316</span>                                                lowerBound = sub.findall(<span class="stringliteral">&#39;.//{*}lower-bound&#39;</span>)</div>
+<div class="line"><a id="l01317" name="l01317"></a><span class="lineno"> 1317</span>                                                <span class="keywordflow">if</span> len(lowerBound) &gt; 0:</div>
+<div class="line"><a id="l01318" name="l01318"></a><span class="lineno"> 1318</span>                                                    <span class="keywordflow">if</span> len(sub.findall(<span class="stringliteral">&#39;.//{*}upper-bound&#39;</span>)) &gt; 0:</div>
+<div class="line"><a id="l01319" name="l01319"></a><span class="lineno"> 1319</span>                                                        <span class="comment"># For protection: not handled with</span></div>
+<div class="line"><a id="l01320" name="l01320"></a><span class="lineno"> 1320</span>                                                        <span class="comment">#                 lower:upper bounds</span></div>
+<div class="line"><a id="l01321" name="l01321"></a><span class="lineno"> 1321</span>                                                        <span class="keywordflow">raise</span> <a class="code hl_class" href="classpyfortool_1_1util_1_1PYFTError.html">PYFTError</a>(<span class="stringliteral">&#39;ShumanFUNCtoCALL does &#39;</span> +</div>
+<div class="line"><a id="l01322" name="l01322"></a><span class="lineno"> 1322</span>                                                                        <span class="stringliteral">&#39;not handle conversion &#39;</span> +</div>
+<div class="line"><a id="l01323" name="l01323"></a><span class="lineno"> 1323</span>                                                                        <span class="stringliteral">&#39;to routine of array &#39;</span> +</div>
+<div class="line"><a id="l01324" name="l01324"></a><span class="lineno"> 1324</span>                                                                        <span class="stringliteral">&#39;subselection lower:upper&#39;</span> +</div>
+<div class="line"><a id="l01325" name="l01325"></a><span class="lineno"> 1325</span>                                                                        <span class="stringliteral">&#39;: how to set up the &#39;</span> +</div>
+<div class="line"><a id="l01326" name="l01326"></a><span class="lineno"> 1326</span>                                                                        <span class="stringliteral">&#39;shape of intermediate &#39;</span> +</div>
+<div class="line"><a id="l01327" name="l01327"></a><span class="lineno"> 1327</span>                                                                        <span class="stringliteral">&#39;arrays ?&#39;</span>)</div>
+<div class="line"><a id="l01328" name="l01328"></a><span class="lineno"> 1328</span>                                                    <span class="comment"># Handle change of dimensions for</span></div>
+<div class="line"><a id="l01329" name="l01329"></a><span class="lineno"> 1329</span>                                                    <span class="comment"># selecting index for the working arrays</span></div>
+<div class="line"><a id="l01330" name="l01330"></a><span class="lineno"> 1330</span>                                                    arrayDim -= 1</div>
+<div class="line"><a id="l01331" name="l01331"></a><span class="lineno"> 1331</span> </div>
+<div class="line"><a id="l01332" name="l01332"></a><span class="lineno"> 1332</span>                                    <span class="comment"># Build the dimensions declaration in case of</span></div>
+<div class="line"><a id="l01333" name="l01333"></a><span class="lineno"> 1333</span>                                    <span class="comment"># working/intermediate variable needed</span></div>
+<div class="line"><a id="l01334" name="l01334"></a><span class="lineno"> 1334</span>                                    dimWorkingVar = <span class="stringliteral">&#39;&#39;</span></div>
+<div class="line"><a id="l01335" name="l01335"></a><span class="lineno"> 1335</span>                                    <span class="keywordflow">if</span> var:</div>
+<div class="line"><a id="l01336" name="l01336"></a><span class="lineno"> 1336</span>                                        dimWorkingVar = <span class="stringliteral">&#39;REAL, DIMENSION(&#39;</span></div>
+<div class="line"><a id="l01337" name="l01337"></a><span class="lineno"> 1337</span>                                        <span class="keywordflow">for</span> dims <span class="keywordflow">in</span> var[<span class="stringliteral">&#39;as&#39;</span>][:arrayDim]:</div>
+<div class="line"><a id="l01338" name="l01338"></a><span class="lineno"> 1338</span>                                            dimWorkingVar += dims[1] + <span class="stringliteral">&#39;,&#39;</span></div>
+<div class="line"><a id="l01339" name="l01339"></a><span class="lineno"> 1339</span>                                        dimWorkingVar = dimWorkingVar[:-1] + <span class="stringliteral">&#39;) ::&#39;</span></div>
+<div class="line"><a id="l01340" name="l01340"></a><span class="lineno"> 1340</span> </div>
+<div class="line"><a id="l01341" name="l01341"></a><span class="lineno"> 1341</span>                                    <span class="comment"># Add existing working variable with the name of the function</span></div>
+<div class="line"><a id="l01342" name="l01342"></a><span class="lineno"> 1342</span>                                    localShumansGradients[alltext(el)] += 1</div>
+<div class="line"><a id="l01343" name="l01343"></a><span class="lineno"> 1343</span> </div>
+<div class="line"><a id="l01344" name="l01344"></a><span class="lineno"> 1344</span>                                    <span class="comment"># To be sure that ending !comments after the statement is</span></div>
+<div class="line"><a id="l01345" name="l01345"></a><span class="lineno"> 1345</span>                                    <span class="comment"># not impacting the placement of the last !mnh_expand_array</span></div>
+<div class="line"><a id="l01346" name="l01346"></a><span class="lineno"> 1346</span>                                    <span class="keywordflow">if</span> foundStmtandCalls[stmt][0].tail:</div>
+<div class="line"><a id="l01347" name="l01347"></a><span class="lineno"> 1347</span>                                        foundStmtandCalls[stmt][0].tail = \</div>
+<div class="line"><a id="l01348" name="l01348"></a><span class="lineno"> 1348</span>                                            foundStmtandCalls[stmt][0].tail.replace(<span class="stringliteral">&#39;\n&#39;</span>, <span class="stringliteral">&#39;&#39;</span>) + <span class="stringliteral">&#39;\n&#39;</span></div>
+<div class="line"><a id="l01349" name="l01349"></a><span class="lineno"> 1349</span>                                    <span class="keywordflow">else</span>:</div>
+<div class="line"><a id="l01350" name="l01350"></a><span class="lineno"> 1350</span>                                        foundStmtandCalls[stmt][0].tail = <span class="stringliteral">&#39;\n&#39;</span></div>
+<div class="line"><a id="l01351" name="l01351"></a><span class="lineno"> 1351</span> </div>
+<div class="line"><a id="l01352" name="l01352"></a><span class="lineno"> 1352</span>                                    <span class="comment"># Transform the function into a call statement</span></div>
+<div class="line"><a id="l01353" name="l01353"></a><span class="lineno"> 1353</span>                                    result = FUNCtoROUTINE(scope, elem, el,</div>
+<div class="line"><a id="l01354" name="l01354"></a><span class="lineno"> 1354</span>                                                           localShumansGradients,</div>
+<div class="line"><a id="l01355" name="l01355"></a><span class="lineno"> 1355</span>                                                           elem <span class="keywordflow">in</span> previousComputeStmt,</div>
+<div class="line"><a id="l01356" name="l01356"></a><span class="lineno"> 1356</span>                                                           nbzshugradwk, arrayDim,</div>
+<div class="line"><a id="l01357" name="l01357"></a><span class="lineno"> 1357</span>                                                           dimWorkingVar)</div>
+<div class="line"><a id="l01358" name="l01358"></a><span class="lineno"> 1358</span>                                    (newCallStmt, newComputeStmt,</div>
+<div class="line"><a id="l01359" name="l01359"></a><span class="lineno"> 1359</span>                                     nbzshugradwk, newFuncName) = result</div>
+<div class="line"><a id="l01360" name="l01360"></a><span class="lineno"> 1360</span>                                    subToInclude.add(newFuncName)</div>
+<div class="line"><a id="l01361" name="l01361"></a><span class="lineno"> 1361</span>                                    <span class="comment"># Update the list of elements to check if there are still</span></div>
+<div class="line"><a id="l01362" name="l01362"></a><span class="lineno"> 1362</span>                                    <span class="comment"># remaining function to convert within the new call-stmt</span></div>
+<div class="line"><a id="l01363" name="l01363"></a><span class="lineno"> 1363</span>                                    elemToLookFor.append(newCallStmt)</div>
+<div class="line"><a id="l01364" name="l01364"></a><span class="lineno"> 1364</span> </div>
+<div class="line"><a id="l01365" name="l01365"></a><span class="lineno"> 1365</span>                                    <span class="comment"># If a new intermediate compute statement was created, it needs</span></div>
+<div class="line"><a id="l01366" name="l01366"></a><span class="lineno"> 1366</span>                                    <span class="comment"># to be checked and add Parenthesis to arrays for mnh_expand</span></div>
+<div class="line"><a id="l01367" name="l01367"></a><span class="lineno"> 1367</span>                                    <span class="keywordflow">if</span> len(newComputeStmt) &gt; 0:</div>
+<div class="line"><a id="l01368" name="l01368"></a><span class="lineno"> 1368</span>                                        elemToLookFor.append(newComputeStmt)</div>
+<div class="line"><a id="l01369" name="l01369"></a><span class="lineno"> 1369</span>                                        computeStmtforParenthesis.append(newComputeStmt)</div>
+<div class="line"><a id="l01370" name="l01370"></a><span class="lineno"> 1370</span>                                        <span class="comment"># Allow to save that this newComputeStmt comes with 2</span></div>
+<div class="line"><a id="l01371" name="l01371"></a><span class="lineno"> 1371</span>                                        <span class="comment"># extra lines before and after</span></div>
+<div class="line"><a id="l01372" name="l01372"></a><span class="lineno"> 1372</span>                                        <span class="comment"># (mnh_expand and acc directives)</span></div>
+<div class="line"><a id="l01373" name="l01373"></a><span class="lineno"> 1373</span>                                        previousComputeStmt.append(newComputeStmt)</div>
+<div class="line"><a id="l01374" name="l01374"></a><span class="lineno"> 1374</span>                                    <span class="keywordflow">break</span></div>
+<div class="line"><a id="l01375" name="l01375"></a><span class="lineno"> 1375</span>                        <span class="comment"># Check in old and new objects if there are still</span></div>
+<div class="line"><a id="l01376" name="l01376"></a><span class="lineno"> 1376</span>                        <span class="comment"># remaining shuman/gradients functions</span></div>
+<div class="line"><a id="l01377" name="l01377"></a><span class="lineno"> 1377</span>                        elemToLookForNew = []</div>
+<div class="line"><a id="l01378" name="l01378"></a><span class="lineno"> 1378</span>                        <span class="keywordflow">for</span> i <span class="keywordflow">in</span> elemToLookFor:</div>
+<div class="line"><a id="l01379" name="l01379"></a><span class="lineno"> 1379</span>                            nodeNs = i.findall(<span class="stringliteral">&#39;.//{*}n&#39;</span>)</div>
+<div class="line"><a id="l01380" name="l01380"></a><span class="lineno"> 1380</span>                            <span class="keywordflow">if</span> len(nodeNs) &gt; 0:</div>
+<div class="line"><a id="l01381" name="l01381"></a><span class="lineno"> 1381</span>                                <span class="keywordflow">for</span> nnn <span class="keywordflow">in</span> nodeNs:</div>
+<div class="line"><a id="l01382" name="l01382"></a><span class="lineno"> 1382</span>                                    <span class="keywordflow">if</span> alltext(nnn) <span class="keywordflow">in</span> list(localShumansGradients):</div>
+<div class="line"><a id="l01383" name="l01383"></a><span class="lineno"> 1383</span>                                        elemToLookForNew.append(i)</div>
+<div class="line"><a id="l01384" name="l01384"></a><span class="lineno"> 1384</span>                                        <span class="keywordflow">break</span></div>
+<div class="line"><a id="l01385" name="l01385"></a><span class="lineno"> 1385</span>                        elemToLookFor = elemToLookForNew</div>
+<div class="line"><a id="l01386" name="l01386"></a><span class="lineno"> 1386</span>                        <span class="comment"># Save the maximum number of necessary intermediate</span></div>
+<div class="line"><a id="l01387" name="l01387"></a><span class="lineno"> 1387</span>                        <span class="comment"># computing variables ZSHUGRADWK</span></div>
+<div class="line"><a id="l01388" name="l01388"></a><span class="lineno"> 1388</span>                        <span class="keywordflow">if</span> nbzshugradwk &gt; maxnbZshugradwk:</div>
+<div class="line"><a id="l01389" name="l01389"></a><span class="lineno"> 1389</span>                            maxnbZshugradwk = nbzshugradwk</div>
+<div class="line"><a id="l01390" name="l01390"></a><span class="lineno"> 1390</span> </div>
+<div class="line"><a id="l01391" name="l01391"></a><span class="lineno"> 1391</span>                    <span class="comment"># Add parenthesis around all variables</span></div>
+<div class="line"><a id="l01392" name="l01392"></a><span class="lineno"> 1392</span>                    scope.addArrayParenthesesInNode(foundStmtandCalls[stmt][0])</div>
+<div class="line"><a id="l01393" name="l01393"></a><span class="lineno"> 1393</span> </div>
+<div class="line"><a id="l01394" name="l01394"></a><span class="lineno"> 1394</span>                    <span class="comment"># For the last compute statement, add mnh_expand and acc</span></div>
+<div class="line"><a id="l01395" name="l01395"></a><span class="lineno"> 1395</span>                    <span class="comment"># kernels if not call statement</span></div>
+<div class="line"><a id="l01396" name="l01396"></a><span class="lineno"> 1396</span>                    <span class="keywordflow">if</span> tag(foundStmtandCalls[stmt][0]) != <span class="stringliteral">&#39;call-stmt&#39;</span>:</div>
+<div class="line"><a id="l01397" name="l01397"></a><span class="lineno"> 1397</span>                        <span class="comment"># get mnhExpandArrayIndexes</span></div>
+<div class="line"><a id="l01398" name="l01398"></a><span class="lineno"> 1398</span>                        <span class="comment"># Here dimSuffRoutine, dimSuffVar are not used</span></div>
+<div class="line"><a id="l01399" name="l01399"></a><span class="lineno"> 1399</span>                        dimSuffRoutine, dimSuffVar, mnhExpandArrayIndexes = \</div>
+<div class="line"><a id="l01400" name="l01400"></a><span class="lineno"> 1400</span>                            getDimsAndMNHExpandIndexes(arrayDim, dimWorkingVar)</div>
+<div class="line"><a id="l01401" name="l01401"></a><span class="lineno"> 1401</span> </div>
+<div class="line"><a id="l01402" name="l01402"></a><span class="lineno"> 1402</span>                        parStmt = scope.getParent(foundStmtandCalls[stmt][0])</div>
+<div class="line"><a id="l01403" name="l01403"></a><span class="lineno"> 1403</span>                        indexForCall = list(parStmt).index(foundStmtandCalls[stmt][0])</div>
+<div class="line"><a id="l01404" name="l01404"></a><span class="lineno"> 1404</span>                        mnhOpenDir = <span class="stringliteral">&quot;!$mnh_expand_array(&quot;</span> + mnhExpandArrayIndexes + <span class="stringliteral">&quot;)&quot;</span></div>
+<div class="line"><a id="l01405" name="l01405"></a><span class="lineno"> 1405</span>                        mnhCloseDir = <span class="stringliteral">&quot;!$mnh_end_expand_array(&quot;</span> + mnhExpandArrayIndexes + <span class="stringliteral">&quot;)&quot;</span></div>
+<div class="line"><a id="l01406" name="l01406"></a><span class="lineno"> 1406</span>                        parStmt.insert(indexForCall,</div>
+<div class="line"><a id="l01407" name="l01407"></a><span class="lineno"> 1407</span>                                       createElem(<span class="stringliteral">&#39;C&#39;</span>, text=<span class="stringliteral">&quot;!$acc kernels&quot;</span>, tail=<span class="stringliteral">&#39;\n&#39;</span>))</div>
+<div class="line"><a id="l01408" name="l01408"></a><span class="lineno"> 1408</span>                        parStmt.insert(indexForCall + 1,</div>
+<div class="line"><a id="l01409" name="l01409"></a><span class="lineno"> 1409</span>                                       createElem(<span class="stringliteral">&#39;C&#39;</span>, text=mnhOpenDir, tail=<span class="stringliteral">&#39;\n&#39;</span>))</div>
+<div class="line"><a id="l01410" name="l01410"></a><span class="lineno"> 1410</span>                        parStmt.insert(indexForCall + 3,</div>
+<div class="line"><a id="l01411" name="l01411"></a><span class="lineno"> 1411</span>                                       createElem(<span class="stringliteral">&#39;C&#39;</span>, text=mnhCloseDir, tail=<span class="stringliteral">&#39;\n&#39;</span>))</div>
+<div class="line"><a id="l01412" name="l01412"></a><span class="lineno"> 1412</span>                        parStmt.insert(indexForCall + 4,</div>
+<div class="line"><a id="l01413" name="l01413"></a><span class="lineno"> 1413</span>                                       createElem(<span class="stringliteral">&#39;C&#39;</span>, text=<span class="stringliteral">&quot;!$acc end kernels&quot;</span>, tail=<span class="stringliteral">&#39;\n&#39;</span>))</div>
+<div class="line"><a id="l01414" name="l01414"></a><span class="lineno"> 1414</span>                        parStmt.insert(indexForCall + 5,</div>
+<div class="line"><a id="l01415" name="l01415"></a><span class="lineno"> 1415</span>                                       createElem(<span class="stringliteral">&#39;C&#39;</span>, text=<span class="stringliteral">&quot;!&quot;</span>, tail=<span class="stringliteral">&#39;\n&#39;</span>))  <span class="comment"># For readibility</span></div>
+<div class="line"><a id="l01416" name="l01416"></a><span class="lineno"> 1416</span> </div>
+<div class="line"><a id="l01417" name="l01417"></a><span class="lineno"> 1417</span>                <span class="comment"># For all saved intermediate newComputeStmt, add parenthesis around all variables</span></div>
+<div class="line"><a id="l01418" name="l01418"></a><span class="lineno"> 1418</span>                <span class="keywordflow">for</span> stmt <span class="keywordflow">in</span> computeStmtforParenthesis:</div>
+<div class="line"><a id="l01419" name="l01419"></a><span class="lineno"> 1419</span>                    scope.addArrayParenthesesInNode(stmt)</div>
+<div class="line"><a id="l01420" name="l01420"></a><span class="lineno"> 1420</span> </div>
+<div class="line"><a id="l01421" name="l01421"></a><span class="lineno"> 1421</span>                <span class="comment"># Add the use statements</span></div>
+<div class="line"><a id="l01422" name="l01422"></a><span class="lineno"> 1422</span>                moduleVars = []</div>
+<div class="line"><a id="l01423" name="l01423"></a><span class="lineno"> 1423</span>                <span class="keywordflow">for</span> sub <span class="keywordflow">in</span> sorted(subToInclude):</div>
+<div class="line"><a id="l01424" name="l01424"></a><span class="lineno"> 1424</span>                    <span class="keywordflow">if</span> re.match(<span class="stringliteral">r&#39;[MD][XYZ][MF](2D)?_PHY&#39;</span>, sub):</div>
+<div class="line"><a id="l01425" name="l01425"></a><span class="lineno"> 1425</span>                        moduleVars.append((scope.path, <span class="stringliteral">&#39;MODE_SHUMAN_PHY&#39;</span>, sub))</div>
+<div class="line"><a id="l01426" name="l01426"></a><span class="lineno"> 1426</span>                    <span class="keywordflow">else</span>:</div>
+<div class="line"><a id="l01427" name="l01427"></a><span class="lineno"> 1427</span>                        <span class="keywordflow">for</span> kind <span class="keywordflow">in</span> (<span class="stringliteral">&#39;M&#39;</span>, <span class="stringliteral">&#39;U&#39;</span>, <span class="stringliteral">&#39;V&#39;</span>, <span class="stringliteral">&#39;W&#39;</span>):</div>
+<div class="line"><a id="l01428" name="l01428"></a><span class="lineno"> 1428</span>                            <span class="keywordflow">if</span> re.match(<span class="stringliteral">r&#39;G[XYZ]_&#39;</span> + kind + <span class="stringliteral">r&#39;_[MUVW]{1,2}_PHY&#39;</span>, sub):</div>
+<div class="line"><a id="l01429" name="l01429"></a><span class="lineno"> 1429</span>                                moduleVars.append((scope.path, f<span class="stringliteral">&#39;MODE_GRADIENT_{kind}_PHY&#39;</span>, sub))</div>
+<div class="line"><a id="l01430" name="l01430"></a><span class="lineno"> 1430</span>                scope.addModuleVar(moduleVars)</div>
+<div class="line"><a id="l01431" name="l01431"></a><span class="lineno"> 1431</span> </div>
 </div>
-<div class="line"><a id="l01422" name="l01422"></a><span class="lineno"> 1422</span>    <span class="preprocessor">@debugDecor</span></div>
-<div class="line"><a id="l01423" name="l01423"></a><span class="lineno"> 1423</span>    <span class="preprocessor">@noParallel</span></div>
-<div class="line"><a id="l01424" name="l01424"></a><span class="lineno"> 1424</span>    <span class="preprocessor">@updateTree(&#39;signal&#39;)</span></div>
-<div class="foldopen" id="foldopen01425" data-start="" data-end="">
-<div class="line"><a id="l01425" name="l01425"></a><span class="lineno"><a class="line" href="classpyfortool_1_1applications_1_1Applications.html#a8b2540c9902916d4c5c66160500e8e3e"> 1425</a></span>    <span class="keyword">def </span><a class="code hl_function" href="classpyfortool_1_1applications_1_1Applications.html#a8b2540c9902916d4c5c66160500e8e3e">buildACCTypeHelpers</a>(self):</div>
-<div class="line"><a id="l01426" name="l01426"></a><span class="lineno"> 1426</span>        <span class="stringliteral">&quot;&quot;&quot;</span></div>
-<div class="line"><a id="l01427" name="l01427"></a><span class="lineno"> 1427</span><span class="stringliteral">        build module files containing helpers to copy user type structures</span></div>
-<div class="line"><a id="l01428" name="l01428"></a><span class="lineno"> 1428</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
-<div class="line"><a id="l01429" name="l01429"></a><span class="lineno"> 1429</span>        <span class="keywordflow">for</span> scope <span class="keywordflow">in</span> self.getScopes():</div>
-<div class="line"><a id="l01430" name="l01430"></a><span class="lineno"> 1430</span>            <span class="keywordflow">if</span> scope.path.split(<span class="stringliteral">&#39;/&#39;</span>)[-1].split(<span class="stringliteral">&#39;:&#39;</span>)[0] == <span class="stringliteral">&#39;type&#39;</span>:</div>
-<div class="line"><a id="l01431" name="l01431"></a><span class="lineno"> 1431</span>                typeName = scope.path.split(<span class="stringliteral">&#39;/&#39;</span>)[-1].split(<span class="stringliteral">&#39;:&#39;</span>)[1]</div>
-<div class="line"><a id="l01432" name="l01432"></a><span class="lineno"> 1432</span>                filename = os.path.join(os.path.dirname(scope.getFileName()),</div>
-<div class="line"><a id="l01433" name="l01433"></a><span class="lineno"> 1433</span>                                        <span class="stringliteral">&quot;modd_util_{t}.F90&quot;</span>.format(t=typeName.lower()))</div>
-<div class="line"><a id="l01434" name="l01434"></a><span class="lineno"> 1434</span>                scope.tree.signal(filename)</div>
-<div class="line"><a id="l01435" name="l01435"></a><span class="lineno"> 1435</span>                <span class="keyword">with</span> open(filename, <span class="stringliteral">&#39;w&#39;</span>, encoding=<span class="stringliteral">&quot;utf-8&quot;</span>) <span class="keyword">as</span> file:</div>
-<div class="line"><a id="l01436" name="l01436"></a><span class="lineno"> 1436</span>                    file.write(<span class="stringliteral">&quot;&quot;&quot;</span></div>
-<div class="line"><a id="l01437" name="l01437"></a><span class="lineno"> 1437</span><span class="stringliteral">MODULE MODD_UTIL_{t}</span></div>
-<div class="line"><a id="l01438" name="l01438"></a><span class="lineno"> 1438</span><span class="stringliteral">USE {m}, ONLY: {t}</span></div>
-<div class="line"><a id="l01439" name="l01439"></a><span class="lineno"> 1439</span><span class="stringliteral">CONTAINS</span></div>
-<div class="line"><a id="l01440" name="l01440"></a><span class="lineno"> 1440</span><span class="stringliteral">SUBROUTINE COPY_{t} (YD, LDCREATED)&quot;&quot;&quot;</span>.format(t=typeName,</div>
-<div class="line"><a id="l01441" name="l01441"></a><span class="lineno"> 1441</span>                                              m=scope.path.split(<span class="stringliteral">&#39;/&#39;</span>)[-2].split(<span class="stringliteral">&#39;:&#39;</span>)[1]))</div>
-<div class="line"><a id="l01442" name="l01442"></a><span class="lineno"> 1442</span> </div>
-<div class="line"><a id="l01443" name="l01443"></a><span class="lineno"> 1443</span>                    <span class="keywordflow">for</span> var <span class="keywordflow">in</span> scope.varList:</div>
-<div class="line"><a id="l01444" name="l01444"></a><span class="lineno"> 1444</span>                        <span class="keywordflow">if</span> <span class="stringliteral">&#39;TYPE(&#39;</span> <span class="keywordflow">in</span> var[<span class="stringliteral">&#39;t&#39;</span>].replace(<span class="stringliteral">&#39; &#39;</span>, <span class="stringliteral">&#39;&#39;</span>).upper():</div>
-<div class="line"><a id="l01445" name="l01445"></a><span class="lineno"> 1445</span>                            file.write(<span class="stringliteral">&quot;&quot;&quot;</span></div>
-<div class="line"><a id="l01446" name="l01446"></a><span class="lineno"> 1446</span><span class="stringliteral">USE MODD_UTIL_{t}&quot;&quot;&quot;</span>.format(t=var[<span class="stringliteral">&#39;t&#39;</span>].replace(<span class="stringliteral">&#39; &#39;</span>, <span class="stringliteral">&#39;&#39;</span>)[5:-1]))</div>
-<div class="line"><a id="l01447" name="l01447"></a><span class="lineno"> 1447</span> </div>
-<div class="line"><a id="l01448" name="l01448"></a><span class="lineno"> 1448</span>                    file.write(<span class="stringliteral">&quot;&quot;&quot;</span></div>
-<div class="line"><a id="l01449" name="l01449"></a><span class="lineno"> 1449</span><span class="stringliteral">IMPLICIT NONE</span></div>
-<div class="line"><a id="l01450" name="l01450"></a><span class="lineno"> 1450</span><span class="stringliteral">TYPE ({t}), INTENT(IN), TARGET :: YD</span></div>
-<div class="line"><a id="l01451" name="l01451"></a><span class="lineno"> 1451</span><span class="stringliteral">LOGICAL, OPTIONAL, INTENT(IN) :: LDCREATED</span></div>
-<div class="line"><a id="l01452" name="l01452"></a><span class="lineno"> 1452</span><span class="stringliteral">INTEGER :: I</span></div>
-<div class="line"><a id="l01453" name="l01453"></a><span class="lineno"> 1453</span><span class="stringliteral">LOGICAL :: LLCREATED</span></div>
-<div class="line"><a id="l01454" name="l01454"></a><span class="lineno"> 1454</span><span class="stringliteral">LLCREATED = .FALSE.</span></div>
-<div class="line"><a id="l01455" name="l01455"></a><span class="lineno"> 1455</span><span class="stringliteral">IF (PRESENT (LDCREATED)) THEN</span></div>
-<div class="line"><a id="l01456" name="l01456"></a><span class="lineno"> 1456</span><span class="stringliteral">  LLCREATED = LDCREATED</span></div>
-<div class="line"><a id="l01457" name="l01457"></a><span class="lineno"> 1457</span><span class="stringliteral">ENDIF</span></div>
-<div class="line"><a id="l01458" name="l01458"></a><span class="lineno"> 1458</span><span class="stringliteral">IF (.NOT. LLCREATED) THEN</span></div>
-<div class="line"><a id="l01459" name="l01459"></a><span class="lineno"> 1459</span><span class="stringliteral">  !$acc enter data create (YD)</span></div>
-<div class="line"><a id="l01460" name="l01460"></a><span class="lineno"> 1460</span><span class="stringliteral">  !$acc update device (YD)</span></div>
-<div class="line"><a id="l01461" name="l01461"></a><span class="lineno"> 1461</span><span class="stringliteral">ENDIF&quot;&quot;&quot;</span>.format(t=typeName))</div>
-<div class="line"><a id="l01462" name="l01462"></a><span class="lineno"> 1462</span> </div>
-<div class="line"><a id="l01463" name="l01463"></a><span class="lineno"> 1463</span>                    <span class="keywordflow">for</span> var <span class="keywordflow">in</span> scope.varList:</div>
-<div class="line"><a id="l01464" name="l01464"></a><span class="lineno"> 1464</span>                        <span class="keywordflow">if</span> var[<span class="stringliteral">&#39;allocatable&#39;</span>]:</div>
-<div class="line"><a id="l01465" name="l01465"></a><span class="lineno"> 1465</span>                            file.write(<span class="stringliteral">&quot;&quot;&quot;</span></div>
-<div class="line"><a id="l01466" name="l01466"></a><span class="lineno"> 1466</span><span class="stringliteral">IF (ALLOCATED (YD%{v})) THEN</span></div>
-<div class="line"><a id="l01467" name="l01467"></a><span class="lineno"> 1467</span><span class="stringliteral">  !$acc enter data create (YD%{v})</span></div>
-<div class="line"><a id="l01468" name="l01468"></a><span class="lineno"> 1468</span><span class="stringliteral">  !$acc update device (YD%{v})</span></div>
-<div class="line"><a id="l01469" name="l01469"></a><span class="lineno"> 1469</span><span class="stringliteral">  !$acc enter data attach (YD%{v})</span></div>
-<div class="line"><a id="l01470" name="l01470"></a><span class="lineno"> 1470</span><span class="stringliteral">ENDIF&quot;&quot;&quot;</span>.format(v=var[<span class="stringliteral">&#39;n&#39;</span>]))</div>
-<div class="line"><a id="l01471" name="l01471"></a><span class="lineno"> 1471</span>                        <span class="keywordflow">if</span> <span class="stringliteral">&#39;TYPE(&#39;</span> <span class="keywordflow">in</span> var[<span class="stringliteral">&#39;t&#39;</span>].replace(<span class="stringliteral">&#39; &#39;</span>, <span class="stringliteral">&#39;&#39;</span>).upper():</div>
-<div class="line"><a id="l01472" name="l01472"></a><span class="lineno"> 1472</span>                            <span class="keywordflow">if</span> var[<span class="stringliteral">&#39;as&#39;</span>] <span class="keywordflow">is</span> <span class="keywordflow">not</span> <span class="keywordtype">None</span> <span class="keywordflow">and</span> len(var[<span class="stringliteral">&#39;as&#39;</span>]) != 0:</div>
-<div class="line"><a id="l01473" name="l01473"></a><span class="lineno"> 1473</span>                                indexes = [<span class="stringliteral">&#39;LBOUND(YD%{v}, 1) + I - 1&#39;</span>.format(v=var[<span class="stringliteral">&#39;n&#39;</span>])]</div>
-<div class="line"><a id="l01474" name="l01474"></a><span class="lineno"> 1474</span>                                <span class="keywordflow">for</span> i <span class="keywordflow">in</span> range(len(var[<span class="stringliteral">&#39;as&#39;</span>]) - 1):</div>
-<div class="line"><a id="l01475" name="l01475"></a><span class="lineno"> 1475</span>                                    indexes.append(<span class="stringliteral">&#39;LBOUND(YD%{v}, {i})&#39;</span>.format(v=var[<span class="stringliteral">&#39;n&#39;</span>],</div>
-<div class="line"><a id="l01476" name="l01476"></a><span class="lineno"> 1476</span>                                                   i=str(i + 2)))</div>
-<div class="line"><a id="l01477" name="l01477"></a><span class="lineno"> 1477</span>                                file.write(<span class="stringliteral">&quot;&quot;&quot;</span></div>
-<div class="line"><a id="l01478" name="l01478"></a><span class="lineno"> 1478</span><span class="stringliteral">DO I=1, SIZE(YD%{v})</span></div>
-<div class="line"><a id="l01479" name="l01479"></a><span class="lineno"> 1479</span><span class="stringliteral">  CALL COPY_{t}(YD%{v}({i}), LDCREATED=.TRUE.)</span></div>
-<div class="line"><a id="l01480" name="l01480"></a><span class="lineno"> 1480</span><span class="stringliteral">ENDDO&quot;&quot;&quot;</span>.format(v=var[<span class="stringliteral">&#39;n&#39;</span>], t=var[<span class="stringliteral">&#39;t&#39;</span>].replace(<span class="stringliteral">&#39; &#39;</span>, <span class="stringliteral">&#39;&#39;</span>)[5:-1], i=<span class="stringliteral">&#39;, &#39;</span>.join(indexes)))</div>
-<div class="line"><a id="l01481" name="l01481"></a><span class="lineno"> 1481</span>                            <span class="keywordflow">else</span>:</div>
-<div class="line"><a id="l01482" name="l01482"></a><span class="lineno"> 1482</span>                                file.write(<span class="stringliteral">&quot;&quot;&quot;</span></div>
-<div class="line"><a id="l01483" name="l01483"></a><span class="lineno"> 1483</span><span class="stringliteral">CALL COPY_{t}(YD%{v}, LDCREATED=.TRUE.)&quot;&quot;&quot;</span>.format(v=var[<span class="stringliteral">&#39;n&#39;</span>], t=var[<span class="stringliteral">&#39;t&#39;</span>].replace(<span class="stringliteral">&#39; &#39;</span>, <span class="stringliteral">&#39;&#39;</span>)[5:-1]))</div>
-<div class="line"><a id="l01484" name="l01484"></a><span class="lineno"> 1484</span> </div>
-<div class="line"><a id="l01485" name="l01485"></a><span class="lineno"> 1485</span>                    file.write(<span class="stringliteral">&quot;&quot;&quot;</span></div>
-<div class="line"><a id="l01486" name="l01486"></a><span class="lineno"> 1486</span><span class="stringliteral">END SUBROUTINE COPY_{t}</span></div>
-<div class="line"><a id="l01487" name="l01487"></a><span class="lineno"> 1487</span><span class="stringliteral"></span> </div>
-<div class="line"><a id="l01488" name="l01488"></a><span class="lineno"> 1488</span><span class="stringliteral">SUBROUTINE WIPE_{t} (YD, LDDELETED)&quot;&quot;&quot;</span>.format(t=typeName))</div>
-<div class="line"><a id="l01489" name="l01489"></a><span class="lineno"> 1489</span> </div>
-<div class="line"><a id="l01490" name="l01490"></a><span class="lineno"> 1490</span>                    <span class="keywordflow">for</span> var <span class="keywordflow">in</span> scope.varList:</div>
-<div class="line"><a id="l01491" name="l01491"></a><span class="lineno"> 1491</span>                        <span class="keywordflow">if</span> <span class="stringliteral">&#39;TYPE(&#39;</span> <span class="keywordflow">in</span> var[<span class="stringliteral">&#39;t&#39;</span>].replace(<span class="stringliteral">&#39; &#39;</span>, <span class="stringliteral">&#39;&#39;</span>).upper():</div>
-<div class="line"><a id="l01492" name="l01492"></a><span class="lineno"> 1492</span>                            file.write(<span class="stringliteral">&quot;&quot;&quot;</span></div>
-<div class="line"><a id="l01493" name="l01493"></a><span class="lineno"> 1493</span><span class="stringliteral">USE MODD_UTIL_{t}&quot;&quot;&quot;</span>.format(t=var[<span class="stringliteral">&#39;t&#39;</span>].replace(<span class="stringliteral">&#39; &#39;</span>, <span class="stringliteral">&#39;&#39;</span>)[5:-1]))</div>
+<div class="line"><a id="l01432" name="l01432"></a><span class="lineno"> 1432</span>    <span class="preprocessor">@debugDecor</span></div>
+<div class="line"><a id="l01433" name="l01433"></a><span class="lineno"> 1433</span>    <span class="preprocessor">@noParallel</span></div>
+<div class="line"><a id="l01434" name="l01434"></a><span class="lineno"> 1434</span>    <span class="preprocessor">@updateTree(&#39;signal&#39;)</span></div>
+<div class="foldopen" id="foldopen01435" data-start="" data-end="">
+<div class="line"><a id="l01435" name="l01435"></a><span class="lineno"><a class="line" href="classpyfortool_1_1applications_1_1Applications.html#a8b2540c9902916d4c5c66160500e8e3e"> 1435</a></span>    <span class="keyword">def </span><a class="code hl_function" href="classpyfortool_1_1applications_1_1Applications.html#a8b2540c9902916d4c5c66160500e8e3e">buildACCTypeHelpers</a>(self):</div>
+<div class="line"><a id="l01436" name="l01436"></a><span class="lineno"> 1436</span>        <span class="stringliteral">&quot;&quot;&quot;</span></div>
+<div class="line"><a id="l01437" name="l01437"></a><span class="lineno"> 1437</span><span class="stringliteral">        build module files containing helpers to copy user type structures</span></div>
+<div class="line"><a id="l01438" name="l01438"></a><span class="lineno"> 1438</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
+<div class="line"><a id="l01439" name="l01439"></a><span class="lineno"> 1439</span>        <span class="keywordflow">for</span> scope <span class="keywordflow">in</span> self.getScopes():</div>
+<div class="line"><a id="l01440" name="l01440"></a><span class="lineno"> 1440</span>            <span class="keywordflow">if</span> scope.path.split(<span class="stringliteral">&#39;/&#39;</span>)[-1].split(<span class="stringliteral">&#39;:&#39;</span>)[0] == <span class="stringliteral">&#39;type&#39;</span>:</div>
+<div class="line"><a id="l01441" name="l01441"></a><span class="lineno"> 1441</span>                typeName = scope.path.split(<span class="stringliteral">&#39;/&#39;</span>)[-1].split(<span class="stringliteral">&#39;:&#39;</span>)[1]</div>
+<div class="line"><a id="l01442" name="l01442"></a><span class="lineno"> 1442</span>                filename = os.path.join(os.path.dirname(scope.getFileName()),</div>
+<div class="line"><a id="l01443" name="l01443"></a><span class="lineno"> 1443</span>                                        <span class="stringliteral">&quot;modd_util_{t}.F90&quot;</span>.format(t=typeName.lower()))</div>
+<div class="line"><a id="l01444" name="l01444"></a><span class="lineno"> 1444</span>                scope.tree.signal(filename)</div>
+<div class="line"><a id="l01445" name="l01445"></a><span class="lineno"> 1445</span>                <span class="keyword">with</span> open(filename, <span class="stringliteral">&#39;w&#39;</span>, encoding=<span class="stringliteral">&quot;utf-8&quot;</span>) <span class="keyword">as</span> file:</div>
+<div class="line"><a id="l01446" name="l01446"></a><span class="lineno"> 1446</span>                    file.write(<span class="stringliteral">&quot;&quot;&quot;</span></div>
+<div class="line"><a id="l01447" name="l01447"></a><span class="lineno"> 1447</span><span class="stringliteral">MODULE MODD_UTIL_{t}</span></div>
+<div class="line"><a id="l01448" name="l01448"></a><span class="lineno"> 1448</span><span class="stringliteral">USE {m}, ONLY: {t}</span></div>
+<div class="line"><a id="l01449" name="l01449"></a><span class="lineno"> 1449</span><span class="stringliteral">CONTAINS</span></div>
+<div class="line"><a id="l01450" name="l01450"></a><span class="lineno"> 1450</span><span class="stringliteral">SUBROUTINE COPY_{t} (YD, LDCREATED)&quot;&quot;&quot;</span>.format(t=typeName,</div>
+<div class="line"><a id="l01451" name="l01451"></a><span class="lineno"> 1451</span>                                              m=scope.path.split(<span class="stringliteral">&#39;/&#39;</span>)[-2].split(<span class="stringliteral">&#39;:&#39;</span>)[1]))</div>
+<div class="line"><a id="l01452" name="l01452"></a><span class="lineno"> 1452</span> </div>
+<div class="line"><a id="l01453" name="l01453"></a><span class="lineno"> 1453</span>                    <span class="keywordflow">for</span> var <span class="keywordflow">in</span> scope.varList:</div>
+<div class="line"><a id="l01454" name="l01454"></a><span class="lineno"> 1454</span>                        <span class="keywordflow">if</span> <span class="stringliteral">&#39;TYPE(&#39;</span> <span class="keywordflow">in</span> var[<span class="stringliteral">&#39;t&#39;</span>].replace(<span class="stringliteral">&#39; &#39;</span>, <span class="stringliteral">&#39;&#39;</span>).upper():</div>
+<div class="line"><a id="l01455" name="l01455"></a><span class="lineno"> 1455</span>                            file.write(<span class="stringliteral">&quot;&quot;&quot;</span></div>
+<div class="line"><a id="l01456" name="l01456"></a><span class="lineno"> 1456</span><span class="stringliteral">USE MODD_UTIL_{t}&quot;&quot;&quot;</span>.format(t=var[<span class="stringliteral">&#39;t&#39;</span>].replace(<span class="stringliteral">&#39; &#39;</span>, <span class="stringliteral">&#39;&#39;</span>)[5:-1]))</div>
+<div class="line"><a id="l01457" name="l01457"></a><span class="lineno"> 1457</span> </div>
+<div class="line"><a id="l01458" name="l01458"></a><span class="lineno"> 1458</span>                    file.write(<span class="stringliteral">&quot;&quot;&quot;</span></div>
+<div class="line"><a id="l01459" name="l01459"></a><span class="lineno"> 1459</span><span class="stringliteral">IMPLICIT NONE</span></div>
+<div class="line"><a id="l01460" name="l01460"></a><span class="lineno"> 1460</span><span class="stringliteral">TYPE ({t}), INTENT(IN), TARGET :: YD</span></div>
+<div class="line"><a id="l01461" name="l01461"></a><span class="lineno"> 1461</span><span class="stringliteral">LOGICAL, OPTIONAL, INTENT(IN) :: LDCREATED</span></div>
+<div class="line"><a id="l01462" name="l01462"></a><span class="lineno"> 1462</span><span class="stringliteral">INTEGER :: I</span></div>
+<div class="line"><a id="l01463" name="l01463"></a><span class="lineno"> 1463</span><span class="stringliteral">LOGICAL :: LLCREATED</span></div>
+<div class="line"><a id="l01464" name="l01464"></a><span class="lineno"> 1464</span><span class="stringliteral">LLCREATED = .FALSE.</span></div>
+<div class="line"><a id="l01465" name="l01465"></a><span class="lineno"> 1465</span><span class="stringliteral">IF (PRESENT (LDCREATED)) THEN</span></div>
+<div class="line"><a id="l01466" name="l01466"></a><span class="lineno"> 1466</span><span class="stringliteral">  LLCREATED = LDCREATED</span></div>
+<div class="line"><a id="l01467" name="l01467"></a><span class="lineno"> 1467</span><span class="stringliteral">ENDIF</span></div>
+<div class="line"><a id="l01468" name="l01468"></a><span class="lineno"> 1468</span><span class="stringliteral">IF (.NOT. LLCREATED) THEN</span></div>
+<div class="line"><a id="l01469" name="l01469"></a><span class="lineno"> 1469</span><span class="stringliteral">  !$acc enter data create (YD)</span></div>
+<div class="line"><a id="l01470" name="l01470"></a><span class="lineno"> 1470</span><span class="stringliteral">  !$acc update device (YD)</span></div>
+<div class="line"><a id="l01471" name="l01471"></a><span class="lineno"> 1471</span><span class="stringliteral">ENDIF&quot;&quot;&quot;</span>.format(t=typeName))</div>
+<div class="line"><a id="l01472" name="l01472"></a><span class="lineno"> 1472</span> </div>
+<div class="line"><a id="l01473" name="l01473"></a><span class="lineno"> 1473</span>                    <span class="keywordflow">for</span> var <span class="keywordflow">in</span> scope.varList:</div>
+<div class="line"><a id="l01474" name="l01474"></a><span class="lineno"> 1474</span>                        <span class="keywordflow">if</span> var[<span class="stringliteral">&#39;allocatable&#39;</span>]:</div>
+<div class="line"><a id="l01475" name="l01475"></a><span class="lineno"> 1475</span>                            file.write(<span class="stringliteral">&quot;&quot;&quot;</span></div>
+<div class="line"><a id="l01476" name="l01476"></a><span class="lineno"> 1476</span><span class="stringliteral">IF (ALLOCATED (YD%{v})) THEN</span></div>
+<div class="line"><a id="l01477" name="l01477"></a><span class="lineno"> 1477</span><span class="stringliteral">  !$acc enter data create (YD%{v})</span></div>
+<div class="line"><a id="l01478" name="l01478"></a><span class="lineno"> 1478</span><span class="stringliteral">  !$acc update device (YD%{v})</span></div>
+<div class="line"><a id="l01479" name="l01479"></a><span class="lineno"> 1479</span><span class="stringliteral">  !$acc enter data attach (YD%{v})</span></div>
+<div class="line"><a id="l01480" name="l01480"></a><span class="lineno"> 1480</span><span class="stringliteral">ENDIF&quot;&quot;&quot;</span>.format(v=var[<span class="stringliteral">&#39;n&#39;</span>]))</div>
+<div class="line"><a id="l01481" name="l01481"></a><span class="lineno"> 1481</span>                        <span class="keywordflow">if</span> <span class="stringliteral">&#39;TYPE(&#39;</span> <span class="keywordflow">in</span> var[<span class="stringliteral">&#39;t&#39;</span>].replace(<span class="stringliteral">&#39; &#39;</span>, <span class="stringliteral">&#39;&#39;</span>).upper():</div>
+<div class="line"><a id="l01482" name="l01482"></a><span class="lineno"> 1482</span>                            <span class="keywordflow">if</span> var[<span class="stringliteral">&#39;as&#39;</span>] <span class="keywordflow">is</span> <span class="keywordflow">not</span> <span class="keywordtype">None</span> <span class="keywordflow">and</span> len(var[<span class="stringliteral">&#39;as&#39;</span>]) != 0:</div>
+<div class="line"><a id="l01483" name="l01483"></a><span class="lineno"> 1483</span>                                indexes = [<span class="stringliteral">&#39;LBOUND(YD%{v}, 1) + I - 1&#39;</span>.format(v=var[<span class="stringliteral">&#39;n&#39;</span>])]</div>
+<div class="line"><a id="l01484" name="l01484"></a><span class="lineno"> 1484</span>                                <span class="keywordflow">for</span> i <span class="keywordflow">in</span> range(len(var[<span class="stringliteral">&#39;as&#39;</span>]) - 1):</div>
+<div class="line"><a id="l01485" name="l01485"></a><span class="lineno"> 1485</span>                                    indexes.append(<span class="stringliteral">&#39;LBOUND(YD%{v}, {i})&#39;</span>.format(v=var[<span class="stringliteral">&#39;n&#39;</span>],</div>
+<div class="line"><a id="l01486" name="l01486"></a><span class="lineno"> 1486</span>                                                   i=str(i + 2)))</div>
+<div class="line"><a id="l01487" name="l01487"></a><span class="lineno"> 1487</span>                                file.write(<span class="stringliteral">&quot;&quot;&quot;</span></div>
+<div class="line"><a id="l01488" name="l01488"></a><span class="lineno"> 1488</span><span class="stringliteral">DO I=1, SIZE(YD%{v})</span></div>
+<div class="line"><a id="l01489" name="l01489"></a><span class="lineno"> 1489</span><span class="stringliteral">  CALL COPY_{t}(YD%{v}({i}), LDCREATED=.TRUE.)</span></div>
+<div class="line"><a id="l01490" name="l01490"></a><span class="lineno"> 1490</span><span class="stringliteral">ENDDO&quot;&quot;&quot;</span>.format(v=var[<span class="stringliteral">&#39;n&#39;</span>], t=var[<span class="stringliteral">&#39;t&#39;</span>].replace(<span class="stringliteral">&#39; &#39;</span>, <span class="stringliteral">&#39;&#39;</span>)[5:-1], i=<span class="stringliteral">&#39;, &#39;</span>.join(indexes)))</div>
+<div class="line"><a id="l01491" name="l01491"></a><span class="lineno"> 1491</span>                            <span class="keywordflow">else</span>:</div>
+<div class="line"><a id="l01492" name="l01492"></a><span class="lineno"> 1492</span>                                file.write(<span class="stringliteral">&quot;&quot;&quot;</span></div>
+<div class="line"><a id="l01493" name="l01493"></a><span class="lineno"> 1493</span><span class="stringliteral">CALL COPY_{t}(YD%{v}, LDCREATED=.TRUE.)&quot;&quot;&quot;</span>.format(v=var[<span class="stringliteral">&#39;n&#39;</span>], t=var[<span class="stringliteral">&#39;t&#39;</span>].replace(<span class="stringliteral">&#39; &#39;</span>, <span class="stringliteral">&#39;&#39;</span>)[5:-1]))</div>
 <div class="line"><a id="l01494" name="l01494"></a><span class="lineno"> 1494</span> </div>
 <div class="line"><a id="l01495" name="l01495"></a><span class="lineno"> 1495</span>                    file.write(<span class="stringliteral">&quot;&quot;&quot;</span></div>
-<div class="line"><a id="l01496" name="l01496"></a><span class="lineno"> 1496</span><span class="stringliteral">IMPLICIT NONE</span></div>
-<div class="line"><a id="l01497" name="l01497"></a><span class="lineno"> 1497</span><span class="stringliteral">TYPE ({t}), INTENT(IN), TARGET :: YD</span></div>
-<div class="line"><a id="l01498" name="l01498"></a><span class="lineno"> 1498</span><span class="stringliteral">LOGICAL, OPTIONAL, INTENT(IN) :: LDDELETED</span></div>
-<div class="line"><a id="l01499" name="l01499"></a><span class="lineno"> 1499</span><span class="stringliteral">INTEGER :: I</span></div>
-<div class="line"><a id="l01500" name="l01500"></a><span class="lineno"> 1500</span><span class="stringliteral">LOGICAL :: LLDELETED</span></div>
-<div class="line"><a id="l01501" name="l01501"></a><span class="lineno"> 1501</span><span class="stringliteral">LLDELETED = .FALSE.</span></div>
-<div class="line"><a id="l01502" name="l01502"></a><span class="lineno"> 1502</span><span class="stringliteral">IF (PRESENT (LDDELETED)) THEN</span></div>
-<div class="line"><a id="l01503" name="l01503"></a><span class="lineno"> 1503</span><span class="stringliteral">  LLDELETED = LDDELETED</span></div>
-<div class="line"><a id="l01504" name="l01504"></a><span class="lineno"> 1504</span><span class="stringliteral">ENDIF&quot;&quot;&quot;</span>.format(t=typeName))</div>
-<div class="line"><a id="l01505" name="l01505"></a><span class="lineno"> 1505</span> </div>
-<div class="line"><a id="l01506" name="l01506"></a><span class="lineno"> 1506</span>                    <span class="keywordflow">for</span> var <span class="keywordflow">in</span> scope.varList:</div>
-<div class="line"><a id="l01507" name="l01507"></a><span class="lineno"> 1507</span>                        <span class="keywordflow">if</span> <span class="stringliteral">&#39;TYPE(&#39;</span> <span class="keywordflow">in</span> var[<span class="stringliteral">&#39;t&#39;</span>].replace(<span class="stringliteral">&#39; &#39;</span>, <span class="stringliteral">&#39;&#39;</span>).upper():</div>
-<div class="line"><a id="l01508" name="l01508"></a><span class="lineno"> 1508</span>                            <span class="keywordflow">if</span> var[<span class="stringliteral">&#39;as&#39;</span>] <span class="keywordflow">is</span> <span class="keywordflow">not</span> <span class="keywordtype">None</span> <span class="keywordflow">and</span> len(var[<span class="stringliteral">&#39;as&#39;</span>]) != 0:</div>
-<div class="line"><a id="l01509" name="l01509"></a><span class="lineno"> 1509</span>                                indexes = [<span class="stringliteral">&#39;LBOUND(YD%{v}, 1) + I - 1&#39;</span>.format(v=var[<span class="stringliteral">&#39;n&#39;</span>])]</div>
-<div class="line"><a id="l01510" name="l01510"></a><span class="lineno"> 1510</span>                                <span class="keywordflow">for</span> i <span class="keywordflow">in</span> range(len(var[<span class="stringliteral">&#39;as&#39;</span>]) - 1):</div>
-<div class="line"><a id="l01511" name="l01511"></a><span class="lineno"> 1511</span>                                    indexes.append(<span class="stringliteral">&#39;LBOUND(YD%{v}, {i})&#39;</span>.format(v=var[<span class="stringliteral">&#39;n&#39;</span>],</div>
-<div class="line"><a id="l01512" name="l01512"></a><span class="lineno"> 1512</span>                                                   i=str(i + 2)))</div>
-<div class="line"><a id="l01513" name="l01513"></a><span class="lineno"> 1513</span>                                file.write(<span class="stringliteral">&quot;&quot;&quot;</span></div>
-<div class="line"><a id="l01514" name="l01514"></a><span class="lineno"> 1514</span><span class="stringliteral">DO I=1, SIZE(YD%{v})</span></div>
-<div class="line"><a id="l01515" name="l01515"></a><span class="lineno"> 1515</span><span class="stringliteral">  CALL WIPE_{t}(YD%{v}({i}), LDDELETED=.TRUE.)</span></div>
-<div class="line"><a id="l01516" name="l01516"></a><span class="lineno"> 1516</span><span class="stringliteral">ENDDO&quot;&quot;&quot;</span>.format(v=var[<span class="stringliteral">&#39;n&#39;</span>], t=var[<span class="stringliteral">&#39;t&#39;</span>].replace(<span class="stringliteral">&#39; &#39;</span>, <span class="stringliteral">&#39;&#39;</span>)[5:-1], i=<span class="stringliteral">&#39;, &#39;</span>.join(indexes)))</div>
-<div class="line"><a id="l01517" name="l01517"></a><span class="lineno"> 1517</span>                            <span class="keywordflow">else</span>:</div>
-<div class="line"><a id="l01518" name="l01518"></a><span class="lineno"> 1518</span>                                file.write(<span class="stringliteral">&quot;&quot;&quot;</span></div>
-<div class="line"><a id="l01519" name="l01519"></a><span class="lineno"> 1519</span><span class="stringliteral">CALL WIPE_{t}(YD%{v}, LDDELETED=.TRUE.)&quot;&quot;&quot;</span>.format(v=var[<span class="stringliteral">&#39;n&#39;</span>], t=var[<span class="stringliteral">&#39;t&#39;</span>].replace(<span class="stringliteral">&#39; &#39;</span>, <span class="stringliteral">&#39;&#39;</span>)[5:-1]))</div>
-<div class="line"><a id="l01520" name="l01520"></a><span class="lineno"> 1520</span>                        <span class="keywordflow">if</span> var[<span class="stringliteral">&#39;allocatable&#39;</span>]:</div>
-<div class="line"><a id="l01521" name="l01521"></a><span class="lineno"> 1521</span>                            file.write(<span class="stringliteral">&quot;&quot;&quot;</span></div>
-<div class="line"><a id="l01522" name="l01522"></a><span class="lineno"> 1522</span><span class="stringliteral">IF (ALLOCATED (YD%{v})) THEN</span></div>
-<div class="line"><a id="l01523" name="l01523"></a><span class="lineno"> 1523</span><span class="stringliteral">  !$acc exit data detach (YD%{v})</span></div>
-<div class="line"><a id="l01524" name="l01524"></a><span class="lineno"> 1524</span><span class="stringliteral">  !$acc exit data delete (YD%{v})</span></div>
-<div class="line"><a id="l01525" name="l01525"></a><span class="lineno"> 1525</span><span class="stringliteral">ENDIF&quot;&quot;&quot;</span>.format(v=var[<span class="stringliteral">&#39;n&#39;</span>]))</div>
-<div class="line"><a id="l01526" name="l01526"></a><span class="lineno"> 1526</span> </div>
-<div class="line"><a id="l01527" name="l01527"></a><span class="lineno"> 1527</span>                    file.write(<span class="stringliteral">&quot;&quot;&quot;</span></div>
-<div class="line"><a id="l01528" name="l01528"></a><span class="lineno"> 1528</span><span class="stringliteral">IF (.NOT. LLDELETED) THEN</span></div>
-<div class="line"><a id="l01529" name="l01529"></a><span class="lineno"> 1529</span><span class="stringliteral">  !$acc exit data delete (YD)</span></div>
-<div class="line"><a id="l01530" name="l01530"></a><span class="lineno"> 1530</span><span class="stringliteral">ENDIF</span></div>
-<div class="line"><a id="l01531" name="l01531"></a><span class="lineno"> 1531</span><span class="stringliteral">END SUBROUTINE WIPE_{t}</span></div>
-<div class="line"><a id="l01532" name="l01532"></a><span class="lineno"> 1532</span><span class="stringliteral"></span> </div>
-<div class="line"><a id="l01533" name="l01533"></a><span class="lineno"> 1533</span><span class="stringliteral">END MODULE MODD_UTIL_{t}\n&quot;&quot;&quot;</span>.format(t=typeName))</div>
+<div class="line"><a id="l01496" name="l01496"></a><span class="lineno"> 1496</span><span class="stringliteral">END SUBROUTINE COPY_{t}</span></div>
+<div class="line"><a id="l01497" name="l01497"></a><span class="lineno"> 1497</span><span class="stringliteral"></span> </div>
+<div class="line"><a id="l01498" name="l01498"></a><span class="lineno"> 1498</span><span class="stringliteral">SUBROUTINE WIPE_{t} (YD, LDDELETED)&quot;&quot;&quot;</span>.format(t=typeName))</div>
+<div class="line"><a id="l01499" name="l01499"></a><span class="lineno"> 1499</span> </div>
+<div class="line"><a id="l01500" name="l01500"></a><span class="lineno"> 1500</span>                    <span class="keywordflow">for</span> var <span class="keywordflow">in</span> scope.varList:</div>
+<div class="line"><a id="l01501" name="l01501"></a><span class="lineno"> 1501</span>                        <span class="keywordflow">if</span> <span class="stringliteral">&#39;TYPE(&#39;</span> <span class="keywordflow">in</span> var[<span class="stringliteral">&#39;t&#39;</span>].replace(<span class="stringliteral">&#39; &#39;</span>, <span class="stringliteral">&#39;&#39;</span>).upper():</div>
+<div class="line"><a id="l01502" name="l01502"></a><span class="lineno"> 1502</span>                            file.write(<span class="stringliteral">&quot;&quot;&quot;</span></div>
+<div class="line"><a id="l01503" name="l01503"></a><span class="lineno"> 1503</span><span class="stringliteral">USE MODD_UTIL_{t}&quot;&quot;&quot;</span>.format(t=var[<span class="stringliteral">&#39;t&#39;</span>].replace(<span class="stringliteral">&#39; &#39;</span>, <span class="stringliteral">&#39;&#39;</span>)[5:-1]))</div>
+<div class="line"><a id="l01504" name="l01504"></a><span class="lineno"> 1504</span> </div>
+<div class="line"><a id="l01505" name="l01505"></a><span class="lineno"> 1505</span>                    file.write(<span class="stringliteral">&quot;&quot;&quot;</span></div>
+<div class="line"><a id="l01506" name="l01506"></a><span class="lineno"> 1506</span><span class="stringliteral">IMPLICIT NONE</span></div>
+<div class="line"><a id="l01507" name="l01507"></a><span class="lineno"> 1507</span><span class="stringliteral">TYPE ({t}), INTENT(IN), TARGET :: YD</span></div>
+<div class="line"><a id="l01508" name="l01508"></a><span class="lineno"> 1508</span><span class="stringliteral">LOGICAL, OPTIONAL, INTENT(IN) :: LDDELETED</span></div>
+<div class="line"><a id="l01509" name="l01509"></a><span class="lineno"> 1509</span><span class="stringliteral">INTEGER :: I</span></div>
+<div class="line"><a id="l01510" name="l01510"></a><span class="lineno"> 1510</span><span class="stringliteral">LOGICAL :: LLDELETED</span></div>
+<div class="line"><a id="l01511" name="l01511"></a><span class="lineno"> 1511</span><span class="stringliteral">LLDELETED = .FALSE.</span></div>
+<div class="line"><a id="l01512" name="l01512"></a><span class="lineno"> 1512</span><span class="stringliteral">IF (PRESENT (LDDELETED)) THEN</span></div>
+<div class="line"><a id="l01513" name="l01513"></a><span class="lineno"> 1513</span><span class="stringliteral">  LLDELETED = LDDELETED</span></div>
+<div class="line"><a id="l01514" name="l01514"></a><span class="lineno"> 1514</span><span class="stringliteral">ENDIF&quot;&quot;&quot;</span>.format(t=typeName))</div>
+<div class="line"><a id="l01515" name="l01515"></a><span class="lineno"> 1515</span> </div>
+<div class="line"><a id="l01516" name="l01516"></a><span class="lineno"> 1516</span>                    <span class="keywordflow">for</span> var <span class="keywordflow">in</span> scope.varList:</div>
+<div class="line"><a id="l01517" name="l01517"></a><span class="lineno"> 1517</span>                        <span class="keywordflow">if</span> <span class="stringliteral">&#39;TYPE(&#39;</span> <span class="keywordflow">in</span> var[<span class="stringliteral">&#39;t&#39;</span>].replace(<span class="stringliteral">&#39; &#39;</span>, <span class="stringliteral">&#39;&#39;</span>).upper():</div>
+<div class="line"><a id="l01518" name="l01518"></a><span class="lineno"> 1518</span>                            <span class="keywordflow">if</span> var[<span class="stringliteral">&#39;as&#39;</span>] <span class="keywordflow">is</span> <span class="keywordflow">not</span> <span class="keywordtype">None</span> <span class="keywordflow">and</span> len(var[<span class="stringliteral">&#39;as&#39;</span>]) != 0:</div>
+<div class="line"><a id="l01519" name="l01519"></a><span class="lineno"> 1519</span>                                indexes = [<span class="stringliteral">&#39;LBOUND(YD%{v}, 1) + I - 1&#39;</span>.format(v=var[<span class="stringliteral">&#39;n&#39;</span>])]</div>
+<div class="line"><a id="l01520" name="l01520"></a><span class="lineno"> 1520</span>                                <span class="keywordflow">for</span> i <span class="keywordflow">in</span> range(len(var[<span class="stringliteral">&#39;as&#39;</span>]) - 1):</div>
+<div class="line"><a id="l01521" name="l01521"></a><span class="lineno"> 1521</span>                                    indexes.append(<span class="stringliteral">&#39;LBOUND(YD%{v}, {i})&#39;</span>.format(v=var[<span class="stringliteral">&#39;n&#39;</span>],</div>
+<div class="line"><a id="l01522" name="l01522"></a><span class="lineno"> 1522</span>                                                   i=str(i + 2)))</div>
+<div class="line"><a id="l01523" name="l01523"></a><span class="lineno"> 1523</span>                                file.write(<span class="stringliteral">&quot;&quot;&quot;</span></div>
+<div class="line"><a id="l01524" name="l01524"></a><span class="lineno"> 1524</span><span class="stringliteral">DO I=1, SIZE(YD%{v})</span></div>
+<div class="line"><a id="l01525" name="l01525"></a><span class="lineno"> 1525</span><span class="stringliteral">  CALL WIPE_{t}(YD%{v}({i}), LDDELETED=.TRUE.)</span></div>
+<div class="line"><a id="l01526" name="l01526"></a><span class="lineno"> 1526</span><span class="stringliteral">ENDDO&quot;&quot;&quot;</span>.format(v=var[<span class="stringliteral">&#39;n&#39;</span>], t=var[<span class="stringliteral">&#39;t&#39;</span>].replace(<span class="stringliteral">&#39; &#39;</span>, <span class="stringliteral">&#39;&#39;</span>)[5:-1], i=<span class="stringliteral">&#39;, &#39;</span>.join(indexes)))</div>
+<div class="line"><a id="l01527" name="l01527"></a><span class="lineno"> 1527</span>                            <span class="keywordflow">else</span>:</div>
+<div class="line"><a id="l01528" name="l01528"></a><span class="lineno"> 1528</span>                                file.write(<span class="stringliteral">&quot;&quot;&quot;</span></div>
+<div class="line"><a id="l01529" name="l01529"></a><span class="lineno"> 1529</span><span class="stringliteral">CALL WIPE_{t}(YD%{v}, LDDELETED=.TRUE.)&quot;&quot;&quot;</span>.format(v=var[<span class="stringliteral">&#39;n&#39;</span>], t=var[<span class="stringliteral">&#39;t&#39;</span>].replace(<span class="stringliteral">&#39; &#39;</span>, <span class="stringliteral">&#39;&#39;</span>)[5:-1]))</div>
+<div class="line"><a id="l01530" name="l01530"></a><span class="lineno"> 1530</span>                        <span class="keywordflow">if</span> var[<span class="stringliteral">&#39;allocatable&#39;</span>]:</div>
+<div class="line"><a id="l01531" name="l01531"></a><span class="lineno"> 1531</span>                            file.write(<span class="stringliteral">&quot;&quot;&quot;</span></div>
+<div class="line"><a id="l01532" name="l01532"></a><span class="lineno"> 1532</span><span class="stringliteral">IF (ALLOCATED (YD%{v})) THEN</span></div>
+<div class="line"><a id="l01533" name="l01533"></a><span class="lineno"> 1533</span><span class="stringliteral">  !$acc exit data detach (YD%{v})</span></div>
+<div class="line"><a id="l01534" name="l01534"></a><span class="lineno"> 1534</span><span class="stringliteral">  !$acc exit data delete (YD%{v})</span></div>
+<div class="line"><a id="l01535" name="l01535"></a><span class="lineno"> 1535</span><span class="stringliteral">ENDIF&quot;&quot;&quot;</span>.format(v=var[<span class="stringliteral">&#39;n&#39;</span>]))</div>
+<div class="line"><a id="l01536" name="l01536"></a><span class="lineno"> 1536</span> </div>
+<div class="line"><a id="l01537" name="l01537"></a><span class="lineno"> 1537</span>                    file.write(<span class="stringliteral">&quot;&quot;&quot;</span></div>
+<div class="line"><a id="l01538" name="l01538"></a><span class="lineno"> 1538</span><span class="stringliteral">IF (.NOT. LLDELETED) THEN</span></div>
+<div class="line"><a id="l01539" name="l01539"></a><span class="lineno"> 1539</span><span class="stringliteral">  !$acc exit data delete (YD)</span></div>
+<div class="line"><a id="l01540" name="l01540"></a><span class="lineno"> 1540</span><span class="stringliteral">ENDIF</span></div>
+<div class="line"><a id="l01541" name="l01541"></a><span class="lineno"> 1541</span><span class="stringliteral">END SUBROUTINE WIPE_{t}</span></div>
+<div class="line"><a id="l01542" name="l01542"></a><span class="lineno"> 1542</span><span class="stringliteral"></span> </div>
+<div class="line"><a id="l01543" name="l01543"></a><span class="lineno"> 1543</span><span class="stringliteral">END MODULE MODD_UTIL_{t}\n&quot;&quot;&quot;</span>.format(t=typeName))</div>
 </div>
 </div>
 <div class="ttc" id="aclasspyfortool_1_1applications_1_1Applications_html"><div class="ttname"><a href="classpyfortool_1_1applications_1_1Applications.html">pyfortool.applications.Applications</a></div><div class="ttdef"><b>Definition</b> <a href="applications_8py_source.html#l00060">applications.py:60</a></div></div>
@@ -1662,7 +1672,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="ttc" id="aclasspyfortool_1_1applications_1_1Applications_html_a21bb4babb470c1ccf7d9f4639fc6adb7"><div class="ttname"><a href="classpyfortool_1_1applications_1_1Applications.html#a21bb4babb470c1ccf7d9f4639fc6adb7">pyfortool.applications.Applications.deleteRoutineCallsMesoNHGPU</a></div><div class="ttdeci">deleteRoutineCallsMesoNHGPU(self, simplify=True)</div><div class="ttdef"><b>Definition</b> <a href="applications_8py_source.html#l00305">applications.py:305</a></div></div>
 <div class="ttc" id="aclasspyfortool_1_1applications_1_1Applications_html_a313f62e8a40521234d75ab3bdab6c8bd"><div class="ttname"><a href="classpyfortool_1_1applications_1_1Applications.html#a313f62e8a40521234d75ab3bdab6c8bd">pyfortool.applications.Applications.addDrHook</a></div><div class="ttdeci">addDrHook(self)</div><div class="ttdef"><b>Definition</b> <a href="applications_8py_source.html#l00263">applications.py:263</a></div></div>
 <div class="ttc" id="aclasspyfortool_1_1applications_1_1Applications_html_a880004ba6f5cc1e9e7a020ca2f595320"><div class="ttname"><a href="classpyfortool_1_1applications_1_1Applications.html#a880004ba6f5cc1e9e7a020ca2f595320">pyfortool.applications.Applications.removePHYEXUnusedLocalVar</a></div><div class="ttdeci">removePHYEXUnusedLocalVar(self, excludeList=None, simplify=False)</div><div class="ttdef"><b>Definition</b> <a href="applications_8py_source.html#l00885">applications.py:885</a></div></div>
-<div class="ttc" id="aclasspyfortool_1_1applications_1_1Applications_html_a8b2540c9902916d4c5c66160500e8e3e"><div class="ttname"><a href="classpyfortool_1_1applications_1_1Applications.html#a8b2540c9902916d4c5c66160500e8e3e">pyfortool.applications.Applications.buildACCTypeHelpers</a></div><div class="ttdeci">buildACCTypeHelpers(self)</div><div class="ttdef"><b>Definition</b> <a href="applications_8py_source.html#l01425">applications.py:1425</a></div></div>
+<div class="ttc" id="aclasspyfortool_1_1applications_1_1Applications_html_a8b2540c9902916d4c5c66160500e8e3e"><div class="ttname"><a href="classpyfortool_1_1applications_1_1Applications.html#a8b2540c9902916d4c5c66160500e8e3e">pyfortool.applications.Applications.buildACCTypeHelpers</a></div><div class="ttdeci">buildACCTypeHelpers(self)</div><div class="ttdef"><b>Definition</b> <a href="applications_8py_source.html#l01435">applications.py:1435</a></div></div>
 <div class="ttc" id="aclasspyfortool_1_1applications_1_1Applications_html_a8dac033a14bfd2c66be258919222fea0"><div class="ttname"><a href="classpyfortool_1_1applications_1_1Applications.html#a8dac033a14bfd2c66be258919222fea0">pyfortool.applications.Applications.removeIJDim</a></div><div class="ttdeci">removeIJDim(self, stopScopes, parserOptions=None, wrapH=False, simplify=False)</div><div class="ttdef"><b>Definition</b> <a href="applications_8py_source.html#l00618">applications.py:618</a></div></div>
 <div class="ttc" id="aclasspyfortool_1_1applications_1_1Applications_html_a95fe29f92f472ddb9756ed83e695ee5e"><div class="ttname"><a href="classpyfortool_1_1applications_1_1Applications.html#a95fe29f92f472ddb9756ed83e695ee5e">pyfortool.applications.Applications.deleteBudgetDDH</a></div><div class="ttdeci">deleteBudgetDDH(self, simplify=False)</div><div class="ttdef"><b>Definition</b> <a href="applications_8py_source.html#l00288">applications.py:288</a></div></div>
 <div class="ttc" id="aclasspyfortool_1_1applications_1_1Applications_html_a995c41461dc421a6f3c1dfc9a4c7e595"><div class="ttname"><a href="classpyfortool_1_1applications_1_1Applications.html#a995c41461dc421a6f3c1dfc9a4c7e595">pyfortool.applications.Applications.deleteNonColumnCallsPHYEX</a></div><div class="ttdeci">deleteNonColumnCallsPHYEX(self, simplify=False)</div><div class="ttdef"><b>Definition</b> <a href="applications_8py_source.html#l00114">applications.py:114</a></div></div>
