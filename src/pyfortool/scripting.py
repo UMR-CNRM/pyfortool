@@ -575,6 +575,9 @@ def updateParserOpenACC(parser):
     gOpenACC.add_argument('--buildACCTypeHelpers', default=False, action='store_true',
                           help='build module files containing helpers to copy user ' +
                                'type structures')
+    gOpenACC.add_argument('--allocatetoHIP', default=False, action='store_true',
+                          help='convert (DE)ALLOCATE to (DE)ALLOCATE_HIP on variables only sent ' +
+                          'to the GPU via acc enter data copyin/create (for GPU AMD MI250X)')
 
 
 def updateParserChecks(parser):
@@ -861,6 +864,8 @@ def applyTransfoOpenACC(pft, arg, args, stopScopes):  # pylint: disable=unused-a
         pft.addACCRoutineSeq(stopScopes)
     elif arg == '--removeACC':
         pft.removeACC()
+    elif arg == '--allocatetoHIP':
+        pft.allocatetoHIP()
 
 
 def applyTransfoCosmetics(pft, arg, args):

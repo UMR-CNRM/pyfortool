@@ -130,6 +130,38 @@ class Openacc():
             parent.remove(elem)
 
     @debugDecor
+    def allocatetoHIP(self):
+        """
+        Convert (DE)ALLOCATE to (DE)ALLOCATE_HIP on variables only sent to the GPU via
+        !$acc enter data copyin
+        or
+        !$acc enter data create
+        This is necessary for using the managed memory with GPU AMD MI250X (on Adastra)
+        """
+        scopes = self.getScopes()
+        for scope in scopes:
+            varsToChange = []
+            comments = scope.findall('.//{*}C')
+            for coms in comments:
+                if '!$acc enter data' in coms.text:
+                    # !$acc enter data copyin( XRRS, XRRS_CLD ) ==> [' XRRS, XRRS_CLD ']
+                    varsToChange.extend(coms.text.split(')')[0].split('(')[1:][0].split(','))
+            for i, var in enumerate(varsToChange):
+                varsToChange[i] = var.replace(' ', '')
+
+            allocateStmts = scope.findall('.//{*}allocate-stmt')
+            allocateStmts.extend(scope.findall('.//{*}deallocate-stmt'))
+            for stmt in allocateStmts:
+                allocateArg = stmt.find('.//{*}arg-spec')
+                varName = allocateArg.find('.//{*}arg/{*}named-E/{*}N/{*}n')
+                if varName.text in varsToChange:
+                    stmt.text = "MNH_HIP" + stmt.text  # Done for allocate and deallocate statements
+                    if tag(stmt) == 'allocate-stmt':
+                        parensR = allocateArg.find('.//{*}parens-R')
+                        parensR.text = ','
+                        allocateArg.tail = ''
+
+    @debugDecor
     def addACCData(self):
         """
         1) Add after declaration:
