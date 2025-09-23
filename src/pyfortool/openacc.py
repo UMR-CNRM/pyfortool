@@ -148,17 +148,23 @@ class Openacc():
                     varsToChange.extend(coms.text.split(')')[0].split('(')[1:][0].split(','))
             for i, var in enumerate(varsToChange):
                 varsToChange[i] = var.replace(' ', '')
-
+            if len(varsToChange) > 0:
+                scope.addModuleVar([(scope.path,'hipfort', None),\
+                                   (scope.path,'hipfort_check', None),\
+                                       (scope.path,'iso_c_binding', None)])
             allocateStmts = scope.findall('.//{*}allocate-stmt')
             allocateStmts.extend(scope.findall('.//{*}deallocate-stmt'))
             for stmt in allocateStmts:
                 allocateArg = stmt.find('.//{*}arg-spec')
-                varName = allocateArg.find('.//{*}arg/{*}named-E/{*}N/{*}n')
-                if varName.text in varsToChange:
-                    stmt.text = "MNH_HIP" + stmt.text  # Done for allocate and deallocate statements
+                if alltext(allocateArg).split('(')[0] in varsToChange:
+                    stmt.text = "CALL MNH_HIP" + stmt.text  # For allocate/deallocate statements
                     if tag(stmt) == 'allocate-stmt':
                         parensR = allocateArg.find('.//{*}parens-R')
-                        parensR.text = ','
+                        if parensR is None:
+                            arrayR = allocateArg.find('.//{*}array-R')
+                            arrayR.text = ','
+                        else:
+                            parensR.text = ','
                         allocateArg.tail = ''
 
     @debugDecor
