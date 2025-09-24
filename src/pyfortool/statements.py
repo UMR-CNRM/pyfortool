@@ -1187,6 +1187,27 @@ class Statements():
                              ).format(self.getFileName()))
 
     @debugDecor
+    def checkEmptyParensInCall(self, mustRaise=False):
+        """
+        :param mustRaise: True to raise
+        Issue a logging.warning if some call arguments are arrays with empty parens
+        Example: CALL FOO(A(:))
+        If mustRaise is True, issue a logging.error instead and raise an error
+        """
+        ok = True
+        log = logging.error if mustRaise else logging.warning
+        for sslt in self.findall('.//{*}call-stmt/{*}arg-spec/{*}arg/{*}named-E/' +
+                                 '{*}R-LT/{*}array-R/{*}section-subscript-LT'):
+            if all(alltext(ss) == ':' for ss in sslt.findall('./{*}section-subscript')):
+                arg = self.getParent(sslt, 3)
+                log(("The call argument {} is an array with empty parens, in file '{}'"
+                     ).format(alltext(arg).replace('\n', ' \\n '), self.getFileName()))
+                ok = False
+        if not ok and mustRaise:
+            raise PYFTError(("There are call arguments which are arrays " +
+                             "with empty parens in file '{}'").format(self.getFileName()))
+
+    @debugDecor
     def insertStatement(self, stmt, first):
         """
         Insert a statement to be executed first (or last)

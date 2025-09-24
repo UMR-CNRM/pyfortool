@@ -356,7 +356,7 @@ class Variables():
         log = logging.error if mustRaise else logging.warning
         for var in self.varList:
             if var['arg'] and var['i'] is None:
-                log(("The dummy argument {} as no INTENT attribute, in " +
+                log(("The dummy argument {} has no INTENT attribute, in " +
                     "file '{}'").format(var['n'], self.getFileName()))
                 ok = False
         if not ok and mustRaise:

@@ -1,0 +1,6 @@
+!#PYFT transfo: --checkEmptyParensInCall Err
+
+SUBROUTINE EMPTYPARENS_KO
+REAL :: A2(1, 1)
+CALL FOO1(A2(:, :))
+END SUBROUTINE 

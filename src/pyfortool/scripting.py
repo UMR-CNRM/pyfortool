@@ -597,6 +597,9 @@ def updateParserChecks(parser):
                          help='Send a warning or raise an error if some local '
                               'variables are unused (excluding variables needed '
                               'for mnh_expand directives).')
+    gChecks.add_argument('--checkEmptyParensInCall', choices={'Warn', 'Err'}, default=None,
+                         help='Send a warning or raise an error if a call argument is an '
+                              'array with empty parens.')
 
 
 def updateParserStatements(parser):
@@ -921,6 +924,8 @@ def applyTransfoChecks(pft, arg, args):
         pft.checkUnusedLocalVar(args.checkUnusedLocalVar == 'Err')
     elif arg == '--checkPHYEXUnusedLocalVar':
         pft.checkPHYEXUnusedLocalVar(args.checkPHYEXUnusedLocalVar == 'Err')
+    elif arg == '--checkEmptyParensInCall':
+        pft.checkEmptyParensInCall(args.checkEmptyParensInCall == 'Err')
 
 
 def applyTransfoStatements(pft, arg, args, simplify):
