@@ -209,6 +209,9 @@ an error message and raise an exception.
 **--checkOpInCall=Warn\|Err** if a call argument is an operation, issue a warning
 if option is 'Warn'; otherwise issue an error message and raise an exception.
 
+**--checkEmptyParensInCall=Warn\|Err** if a call argument is an array with empty parens,
+ issue a warning if option is 'Warn'; otherwise issue an error message and raise an exception.
+
 **--checkUnusedLocalVar=Warn\|Err** if a local variable is unused, issue a warning
 if option is 'Warn'; otherwise issue an error message and raise an exception.
 
