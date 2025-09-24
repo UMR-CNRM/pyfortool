@@ -303,7 +303,7 @@ def nonCode(elem):
     :param e: element
     :return: True if e is non code (comment, text...)
     """
-    return tag(elem) in {'cnt', 'C', 'cpp'}
+    return tag(elem) in {'cnt', 'C', 'cpp', 'filename', 'S'}
 
 
 def isExecutable(elem):
