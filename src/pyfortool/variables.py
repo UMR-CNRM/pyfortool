@@ -916,10 +916,8 @@ class Variables():
                              var['pointer'] or var['result'])]:
                 # For all automatic arrays, which are not argument, not allocatable,
                 # not pointer and not result
-                if var['init'] is not None:
-                    logging.warning("An array (%s) has an initial value, it can't be " +
-                                    "processed by modifyAutomaticArrays.)", var['n'])
-                else:
+                if var['init'] is None:
+                    # Array with initial value can't be processed by modifyAutomaticArrays
                     varListToTransform.append(var)
             # A variable can make use of the size of another variable in its declaration statement
             # We order the variables to not insert the declaration of a variable before the

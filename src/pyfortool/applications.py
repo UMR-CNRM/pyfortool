@@ -294,6 +294,7 @@ class Applications():
         self.removeCall('BUDGET_STORE_INIT_PHY', simplify=simplify)
         self.removeCall('BUDGET_STORE_END_PHY', simplify=simplify)
         self.removeCall('BUDGET_STORE_ADD_PHY', simplify=simplify)
+        self.removeCall('TBUDGETS', simplify=simplify)
         flagTorm = ['BUCONF%LBUDGET_SV', 'BUCONF%LBUDGET_TKE', 'BUCONF%LBUDGET_TH',
                     'BUCONF%LBUDGET_RI', 'BUCONF%LBUDGET_RV', 'BUCONF%LBUDGET_RG',
                     'BUCONF%LBUDGET_RS', 'BUCONF%LBUDGET_RH', 'BUCONF%LBUDGET_RR',
@@ -1437,7 +1438,10 @@ class Applications():
         build module files containing helpers to copy user type structures
         """
         for scope in self.getScopes():
-            if scope.path.split('/')[-1].split(':')[0] == 'type':
+            attribute = scope.find('./{*}T-stmt/{*}attribute')
+            if scope.path.split('/')[-1].split(':')[0] == 'type' and \
+               (attribute is None or alltext(attribute).upper() != 'ABSTRACT'):
+                print(tag(scope), scope.find('./{*}T-stmt/{*}attribute'))
                 typeName = scope.path.split('/')[-1].split(':')[1]
                 filename = os.path.join(os.path.dirname(scope.getFileName()),
                                         "modd_util_{t}.F90".format(t=typeName.lower()))
