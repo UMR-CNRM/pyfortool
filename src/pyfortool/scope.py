@@ -205,13 +205,15 @@ class PYFTscope(ElementView, Variables, Cosmetics, Applications, Statements, Cpp
                   'sub': 'subroutine-stmt',
                   'type': 'T-stmt',
                   'prog': 'program-stmt',
-                  'interface': 'interface-stmt'}
+                  'interface': 'interface-stmt',
+                  'submodule': 'submodule-stmt'}
     SCOPE_CONSTRUCT = {'module': 'program-unit',
                        'func': 'program-unit',
                        'sub': 'program-unit',
                        'type': 'T-construct',
                        'prog': 'program-unit',
-                       'interface': 'interface-construct'}
+                       'interface': 'interface-construct',
+                       'submodule': 'program-unit'}
 
     def __init__(self, xml, scopePath='/', parentScope=None,
                  enableCache=False, tree=None, excludeContains=False):
@@ -334,6 +336,8 @@ class PYFTscope(ElementView, Variables, Cosmetics, Applications, Statements, Cpp
         if tag(node) == 'T-stmt':
             # To not capture the extension name in "TYPE, EXTENDS(FOO) :: FOO2"
             nodeN = node.find('./{*}T-N/{*}N')
+        elif tag(node) == 'submodule-stmt':
+            nodeN = node.find('./{*}submodule-module-N')
         else:
             nodeN = node.find('.//{*}N')
             if nodeN is not None and nodeN.find('.//{*}N') is not None:
