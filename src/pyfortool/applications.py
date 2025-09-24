@@ -1059,6 +1059,7 @@ class Applications():
                     scope.addModuleVar([(scope.path, 'MODI_BITREP', None)])
 
     @debugDecor
+    @updateVarList
     def shumanFUNCtoCALL(self):
         """
         Convert all calling of functions and gradient present in shumansGradients
