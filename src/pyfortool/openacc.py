@@ -3,8 +3,9 @@ This module implements the Openacc class containing the methods relative to open
 """
 
 import re
+import copy
 
-from pyfortool.util import debugDecor, n2name, alltext, tag
+from pyfortool.util import debugDecor, n2name, alltext, tag, PYFTError, tostring
 from pyfortool.expressions import createElem, createExpr
 
 
@@ -142,30 +143,70 @@ class Openacc():
         for scope in scopes:
             varsToChange = []
             comments = scope.findall('.//{*}C')
+            pointers = scope.findall('.//{*}pointer-a-stmt')
+                
             for coms in comments:
-                if '!$acc enter data' in coms.text:
+                if '!$acc enter data' in coms.text and coms.text.count('!') == 1:
                     # !$acc enter data copyin( XRRS, XRRS_CLD ) ==> [' XRRS, XRRS_CLD ']
                     varsToChange.extend(coms.text.split(')')[0].split('(')[1:][0].split(','))
+
+            if len(pointers) > 0:
+                for i, var in enumerate(varsToChange):
+                    for pointer in pointers:
+                        if alltext(pointer.find('.//{*}E-1/{*}named-E')) == var:
+                            varsToChange[i] = alltext(pointer.find('.//{*}E-2/{*}named-E'))
+
             for i, var in enumerate(varsToChange):
                 varsToChange[i] = var.replace(' ', '')
+                
             if len(varsToChange) > 0:
-                scope.addModuleVar([(scope.path,'hipfort', None),\
-                                   (scope.path,'hipfort_check', None),\
-                                       (scope.path,'iso_c_binding', None)])
+                scope.addModuleVar([(scope.path,'MODE_MNH_HIPFORT', None)])
+                
             allocateStmts = scope.findall('.//{*}allocate-stmt')
             allocateStmts.extend(scope.findall('.//{*}deallocate-stmt'))
             for stmt in allocateStmts:
+                varsChecking = ''
                 allocateArg = stmt.find('.//{*}arg-spec')
-                if alltext(allocateArg).split('(')[0] in varsToChange:
+                arrayR = allocateArg.find('.//{*}array-R')
+                if arrayR is None:
+                    # Particular case of multiple parensR such as Tjacobi(level)%r(nz)
+                    parensR = allocateArg.findall('.//{*}parens-R')
+                    if len(parensR) == 2:
+                        # It's a component case
+                        varsChecking =  alltext(allocateArg).split('%')[0]+'%' + \
+                            alltext(allocateArg).split('%')[1].split('(')[0]
+                    elif len(parensR) == 1:
+                        # Tjacobi(level)%Sr case where Sr is a type itself
+                        if allocateArg.find('.//{*}component-R'): 
+                            varsChecking = alltext(allocateArg)
+                        else:
+                            varsChecking = alltext(allocateArg).split('(')[0]
+                else:
+                    varsChecking = alltext(allocateArg).split('(')[0]
+
+                if varsChecking in varsToChange:
+                    removeLastComma = True
                     stmt.text = "CALL MNH_HIP" + stmt.text  # For allocate/deallocate statements
                     if tag(stmt) == 'allocate-stmt':
-                        parensR = allocateArg.find('.//{*}parens-R')
-                        if parensR is None:
-                            arrayR = allocateArg.find('.//{*}array-R')
-                            arrayR.text = ','
+                        # Replace upper:lower into upper,lower
+                        lowerBounds = allocateArg.findall('.//{*}lower-bound')
+                        if lowerBounds is not None:
+                            for l in lowerBounds:
+                                l.tail = ','
+                        arrayR = allocateArg.find('.//{*}array-R')
+                        if arrayR is None:
+                            # Particular case of multiple parensR such as Tjacobi(level)%r(nz)
+                            parensR = allocateArg.findall('.//{*}parens-R')
+                            if len(parensR) > 1:
+                                parensR[-1].text = ','
+                            else:
+                                if allocateArg.find('.//{*}component-R'):
+                                    removeLastComma = False
+                                else:
+                                    parensR[0].text = ','
                         else:
-                            parensR.text = ','
-                        allocateArg.tail = ''
+                            arrayR.text = ','
+                        if removeLastComma: allocateArg.tail = ''
 
     @debugDecor
     def addACCData(self):
