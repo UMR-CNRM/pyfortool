@@ -205,13 +205,15 @@ class PYFTscope(ElementView, Variables, Cosmetics, Applications, Statements, Cpp
                   'sub': 'subroutine-stmt',
                   'type': 'T-stmt',
                   'prog': 'program-stmt',
-                  'interface': 'interface-stmt'}
+                  'interface': 'interface-stmt',
+                  'submodule': 'submodule-stmt'}
     SCOPE_CONSTRUCT = {'module': 'program-unit',
                        'func': 'program-unit',
                        'sub': 'program-unit',
                        'type': 'T-construct',
                        'prog': 'program-unit',
-                       'interface': 'interface-construct'}
+                       'interface': 'interface-construct',
+                       'submodule': 'program-unit'}
 
     def __init__(self, xml, scopePath='/', parentScope=None,
                  enableCache=False, tree=None, excludeContains=False):
@@ -331,12 +333,16 @@ class PYFTscope(ElementView, Variables, Cosmetics, Applications, Statements, Cpp
         :param node: program-unit node
         :return: name
         """
-        # If there was no interface bloc, code could be n2name(node[0].find('.//{*}N'))
-        # But (as of 7 Jul 2023), interface have two nested N
-        nodeN = node.find('.//{*}N')
-        if nodeN is not None and nodeN.find('.//{*}N') is not None:
-            # As of 7 Jul 2023, this is the case for interface statements
-            nodeN = nodeN.find('.//{*}N')
+        if tag(node) == 'T-stmt':
+            # To not capture the extension name in "TYPE, EXTENDS(FOO) :: FOO2"
+            nodeN = node.find('./{*}T-N/{*}N')
+        elif tag(node) == 'submodule-stmt':
+            nodeN = node.find('./{*}submodule-module-N')
+        else:
+            nodeN = node.find('.//{*}N')
+            if nodeN is not None and nodeN.find('.//{*}N') is not None:
+                # As of 7 Jul 2023, this is the case for interface statements
+                nodeN = nodeN.find('.//{*}N')
         if nodeN is not None:
             name = n2name(nodeN).upper()
         else:
