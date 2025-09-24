@@ -1071,13 +1071,16 @@ class Applications():
                 dimSuffRoutine = '2D'  # e.g. in turb_ver_dyn_flux : MZM(ZCOEFS(:,IKB))
                 dimSuffVar = '1D'
                 mnhExpandArrayIndexes = 'JIJ=IIJB:IIJE'
+                localVariables = ['JIJ']
             elif zshugradwkDim == 2:
                 dimSuffVar = '2D'
                 if 'D%NKT' in dimWorkingVar:
                     mnhExpandArrayIndexes = 'JIJ=IIJB:IIJE,JK=1:IKT'
+                    localVariables = ['JIJ', 'JK']
                 elif 'D%NIT' in dimWorkingVar and 'D%NJT' in dimWorkingVar:
                     # only found in turb_hor*
                     mnhExpandArrayIndexes = 'JI=1:IIT,JJ=1:IJT'
+                    localVariables = ['JI', 'JJ']
                     dimSuffRoutine = '2D'  # e.g. in turb_hor : MZM(PRHODJ(:,:,IKB))
                 else:
                     # raise PYFTError('mnhExpandArrayIndexes construction case ' +
@@ -1085,13 +1088,15 @@ class Applications():
                     #                 "dimWorkingVar = ' + dimWorkingVar)
                     dimSuffRoutine = ''
                     mnhExpandArrayIndexes = 'JIJ=IIJB:IIJE,JK=1:IKT'
+                    localVariables = ['JIJ', 'JK']
             elif zshugradwkDim == 3:  # case for turb_hor 3D variables
                 dimSuffVar = '3D'
                 mnhExpandArrayIndexes = 'JI=1:IIT,JJ=1:IJT,JK=1:IKT'
+                localVariables = ['JI', 'JJ', 'JK']
             else:
                 raise PYFTError('Shuman func to routine conversion not implemented ' +
                                 'for 4D+ dimensions variables')
-            return dimSuffRoutine, dimSuffVar, mnhExpandArrayIndexes
+            return dimSuffRoutine, dimSuffVar, mnhExpandArrayIndexes, localVariables
 
         def FUNCtoROUTINE(scope, stmt, itemFuncN, localShumansCount, inComputeStmt,
                           nbzshugradwk, zshugradwkDim, dimWorkingVar):
@@ -1111,7 +1116,9 @@ class Applications():
             :return callStmt: the new CALL to the routines statement
             :return computeStmt: the a-stmt computation statement if there was an operation
                                  in the calling function in stmt
+            :return localVariables: list of local variables needed for the mnh_expand directive
             """
+            localVariables = []
             # Function name, parent and grandParent
             parStmt = scope.getParent(stmt)
             parItemFuncN = scope.getParent(itemFuncN)  # <N><n>MZM</N></n>
@@ -1140,7 +1147,7 @@ class Applications():
             scope.removeArrayParenthesesInNode(workingItem)
             computeStmt, remaningArgsofFunc = [], ''
             dimSuffVar = str(zshugradwkDim) + 'D'
-            dimSuffRoutine, dimSuffVar, mnhExpandArrayIndexes = \
+            dimSuffRoutine, dimSuffVar, mnhExpandArrayIndexes , _ = \
                 getDimsAndMNHExpandIndexes(zshugradwkDim, dimWorkingVar)
             if len(opE) > 0:
                 nbzshugradwk += 1
@@ -1158,7 +1165,7 @@ class Applications():
                         dimWorkingVar += dims[1] + ','
                     dimWorkingVar = dimWorkingVar[:-1] + ') ::'
 
-                dimSuffRoutine, dimSuffVar, mnhExpandArrayIndexes = \
+                dimSuffRoutine, dimSuffVar, mnhExpandArrayIndexes, localVariables = \
                     getDimsAndMNHExpandIndexes(zshugradwkDim, dimWorkingVar)
 
                 # Insert the directives and the compute statement
@@ -1216,7 +1223,7 @@ class Applications():
             if not scope.varList.findVar(workingVar):
                 scope.addVar([[scope.path, workingVar, dimWorkingVar + workingVar, None]])
 
-            return callStmt, computeStmt, nbzshugradwk, newFuncName
+            return callStmt, computeStmt, nbzshugradwk, newFuncName, localVariables
 
         shumansGradients = {'MZM': 0, 'MXM': 0, 'MYM': 0, 'MZF': 0, 'MXF': 0, 'MYF': 0,
                             'DZM': 0, 'DXM': 0, 'DYM': 0, 'DZF': 0, 'DXF': 0, 'DYF': 0,
@@ -1232,6 +1239,7 @@ class Applications():
                and 'interface' not in scope.path:
                 # Init : look for all a-stmt and call-stmt which contains a shuman or
                 # gradients function, and save it into a list foundStmtandCalls
+                localVariablesToAdd = set()
                 foundStmtandCalls, computeStmtforParenthesis = {}, []
                 aStmt = scope.findall('.//{*}a-stmt')
                 callStmts = scope.findall('.//{*}call-stmt')
@@ -1357,7 +1365,8 @@ class Applications():
                                                            nbzshugradwk, arrayDim,
                                                            dimWorkingVar)
                                     (newCallStmt, newComputeStmt,
-                                     nbzshugradwk, newFuncName) = result
+                                     nbzshugradwk, newFuncName, lv) = result
+                                    localVariablesToAdd.update(lv)
                                     subToInclude.add(newFuncName)
                                     # Update the list of elements to check if there are still
                                     # remaining function to convert within the new call-stmt
@@ -1397,8 +1406,9 @@ class Applications():
                     if tag(foundStmtandCalls[stmt][0]) != 'call-stmt':
                         # get mnhExpandArrayIndexes
                         # Here dimSuffRoutine, dimSuffVar are not used
-                        dimSuffRoutine, dimSuffVar, mnhExpandArrayIndexes = \
+                        dimSuffRoutine, dimSuffVar, mnhExpandArrayIndexes, lv = \
                             getDimsAndMNHExpandIndexes(arrayDim, dimWorkingVar)
+                        localVariablesToAdd.update(lv)
 
                         parStmt = scope.getParent(foundStmtandCalls[stmt][0])
                         indexForCall = list(parStmt).index(foundStmtandCalls[stmt][0])
@@ -1429,6 +1439,15 @@ class Applications():
                             if re.match(r'G[XYZ]_' + kind + r'_[MUVW]{1,2}_PHY', sub):
                                 moduleVars.append((scope.path, f'MODE_GRADIENT_{kind}_PHY', sub))
                 scope.addModuleVar(moduleVars)
+
+                # Add the missing local variables
+                for varName in localVariablesToAdd:
+                    if not scope.varList.findVar(varName):
+                        var = {'as': [], 'asx': [],
+                               'n': varName, 'i': None, 't': 'INTEGER', 'arg': False,
+                               'use': False, 'opt': False, 'allocatable': False,
+                               'parameter': False, 'init': None, 'scopePath': scope.path}
+                        scope.addVar([[scope.path, var['n'], scope.varSpec2stmt(var), None]])
 
     @debugDecor
     @noParallel
