@@ -264,71 +264,28 @@ if [ ${force} -eq 1 -o $(get_statuses "${SHA}" | grep -w "${context}" | wc -l) -
 
   cd "${WORKDIR}/pyfortool"
 
-  #Check 'version' consistency
-  log 1 "Check 'version' consistency"
-  set +e
-  vinit=$(python3 -c "$(grep __version__ src/pyfortool/__init__.py); print(__version__)")
-  retval1=$?
-  vtag=$(git describe --abbrev=0)
-  retval2=$?
-  set -e
-  if [ $retval1 -ne 0 -o $retval2 -ne 0 ]; then
-    ret=1
-    log 0 "  'version' consistency: ERROR"
-  else
-    if [ "${vinit}" == "${vtag}" ]; then
-      log 0 "  'version' consistency: OK"
-    else
+  for check in version pylint flake8 examples; do
+    if [ "${check}" == "version" ]; then
+      message="'version' consistency"
+    elif [ "${check}" == "pylint" ]; then
+      message="pylint score"
+    elif [ "${check}" == "flake8" ]; then
+      message="flake8 score"
+    elif [ "${check}" == "examples" ]; then
+      message="test examples"
+    fi
+    log 1 "Check ${message}"
+    set +e
+    bin/checks.sh -s $check
+    retval=$?
+    set -e
+    if [ $retval -ne 0 ]; then
       ret=1
-      log 0 "  'version' consistency: problem"
-    fi
-  fi
-
-  #Check pylint
-  log 1 "Check pylint"
-  set +e
-  score=$(pylint -d R0912,C0209,R0915,R1702,C0302,R0913,R0914,W1202,R0904,R0902 \
-          --persistent=n -f parseable src/pyfortool/ | \
-          grep 'Your code has been rated at' | cut -d\  -f 7 | cut -d/ -f 1)
-  set -e
-  if [ $(python3 -c "print(0 if ${score} >= 9.8 else 1)") -ne 0 ]; then
-    ret=1
-    log 0 "  pylint score: problem"
-  else
-    log 0 "  pylint score: OK"
-  fi
-
-  #Check flake8
-  log 1 "Check flake8"
-  set +e
-  score=$(flake8 src/pyfortool/ | wc -l)
-  retval=$?
-  set -e
-  if [ $retval -ne 0 ]; then
-    ret=1
-    if [ ${score} -ne 0 ]; then
-      log 0 "  flake8 score: problem"
+      log 0 "  ${message}: problem"
     else
-      log 0 "  flake8 score: ERROR"
+      log 0 "  ${message}: OK"
     fi
-  else
-    log 0 "  flake8 score: OK"
-  fi
-
-  #Test examples
-  cd examples
-  log 1 "Test examples"
-  set +e
-  ./tests.sh 2>&1 > /dev/null
-  retval=$?
-  set -e
-  if [ ${retval} -ne 0 ]; then
-    ret=1
-    log 0 "  test examples: problem"
-  else
-    log 0 "  test examples: OK"
-  fi
-  set -e
+  done
 
   if [ $ret -eq 0 ]; then
     log 0 "global result: OK"
