@@ -69,7 +69,6 @@ while [ -n "$1" ]; do
   esac
   shift
 done
-[ "${models}" == "" ] && models="ial mesonh testprogs lmdz"
 
 [ ! -d ${WORKDIR} ] && mkdir -p ${WORKDIR}
 
@@ -266,24 +265,24 @@ if [ ${force} -eq 1 -o $(get_statuses "${SHA}" | grep -w "${context}" | wc -l) -
 
   for check in version pylint flake8 examples; do
     if [ "${check}" == "version" ]; then
-      message="'version' consistency"
+      check_message="'version' consistency"
     elif [ "${check}" == "pylint" ]; then
-      message="pylint score"
+      check_message="pylint score"
     elif [ "${check}" == "flake8" ]; then
-      message="flake8 score"
+      check_message="flake8 score"
     elif [ "${check}" == "examples" ]; then
-      message="test examples"
+      check_message="test examples"
     fi
-    log 1 "Check ${message}"
+    log 1 "Check ${check_message}"
     set +e
     bin/checks.sh -s $check
     retval=$?
     set -e
     if [ $retval -ne 0 ]; then
       ret=1
-      log 0 "  ${message}: problem"
+      log 0 "  ${check_message}: problem"
     else
-      log 0 "  ${message}: OK"
+      log 0 "  ${check_message}: OK"
     fi
   done
 
