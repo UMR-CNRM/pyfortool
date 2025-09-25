@@ -1148,7 +1148,7 @@ class Applications():
             scope.removeArrayParenthesesInNode(workingItem)
             computeStmt, remaningArgsofFunc = [], ''
             dimSuffVar = str(zshugradwkDim) + 'D'
-            dimSuffRoutine, dimSuffVar, mnhExpandArrayIndexes , _ = \
+            dimSuffRoutine, dimSuffVar, mnhExpandArrayIndexes, _ = \
                 getDimsAndMNHExpandIndexes(zshugradwkDim, dimWorkingVar)
             if len(opE) > 0:
                 nbzshugradwk += 1
