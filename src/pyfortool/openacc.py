@@ -146,9 +146,15 @@ class Openacc():
             pointers = scope.findall('.//{*}pointer-a-stmt')
                 
             for coms in comments:
-                if '!$acc enter data' in coms.text and coms.text.count('!') == 1:
-                    # !$acc enter data copyin( XRRS, XRRS_CLD ) ==> [' XRRS, XRRS_CLD ']
-                    varsToChange.extend(coms.text.split(')')[0].split('(')[1:][0].split(','))
+                if ('!$acc enter data' in coms.text or '!$acc exit data' in coms.text ) \
+                    and coms.text.count('!') == 1:
+                    if coms.text.count('(') == 1:
+                        # !$acc enter data copyin( XRRS, XRRS_CLD ) ==> [' XRRS, XRRS_CLD ']
+                        varsToChange.extend(coms.text.split(')')[0].split('(')[1:][0].split(','))
+                    else:
+                        #$acc exit data delete(xb_mg(level,m)%st) ==> xb_mg(level,m)%st
+                        variableName= re.search(r'\(.*\)',coms.text).group(0)[1:-1]
+                        varsToChange.insert(0,variableName)
 
             if len(pointers) > 0:
                 for i, var in enumerate(varsToChange):
@@ -164,6 +170,7 @@ class Openacc():
                 
             allocateStmts = scope.findall('.//{*}allocate-stmt')
             allocateStmts.extend(scope.findall('.//{*}deallocate-stmt'))
+
             for stmt in allocateStmts:
                 varsChecking = ''
                 allocateArg = stmt.find('.//{*}arg-spec')
@@ -181,6 +188,8 @@ class Openacc():
                             varsChecking = alltext(allocateArg)
                         else:
                             varsChecking = alltext(allocateArg).split('(')[0]
+                    elif len(parensR) == 0:
+                        varsChecking = alltext(allocateArg).split('(')[0]
                 else:
                     varsChecking = alltext(allocateArg).split('(')[0]
 
