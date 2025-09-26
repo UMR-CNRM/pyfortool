@@ -529,6 +529,8 @@ def updateParserApplications(parser):
                                     'or "MESONH"). Needs the --stopScopes argument for AROME.')
     gApplications.add_argument('--addIncludes', default=False, action='store_true',
                                help='Add .h includes in the file and remove the INCLUDE statement')
+    gApplications.add_argument('--addSubmodulePHYEX', default=False, action='store_true',
+                               help='Add SUBMODULE and INTERFACE of subroutines in PHYEX')
     gApplications.add_argument('--mnhExpand', default=False, action='store_true',
                                help='Apply the mnh_expand directives with DO loops')
     gApplications.add_argument('--mnhExpandConcurrent', default=False, action='store_true',
@@ -573,6 +575,9 @@ def updateParserOpenACC(parser):
     gOpenACC.add_argument('--buildACCTypeHelpers', default=False, action='store_true',
                           help='build module files containing helpers to copy user ' +
                                'type structures')
+    gOpenACC.add_argument('--allocatetoHIP', default=False, action='store_true',
+                          help='convert (DE)ALLOCATE to (DE)ALLOCATE_HIP on variables only sent ' +
+                          'to the GPU via acc enter data copyin/create (for GPU AMD MI250X)')
 
 
 def updateParserChecks(parser):
@@ -804,6 +809,8 @@ def applyTransfoApplications(pft, arg, args, simplify, parserOptions, stopScopes
         pft.addMPPDB_CHECKS()
     elif arg == '--addPrints':
         pft.addMPPDB_CHECKS(printsMode=True)
+    elif arg == '--addSubmodulePHYEX':
+        pft.addSubmodulePHYEX()
     # mnhExpand must be before inlineContainedSubroutines as inlineContainedSubroutines
     # can change variable names used by mnh_expand directives
     assert not (args.mnhExpand and args.mnhExpandConcurrent), \
@@ -860,6 +867,8 @@ def applyTransfoOpenACC(pft, arg, args, stopScopes):  # pylint: disable=unused-a
         pft.addACCRoutineSeq(stopScopes)
     elif arg == '--removeACC':
         pft.removeACC()
+    elif arg == '--allocatetoHIP':
+        pft.allocatetoHIP()
 
 
 def applyTransfoCosmetics(pft, arg, args):
