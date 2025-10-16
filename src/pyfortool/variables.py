@@ -1005,9 +1005,11 @@ class Variables():
 
     @staticmethod
     @debugDecor
-    def varSpec2stmt(varSpec):
+    def varSpec2stmt(varSpec, implicitDeclaration=False):
         """
         :param varSpec: a variable description, same form as the items return by self.varList
+        :param implicitDeclaration: True if the variable may contain implicit declaration
+        (e.g. outside of PHYEX)
         :return: the associated declarative statement
         """
         if varSpec['use'] is not False:
@@ -1026,8 +1028,9 @@ class Variables():
                         dl.append(el[0] + ':' + el[1])
                 if (varSpec['allocatable'] and not all(d == ':' for d in dl)) or \
                    (any(d == ':' for d in dl) and not varSpec['allocatable']):
-                    raise PYFTError('Missing dim are mandatory and allowed ' +
-                                    'only for allocatable arrays')
+                    if not implicitDeclaration:
+                        raise PYFTError('Missing dim are mandatory and allowed ' +
+                                        'only for allocatable arrays')
                 stmt += ', '.join(dl) + ')'
                 if varSpec['allocatable']:
                     stmt += ", ALLOCATABLE"

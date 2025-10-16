@@ -98,7 +98,7 @@ class Applications():
                 prog.append(copy.deepcopy(use))
             prog.append(createElem('implicit-none-stmt', text='IMPLICIT NONE', tail='\n'))
             for var in [var for var in scope.varList if var['arg'] or var['result']]:
-                prog.append(createExpr(self.varSpec2stmt(var))[0])
+                prog.append(createExpr(self.varSpec2stmt(var, True))[0])
             for external in scope.findall('./{*}external-stmt'):
                 prog.append(copy.deepcopy(external))
             end = copy.deepcopy(scope[-1])
@@ -312,6 +312,155 @@ class Applications():
         :param simplify : if True, remove variables that are now unused
         """
         self.setFalseIfStmt('OCND2', simplify=simplify)
+
+    @debugDecor
+    def addSubmodulePHYEX(self):
+        """
+        Convert MODULE to SUBMODULE statements and add INTERFACE of SUBROUTINEs of PHYEX
+        ==> Applied only on MODE_
+        ==> Not applied :
+            - if an INTERFACE already exists
+            - if no subroutine is present in the module
+            - to CONTAINS routines
+        1) Create interface statement if any
+        2) Add subroutines declaration (with MODULE statement)
+        3) Add SUBMODULE statements and convert SUBROUTINE to MODULE SUBROUTINE statements
+        """
+        scopes = self.getScopes()
+        modScope = scopes[0]  # Module is the first scope
+        # Save the module for later duplications
+        oldModNode = self.find('.//{*}program-unit')
+        modNode = copy.deepcopy(self.find('.//{*}program-unit'))
+
+        interfaceStmt = self.findall('.//{*}interface-stmt')
+        subStmt = self.findall('.//{*}subroutine-stmt')
+
+        if modScope.path.split('/')[-1].split(':')[1][:4] == 'MODE' and \
+                len(interfaceStmt) == 0 and len(subStmt) > 0:
+            moduleName = modScope.path.split('/')[-1].split(':')[1][:]
+            # Creation of the module MODE_XXX with subroutines interfaces
+            newMod = createElem('program-unit', text='MODULE ' + moduleName, tail='\n')
+            newMod.text += '\n'
+            newMod.append(createElem('implicit-none-stmt', text='IMPLICIT NONE', tail='\n'))
+            interfaceStmt = createElem('interface-construct')
+            interfaceStmt.append(createElem('interface-stmt', text='INTERFACE', tail='\n'))
+            interfaceStmt.append(createElem('end-interface-stmt', text='END INTERFACE', tail='\n'))
+            newMod.append(interfaceStmt)
+
+            # For all subroutines/functions, copy the declaration into the interface construct
+            subsModified = []
+            for scope in scopes[1:]:
+                # exclude contained subroutines (sub:sub)
+                if sum('sub' in s for s in scope.path.split('/')) == 1:
+                    subsModified.append(scope.path.split('/')[-1].split(':')[1][:])
+                    subroutineDecl = createElem('module-unit')
+                    # MODULE SUBROUTINE statement
+                    subroutineStmt = copy.deepcopy(scope[0])
+                    declType = subroutineStmt.text  # FUNCTION or SUBROUTINE
+                    prefix = createElem('prefix')
+                    prefix.text = 'MODULE'
+                    subroutineStmt.text = ''
+                    subroutineStmt.insert(0, prefix)
+                    prefix.tail = ' ' + declType
+                    subroutineDecl.append(subroutineStmt)
+                    # USE statements
+                    for use in scope.findall('.//{*}use-stmt'):
+                        subroutineDecl.append(copy.deepcopy(use))
+                    subroutineDecl.append(createElem('implicit-none-stmt', text='IMPLICIT NONE',
+                                                     tail='\n'))
+                    # Variables declarations
+                    for var in [var for var in scope.varList if var['arg'] or var['result']]:
+                        subroutineDecl.append(createExpr(self.varSpec2stmt(var, True))[0])
+                    for external in scope.findall('./{*}external-stmt'):
+                        subroutineDecl.append(copy.deepcopy(external))
+                    if 'SUBROUTINE' in declType:
+                        endStmt = createElem('end-subroutine-stmt')
+                        declName = subroutineStmt.find('./{*}subroutine-N/{*}N/{*}n').text
+                    elif 'FUNCTION' in declType:
+                        endStmt = createElem('end-function-stmt')
+                        declName = subroutineStmt.find('./{*}function-N/{*}N/{*}n').text
+                    else:
+                        raise PYFTError('declType in addSubmodulePHYEX not handled')
+
+                    endStmt.text = 'END ' + declType + declName + '\n'
+                    subroutineDecl.append(endStmt)
+                    interfaceStmt.insert(1, subroutineDecl)
+
+            # Add the new module with interfaces only
+            newMod.append(createElem('end-program-unit', text='END MODULE ' + moduleName,
+                                     tail='\n'))
+            self[0].insert(0, newMod)
+
+            # Convert the old modules statement to SUBMODULE (ancestor) SubmoduleName
+            progUnit = createElem('program-unit')
+            # <f:submodule-stmt>SUBMODULE (
+            # 	<f:parent-identifier>
+            # 		<f:ancestor-module-N>
+            # 			<f:n>MODE_SHUMAN_PHY</f:n>
+            # 		</f:ancestor-module-N>
+            # 	</f:parent-identifier>)
+            # 	<f:submodule-module-N>
+            # 		<f:n>SMODE_SHUMAN_PHY</f:n>
+            # 	</f:submodule-module-N>
+            # </f:submodule-stmt>
+            submoduleStmt = createElem('submodule-stmt', text='SUBMODULE (')
+            parentId = createElem('parent-identifier')
+            parentId.tail = ') '
+            ancestorModule = createElem('ancestor-module-N')
+            ancestorModuleN = createElem('n', text=moduleName)
+            ancestorModule.append(ancestorModuleN)
+            parentId.append(ancestorModule)
+            submoduleStmt.append(parentId)
+            submoduleModule = createElem('submodule-module-N')
+            submoduleModuleN = createElem('n', text='S' + moduleName, tail='\n')
+            submoduleModule.append(submoduleModuleN)
+            submoduleStmt.append(submoduleModule)
+            progUnit.append(submoduleStmt)
+
+            # END SUBMODULE statement
+            endSubmoduleStmt = createElem('end-submodule-stmt', text='END SUBMODULE ')
+            submoduleN = createElem('submodule-N')
+            submoduleNN = createElem('N')
+            submoduleNNn = createElem('n', text='S' + moduleName, tail='\n')
+            submoduleNN.append(submoduleNNn)
+            submoduleN.append(submoduleNN)
+            endSubmoduleStmt.append(submoduleN)
+
+            progUnit.append(endSubmoduleStmt)
+            progUnit.append(createElem('end-program-unit'))
+
+            # Copy the module content into the submodules
+            #   Remove end-module-stmt (and module-stmt is not)
+            modStmt = modNode.find('.//{*}module-stmt')
+            modEndStmt = modNode.find('.//{*}end-module-stmt')
+            modNode.remove(modStmt)
+            modNode.remove(modEndStmt)
+
+            #   Remove possible PUBLIC and PRIVATE statements
+            publicStmts = modNode.findall('.//{*}public-stmt')
+            privateStmts = modNode.findall('.//{*}private-stmt')
+            if len(publicStmts) > 0:
+                for publicStmt in publicStmts:
+                    modNode.remove(publicStmt)
+            if len(privateStmts) > 0:
+                for privateStmt in privateStmts:
+                    modNode.remove(privateStmt)
+
+            #   And Change the subroutine statements to module-subroutine statements
+            subroutines = modNode.findall('.//{*}subroutine-stmt')
+            for sub in subroutines:
+                if sub.find('.//{*}N/{*}n').text in subsModified:
+                    prefix = createElem('prefix')
+                    prefix.text = 'MODULE'
+                    sub.text = ''
+                    sub.insert(0, prefix)
+                    prefix.tail = ' SUBROUTINE '
+            progUnit.insert(1, modNode)
+
+            self.insert(1, progUnit)
+
+            # Remove the old module
+            self.remove(oldModNode)
 
     @debugDecor
     def addMPPDB_CHECKS(self, printsMode=False):
