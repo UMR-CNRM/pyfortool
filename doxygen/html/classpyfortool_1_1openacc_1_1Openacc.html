@@ -101,6 +101,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a0f779e9080068c31e2b5d643520ba6db"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5a4b1dd4c5122286ac8f51e86634d7aa" id="r_a5a4b1dd4c5122286ac8f51e86634d7aa"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpyfortool_1_1openacc_1_1Openacc.html#a5a4b1dd4c5122286ac8f51e86634d7aa">craybyPassDOCONCURRENT</a> (self)</td></tr>
 <tr class="separator:a5a4b1dd4c5122286ac8f51e86634d7aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a524831a3f8f905dfab4b25ec5074e511" id="r_a524831a3f8f905dfab4b25ec5074e511"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpyfortool_1_1openacc_1_1Openacc.html#a524831a3f8f905dfab4b25ec5074e511">allocatetoHIP</a> (self)</td></tr>
+<tr class="separator:a524831a3f8f905dfab4b25ec5074e511"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8003345abfff916f885f70fe23ce83be" id="r_a8003345abfff916f885f70fe23ce83be"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpyfortool_1_1openacc_1_1Openacc.html#a8003345abfff916f885f70fe23ce83be">addACCData</a> (self)</td></tr>
 <tr class="separator:a8003345abfff916f885f70fe23ce83be"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1b41f1f929824774ddba577764ea5a09" id="r_a1b41f1f929824774ddba577764ea5a09"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpyfortool_1_1openacc_1_1Openacc.html#a1b41f1f929824774ddba577764ea5a09">addACCRoutineSeq</a> (self, stopScopes)</td></tr>
@@ -131,7 +133,7 @@ Public Member Functions</h2></td></tr>
 2) Add at the end of the routine
 !$acc end data
 </pre> 
-<p class="definition">Definition at line <a class="el" href="openacc_8py_source.html#l00133">133</a> of file <a class="el" href="openacc_8py_source.html">openacc.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="openacc_8py_source.html#l00221">221</a> of file <a class="el" href="openacc_8py_source.html">openacc.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -190,7 +192,7 @@ Here is the call graph for this function:</div>
 <pre class="fragment">Adds the '!$acc routine (&lt;name&gt;) seq' directive
 :param stopScopes: scope paths where we stop to add the directive
 </pre> 
-<p class="definition">Definition at line <a class="el" href="openacc_8py_source.html#l00182">182</a> of file <a class="el" href="openacc_8py_source.html">openacc.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="openacc_8py_source.html#l00270">270</a> of file <a class="el" href="openacc_8py_source.html">openacc.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -217,6 +219,58 @@ Here is the call graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="1339,113,1373,113,1373,118,1339,118"/>
 <area shape="poly" title=" " alt="" coords="1386,100,1352,100,1352,95,1386,95"/>
 <area shape="poly" title=" " alt="" coords="1462,96,1453,86,1458,76,1476,69,1507,67,1546,71,1557,76,1560,82,1556,85,1553,80,1545,77,1507,73,1477,75,1461,80,1458,85,1466,92"/>
+</map>
+</div>
+
+</div>
+</div>
+<a id="a524831a3f8f905dfab4b25ec5074e511" name="a524831a3f8f905dfab4b25ec5074e511"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a524831a3f8f905dfab4b25ec5074e511">&#9670;&#160;</a></span>allocatetoHIP()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">pyfortool.openacc.Openacc.allocatetoHIP </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>self</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<pre class="fragment">Convert (DE)ALLOCATE to (DE)ALLOCATE_HIP on variables only sent to the GPU via
+!$acc enter data copyin
+or
+!$acc enter data create
+This is necessary for using the managed memory with GPU AMD MI250X (on Adastra)
+</pre> 
+<p class="definition">Definition at line <a class="el" href="openacc_8py_source.html#l00133">133</a> of file <a class="el" href="openacc_8py_source.html">openacc.py</a>.</p>
+<div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="classpyfortool_1_1openacc_1_1Openacc_a524831a3f8f905dfab4b25ec5074e511_cgraph.png" border="0" usemap="#aclasspyfortool_1_1openacc_1_1Openacc_a524831a3f8f905dfab4b25ec5074e511_cgraph" alt=""/></div>
+<map name="aclasspyfortool_1_1openacc_1_1Openacc_a524831a3f8f905dfab4b25ec5074e511_cgraph" id="aclasspyfortool_1_1openacc_1_1Openacc_a524831a3f8f905dfab4b25ec5074e511_cgraph">
+<area shape="rect" title=" " alt="" coords="5,110,296,135"/>
+<area shape="rect" href="classpyfortool_1_1scope_1_1PYFTscope.html#a54ea793c9bd82d8f4e568d1e46bdf6df" title=" " alt="" coords="344,103,563,143"/>
+<area shape="poly" title=" " alt="" coords="296,120,330,120,330,125,296,125"/>
+<area shape="rect" href="classpyfortool_1_1scope_1_1PYFTscope.html#ac3277b30653d4e1636a745dcc588c41e" title=" " alt="" coords="625,45,823,85"/>
+<area shape="poly" title=" " alt="" coords="548,100,615,86,616,91,549,105"/>
+<area shape="rect" href="classpyfortool_1_1scope_1_1PYFTscope.html#a0fe49a63a383a5bfbf0925e2ad34f4f4" title=" " alt="" coords="611,110,837,135"/>
+<area shape="poly" title=" " alt="" coords="563,120,597,120,597,125,563,125"/>
+<area shape="rect" href="classpyfortool_1_1tree_1_1Tree.html#a867c6bc9b5efaf15a8d74f3dc3c8f9ec" title=" " alt="" coords="638,159,810,185"/>
+<area shape="poly" title=" " alt="" coords="563,140,641,154,640,159,562,145"/>
+<area shape="rect" href="classpyfortool_1_1scope_1_1PYFTscope.html#a1bd9f5a2cbe350bcc35b2a154000ed2d" title=" " alt="" coords="913,5,1111,45"/>
+<area shape="poly" title=" " alt="" coords="823,49,899,38,899,44,824,54"/>
+<area shape="rect" href="classpyfortool_1_1scope_1_1ElementView.html#ad9a0aab987c0596f0178bfeb6f33f619" title=" " alt="" coords="885,94,1139,119"/>
+<area shape="poly" title=" " alt="" coords="824,77,910,89,909,95,823,82"/>
+<area shape="poly" title=" " alt="" coords="967,96,957,86,962,76,981,69,1012,67,1053,72,1064,77,1067,83,1063,85,1060,81,1052,77,1012,73,982,75,965,80,962,85,970,92"/>
+<area shape="rect" href="classpyfortool_1_1scope_1_1ElementView.html#a7a1db7bc1c5100e0e9b813edf25d9239" title=" " alt="" coords="1187,87,1403,127"/>
+<area shape="poly" title=" " alt="" coords="1139,104,1173,104,1173,109,1139,109"/>
+<area shape="rect" href="classpyfortool_1_1scope_1_1ElementView.html#a1dbaf54daab3dba3a8d608ab623ca736" title=" " alt="" coords="1451,94,1691,119"/>
+<area shape="poly" title=" " alt="" coords="1403,113,1437,113,1437,118,1403,118"/>
+<area shape="poly" title=" " alt="" coords="1450,100,1416,100,1416,95,1450,95"/>
+<area shape="poly" title=" " alt="" coords="1526,96,1517,86,1522,76,1540,69,1571,67,1610,71,1621,76,1624,82,1620,85,1617,80,1609,77,1571,73,1541,75,1525,80,1522,85,1530,92"/>
 </map>
 </div>
 
