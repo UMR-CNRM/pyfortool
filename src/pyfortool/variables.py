@@ -1010,7 +1010,7 @@ class Variables():
     def varSpec2stmt(varSpec, implicitDeclaration=False):
         """
         :param varSpec: a variable description, same form as the items return by self.varList
-        :param implicitDeclaration: True if the variable may contain implicit declaration 
+        :param implicitDeclaration: True if the variable may contain implicit declaration
         (e.g. outside of PHYEX)
         :return: the associated declarative statement
         """

@@ -3,9 +3,8 @@ This module implements the Openacc class containing the methods relative to open
 """
 
 import re
-import copy
 
-from pyfortool.util import debugDecor, n2name, alltext, tag, PYFTError, tostring
+from pyfortool.util import debugDecor, n2name, alltext, tag
 from pyfortool.expressions import createElem, createExpr
 
 
@@ -144,17 +143,17 @@ class Openacc():
             varsToChange = []
             comments = scope.findall('.//{*}C')
             pointers = scope.findall('.//{*}pointer-a-stmt')
-                
+
             for coms in comments:
-                if ('!$acc enter data' in coms.text or '!$acc exit data' in coms.text ) \
-                    and coms.text.count('!') == 1:
+                if ('!$acc enter data' in coms.text or '!$acc exit data' in coms.text) \
+                        and coms.text.count('!') == 1:
                     if coms.text.count('(') == 1:
                         # !$acc enter data copyin( XRRS, XRRS_CLD ) ==> [' XRRS, XRRS_CLD ']
                         varsToChange.extend(coms.text.split(')')[0].split('(')[1:][0].split(','))
                     else:
-                        #$acc exit data delete(xb_mg(level,m)%st) ==> xb_mg(level,m)%st
-                        variableName= re.search(r'\(.*\)',coms.text).group(0)[1:-1]
-                        varsToChange.insert(0,variableName)
+                        # $acc exit data delete(xb_mg(level,m)%st) ==> xb_mg(level,m)%st
+                        variableName = re.search(r'\(.*\)', coms.text).group(0)[1:-1]
+                        varsToChange.insert(0, variableName)
 
             if len(pointers) > 0:
                 for i, var in enumerate(varsToChange):
@@ -164,10 +163,10 @@ class Openacc():
 
             for i, var in enumerate(varsToChange):
                 varsToChange[i] = var.replace(' ', '')
-                
+
             if len(varsToChange) > 0:
-                scope.addModuleVar([(scope.path,'MODE_MNH_HIPFORT', None)])
-                
+                scope.addModuleVar([(scope.path, 'MODE_MNH_HIPFORT', None)])
+
             allocateStmts = scope.findall('.//{*}allocate-stmt')
             allocateStmts.extend(scope.findall('.//{*}deallocate-stmt'))
 
@@ -180,11 +179,11 @@ class Openacc():
                     parensR = allocateArg.findall('.//{*}parens-R')
                     if len(parensR) == 2:
                         # It's a component case
-                        varsChecking =  alltext(allocateArg).split('%')[0]+'%' + \
+                        varsChecking = alltext(allocateArg).split('%')[0]+'%' + \
                             alltext(allocateArg).split('%')[1].split('(')[0]
                     elif len(parensR) == 1:
                         # Tjacobi(level)%Sr case where Sr is a type itself
-                        if allocateArg.find('.//{*}component-R'): 
+                        if allocateArg.find('.//{*}component-R'):
                             varsChecking = alltext(allocateArg)
                         else:
                             varsChecking = alltext(allocateArg).split('(')[0]
@@ -200,8 +199,8 @@ class Openacc():
                         # Replace upper:lower into upper,lower
                         lowerBounds = allocateArg.findall('.//{*}lower-bound')
                         if lowerBounds is not None:
-                            for l in lowerBounds:
-                                l.tail = ','
+                            for bounds in lowerBounds:
+                                bounds.tail = ','
                         arrayR = allocateArg.find('.//{*}array-R')
                         if arrayR is None:
                             # Particular case of multiple parensR such as Tjacobi(level)%r(nz)
@@ -215,7 +214,8 @@ class Openacc():
                                     parensR[0].text = ','
                         else:
                             arrayR.text = ','
-                        if removeLastComma: allocateArg.tail = ''
+                        if removeLastComma:
+                            allocateArg.tail = ''
 
     @debugDecor
     def addACCData(self):
