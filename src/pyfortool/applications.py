@@ -1025,8 +1025,8 @@ class Applications():
         result = []
         # Look for variables needed for the mnh_expand directives
         for node in self.findall('.//{*}C'):
-            if node.text.startswith('!$mnh_expand_array(') or \
-               node.text.startswith('!$mnh_expand_where('):
+            if node.text.startswith('!$mnh_expand_array') or \
+               node.text.startswith('!$mnh_expand_where'):
                 elems = node.text.split('(')[1].split(')')[0].split(',')
                 result.extend([v.strip().upper() for v in [e.split('=')[0] for e in elems]])
         return result
