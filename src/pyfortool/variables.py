@@ -147,10 +147,12 @@ class VarList():
                     if init is not None:
                         init = alltext(init)
 
+                    argorder = dummyArgs.index(varName) if varName in dummyArgs else None
                     result.append({'as': asList if len(as0List) == 0 else as0List,
                                    'asx': asxList if len(asx0List) == 0 else asx0List,
                                    'n': varName, 'i': iSpec, 't': tSpec,
                                    'arg': varName in dummyArgs,
+                                   'argorder': argorder,
                                    'use': False, 'opt': optSpec, 'allocatable': allocatable,
                                    'parameter': parameter, 'pointer': pointer,
                                    'result': funcResultName == varName,
@@ -163,6 +165,7 @@ class VarList():
                     varName = n2name(var.find('.//{*}N'))
                     result.append({'as': None, 'asx': None,
                                    'n': varName, 'i': None, 't': None, 'arg': False,
+                                   'argorder': None,
                                    'use': module, 'opt': None, 'allocatable': None,
                                    'parameter': None, 'pointer': None, 'result': None,
                                    'init': None, 'scopePath': scope.path})
