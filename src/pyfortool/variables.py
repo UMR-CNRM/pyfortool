@@ -915,6 +915,7 @@ class Variables():
             for var in [var for var in scope.varList
                         if var['as'] is not None and
                         len(var['as']) > 0 and
+                        'CHARACTER' not in var['t'] and
                         not (var['arg'] or var['allocatable'] or
                              var['pointer'] or var['result'])]:
                 # For all automatic arrays, which are not argument, not allocatable,

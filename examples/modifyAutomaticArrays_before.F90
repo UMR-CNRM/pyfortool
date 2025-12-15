@@ -189,6 +189,8 @@ REAL, DIMENSION(MERGE(KPROMA,0,OELEC)) :: ZLATHAM_IAGGS
 INTEGER, DIMENSION(KPROMA) :: I1,I2 ! Used to replace the COUNT and PACK intrinsics on variables
 INTEGER, DIMENSION(KSIZE) :: I1TOT, I2TOT ! Used to replace the COUNT and PACK intrinsics
 !
+CHARACTER(LEN=3), DIMENSION(12) :: YSHAPE_NAME ! Name of the shape corresponding to
+!
 INTEGER :: IC, JMICRO
 LOGICAL :: LLSIGMA_RC, LL_AUCV_ADJU
 !
