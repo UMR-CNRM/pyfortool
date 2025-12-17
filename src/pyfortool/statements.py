@@ -244,6 +244,7 @@ class Statements():
             table = directive.split('(')[1].split(')')[0].split(',')
             table = {c.split('=')[0]: c.split('=')[1].split(':')
                      for c in table}  # ordered since python 3.7
+            table.pop('OPENACC', None)  # OPENACC='gang' in MNH v6.0 mnh_expand
             if directive.lstrip(' ').startswith('!$mnh_expand'):
                 kind = directive[13:].lstrip(' ').split('(')[0].strip()
             else:
