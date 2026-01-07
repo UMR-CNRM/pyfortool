@@ -214,6 +214,22 @@ class Applications():
                             for elcompoE2 in compoE2:
                                 convertOneType(elcompoE2, newVarList, scope)
 
+            # For converted variables (= newVarList), look for possible affection
+            # If found, add an extra affection for the new variables
+            for aStmt in scope.findall('.//{*}a-stmt'):
+                # statements in which the component-R is in E1
+                if len(aStmt[0].findall('.//{*}component-R')) > 0:
+                    # E1 where the conversion will be applied
+                    for el in newVarList.items():
+                        if alltext(aStmt[0]) == el[1][1]:
+                            stmtAffect = createExpr(el[0] + "=" + alltext(aStmt[0]))
+                            par = scope.getParent(aStmt)
+                            iExtra = 0
+                            if tag(par[list(par).index(aStmt)+1]) == 'C':
+                                iExtra = 1
+                            par.insert(list(par).index(aStmt)+1+iExtra, stmtAffect[0])
+                            break
+
             # Add the declaration of the new variables and their affectation
             for el, var in newVarList.items():
                 if el[0].upper() == 'X' or el[0].upper() == 'P' or el[0].upper() == 'Z':
