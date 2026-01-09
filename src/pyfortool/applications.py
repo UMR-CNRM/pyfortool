@@ -126,6 +126,29 @@ class Applications():
             if nb > 0:
                 self.removeVar([(v['scopePath'], v['n']) for v in self.varList
                                 if v['n'] == subroutine], simplify=simplify)
+    @debugDecor
+    def removeExtraDOinMnhDoConcurrent(self):
+        """
+        in Meso-NH, !$mnh_do_concurrent directive works only if no DO/ENDDO is written within.
+        DO loop instructions have been written in PHYEX common code within these directives
+        to be able to be run in offline and IAL models without MNH_EXPAND scripts.
+        This function removes these DO and END DO.
+        It is used only when shipping the PHYEX version integrated into MesoNH.
+        """
+        scopes = self.getScopes()
+        for scope in scopes:
+            comments = scope.findall('.//{*}C')
+            for coms in comments:
+                if ('!$mnh_do_concurrent' in coms.text):
+                    par = scope.getParent(coms)
+                    icom = list(par).index(coms)
+                    mainDoConstruct = par[icom+1] 
+                    allDoConstructs = mainDoConstruct.findall('.//{*}do-construct')
+                    allDoConstructs.append(mainDoConstruct)
+                    for doConstruct in allDoConstructs:
+                        for el in doConstruct:
+                            if tag(el) == 'do-stmt' or tag(el) == 'end-do-stmt':
+                                doConstruct.remove(el)
 
     @debugDecor
     def convertTypesInCompute(self):

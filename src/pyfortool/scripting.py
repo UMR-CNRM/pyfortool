@@ -552,6 +552,8 @@ def updateParserApplications(parser):
                                     'structure in compute statement for optimization issue ')
     gApplications.add_argument('--buildModi', default=False, action='store_true',
                                help='Builds the corresponding modi_ file')
+    gApplications.add_argument('--removeExtraDOinMnhDoConcurrent', default=False, action='store_true',
+                               help='Remove DO and ENDDO instructions inside !$mnh_do_concurrent')
 
 
 def updateParserOpenACC(parser):
@@ -847,6 +849,8 @@ def applyTransfoApplications(pft, arg, args, simplify, parserOptions, stopScopes
         pft.buildModi()
     elif arg == '--splitModuleRoutineFile':
         pft.splitModuleRoutineFile()
+    elif arg == '--removeExtraDOinMnhDoConcurrent':
+        pft.removeExtraDOinMnhDoConcurrent()
 
 
 def applyTransfoOpenACC(pft, arg, args, stopScopes):  # pylint: disable=unused-argument
