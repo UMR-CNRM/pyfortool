@@ -552,7 +552,8 @@ def updateParserApplications(parser):
                                     'structure in compute statement for optimization issue ')
     gApplications.add_argument('--buildModi', default=False, action='store_true',
                                help='Builds the corresponding modi_ file')
-    gApplications.add_argument('--removeExtraDOinMnhDoConcurrent', default=False, action='store_true',
+    gApplications.add_argument('--removeExtraDOinMnhDoConcurrent', default=False,
+                               action='store_true',
                                help='Remove DO and ENDDO instructions inside !$mnh_do_concurrent')
 
 

@@ -126,6 +126,7 @@ class Applications():
             if nb > 0:
                 self.removeVar([(v['scopePath'], v['n']) for v in self.varList
                                 if v['n'] == subroutine], simplify=simplify)
+
     @debugDecor
     def removeExtraDOinMnhDoConcurrent(self):
         """
@@ -142,7 +143,7 @@ class Applications():
                 if ('!$mnh_do_concurrent' in coms.text):
                     par = scope.getParent(coms)
                     icom = list(par).index(coms)
-                    mainDoConstruct = par[icom+1] 
+                    mainDoConstruct = par[icom+1]
                     allDoConstructs = mainDoConstruct.findall('.//{*}do-construct')
                     allDoConstructs.append(mainDoConstruct)
                     for doConstruct in allDoConstructs:
