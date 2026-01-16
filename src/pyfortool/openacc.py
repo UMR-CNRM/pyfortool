@@ -18,7 +18,7 @@ class Openacc():
         Remove openACC directives
         """
         self.removeComments(exclDirectives=[],
-                            pattern=re.compile(r'^\!\$ACC ', re.IGNORECASE))
+                            pattern=re.compile(r'^\!\$ACC', re.IGNORECASE))
 
     @debugDecor
     def removebyPassDOCONCURRENT(self):
