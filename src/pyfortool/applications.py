@@ -166,6 +166,7 @@ class Applications():
         Allowed for conversion : CST%XG
         Not converted : TOTO%CST%XG (for now, recursion must be coded)
         Not converted : TOTO%ARRAY(:) (shape of the array must be determined from E1)
+        Not converted : TOTO%TUTU(:) (type in a type)
         """
         def convertOneType(component, newVarList, scope):
             # 1) Build the name of the new variable
@@ -174,6 +175,7 @@ class Applications():
             namedENn = objType.find('.//{*}N/{*}n')
             structure = namedENn.text
             variable = component.find('.//{*}ct').text.upper()
+            if variable[0] == "T": return  # Exclude variables of the type "Type"
             # If the variable is an array with index selection
             # such as ICED%XRTMIN(1:KRR)
             arrayIndices = ''
@@ -265,7 +267,7 @@ class Applications():
                 elif el[0].upper() == 'C':
                     varType = 'CHARACTER(LEN=LEN(' + var[1] + '))'
                 else:
-                    raise PYFTError('Case not implemented for the first letter of the newVarName' +
+                    raise PYFTError('Case not implemented for the first letter of the newVarName ' +
                                     el + ' in convertTypesInCompute')
                 varArray = ''
                 # Handle the case the variable is an array
