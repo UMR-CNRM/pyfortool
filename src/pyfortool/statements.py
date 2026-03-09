@@ -798,8 +798,15 @@ class Statements():
         for sNode in node.findall('./{*}T-decl-stmt') + localUseToAdd + \
                 node.findall('./{*}implicit-none-stmt'):
             node.remove(sNode)
-        while tag(node[1]) == 'C' and not node[1].text.startswith('!$acc'):
-            node.remove(node[1])
+        icom = 1
+        while tag(node[icom]) == 'C':
+            if node[icom].text.startswith('!$acc'):
+                if 'routine' in node[icom].text:
+                    node.remove(node[icom])
+                else:
+                    icom += 1
+            else:
+                node.remove(node[icom])
 
         # Variable correspondance
         # For each dummy argument, we look for the calling arg name and shape
