@@ -873,8 +873,8 @@ class Variables():
                     if var is not None and var['as'] is not None and len(var['as']) > 0 and \
                        not ((var['pointer'] or var['allocatable']) and self.isNodeInCall(namedE)):
                         arrayR = namedE.findall('./{*}R-LT')
-                        for a in arrayR:
-                            sectionSubscriptLT = a.findall('.//{*}section-subscript-LT')
+                        for arr in arrayR:
+                            sectionSubscriptLT = arr.findall('.//{*}section-subscript-LT')
                             for ss in sectionSubscriptLT:
                                 lowerBound = ss.findall('.//{*}lower-bound')
                                 if len(lowerBound) == 0:

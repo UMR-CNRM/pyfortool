@@ -140,7 +140,7 @@ class Applications():
         for scope in scopes:
             comments = scope.findall('.//{*}C')
             for coms in comments:
-                if ('!$mnh_do_concurrent' in coms.text):
+                if '!$mnh_do_concurrent' in coms.text:
                     par = scope.getParent(coms)
                     icom = list(par).index(coms)
                     mainDoConstruct = par[icom+1]
@@ -175,7 +175,8 @@ class Applications():
             namedENn = objType.find('.//{*}N/{*}n')
             structure = namedENn.text
             variable = component.find('.//{*}ct').text.upper()
-            if variable[0] == "T": return  # Exclude variables of the type "Type"
+            if variable[0] == "T":
+                return  # Exclude variables of the type "Type"
             # If the variable is an array with index selection
             # such as ICED%XRTMIN(1:KRR)
             arrayIndices = ''
@@ -431,7 +432,7 @@ class Applications():
             # Add the new module with interfaces only
             newMod.append(createElem('end-program-unit', text='END MODULE ' + moduleName,
                                      tail='\n'))
-            self[0].insert(0, newMod)
+            self[0].insert(0, newMod)  # pylint: disable=unsubscriptable-object
 
             # Convert the old modules statement to SUBMODULE (ancestor) SubmoduleName
             progUnit = createElem('program-unit')

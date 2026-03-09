@@ -179,18 +179,18 @@ class Openacc():
                     parensR = allocateArg.findall('.//{*}parens-R')
                     if len(parensR) == 2:
                         # It's a component case
-                        varsChecking = alltext(allocateArg).split('%')[0]+'%' + \
-                            alltext(allocateArg).split('%')[1].split('(')[0]
+                        varsChecking = alltext(allocateArg).split('%', maxsplit=1)[0]+'%' + \
+                            alltext(allocateArg).split('%')[1].split('(', maxsplit=1)[0]
                     elif len(parensR) == 1:
                         # Tjacobi(level)%Sr case where Sr is a type itself
                         if allocateArg.find('.//{*}component-R'):
                             varsChecking = alltext(allocateArg)
                         else:
-                            varsChecking = alltext(allocateArg).split('(')[0]
+                            varsChecking = alltext(allocateArg).split('(', maxsplit=1)[0]
                     elif len(parensR) == 0:
-                        varsChecking = alltext(allocateArg).split('(')[0]
+                        varsChecking = alltext(allocateArg).split('(', maxsplit=1)[0]
                 else:
-                    varsChecking = alltext(allocateArg).split('(')[0]
+                    varsChecking = alltext(allocateArg).split('(', maxsplit=1)[0]
 
                 if varsChecking in varsToChange:
                     removeLastComma = True
