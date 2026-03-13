@@ -1,9 +1,12 @@
 <map id="pyfortool.scripting.applyTransfoTree" name="pyfortool.scripting.applyTransfoTree">
-<area shape="rect" id="Node000001" title=" " alt="" coords="461,23,643,63"/>
-<area shape="rect" id="Node000002" href="$namespacepyfortool_1_1scripting.html#a94e978462d3c113c2c7203a32a743127" title=" " alt="" coords="232,23,413,63"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="447,46,414,46,414,41,447,41"/>
-<area shape="rect" id="Node000003" href="$namespacepyfortool_1_1scripting.html#abbbaf3c7b7247fd326868e4a717cf95f" title=" " alt="" coords="5,5,184,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="218,34,184,31,185,25,219,29"/>
-<area shape="rect" id="Node000004" href="$namespacepyfortool_1_1scripting.html#ac356a9d30cb1872431ef5fadd3f1b458" title=" " alt="" coords="8,55,181,80"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="219,57,182,61,181,56,218,52"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="691,47,872,87"/>
+<area shape="rect" id="Node000002" href="$namespacepyfortool_1_1scripting.html#a94e978462d3c113c2c7203a32a743127" title=" " alt="" coords="461,47,643,87"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="677,70,643,70,643,65,677,65"/>
+<area shape="rect" id="Node000003" href="$namespacepyfortool_1_1scripting.html#abbbaf3c7b7247fd326868e4a717cf95f" title=" " alt="" coords="235,5,413,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="447,47,383,33,384,28,448,42"/>
+<area shape="rect" id="Node000005" href="$namespacepyfortool_1_1scripting.html#ac356a9d30cb1872431ef5fadd3f1b458" title=" " alt="" coords="237,55,411,80"/>
+<area shape="poly" id="edge5_Node000002_Node000005" title=" " alt="" coords="447,70,411,70,411,65,447,65"/>
+<area shape="rect" id="Node000004" href="$namespacepyfortool_1_1scripting.html#a33ffaf2864cb476ced14ef21ce40a85e" title=" " alt="" coords="5,49,187,89"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="253,36,187,51,186,46,252,31"/>
+<area shape="poly" id="edge4_Node000004_Node000002" title=" " alt="" coords="201,85,235,89,324,94,413,89,461,83,462,88,414,94,324,99,234,94,200,90"/>
 </map>
