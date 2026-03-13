@@ -2,9 +2,6 @@
 This module contains functions usefull to build scripts around the pyfortool library
 """
 
-if __name__ == "__main__":
-    main()
-
 import sys
 from multiprocessing import cpu_count, Pool
 from multiprocessing.managers import BaseManager
@@ -1001,3 +998,7 @@ def applyTransfoPreprocessor(pft, arg, args):
     """
     if arg == '--applyCPPifdef':
         pft.applyCPPifdef([k for aList in args.applyCPPifdef for k in aList])
+
+
+if __name__ == "__main__":
+    main()
