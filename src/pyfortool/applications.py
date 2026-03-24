@@ -152,6 +152,42 @@ class Applications():
                                 doConstruct.remove(el)
 
     @debugDecor
+    def convertuseModuleToIncludes(self):
+        """
+        Convert USE MODULE, ONLY: ROUTINE into #include routine.intfb.h statement (ARPEGE style)
+
+        RESTRICTION: ONLY must be present; only the first argument after only is checked. It is
+        assumed that nothing else is imported from the module.
+        """
+        scopes = self.getScopes()
+        if scopes[0].path.split('/')[-1].split(':')[1][:4] == 'MODD':
+            return
+        for scope in [scope for scope in scopes
+                      if 'sub:' in scope.path and 'interface' not in scope.path]:
+            routinesCalled = []
+            use_stmts = scope.findall('.//{*}use-stmt')
+            callStmts = scope.findall('.//{*}call-stmt')
+            for call in callStmts:
+                routinesCalled.append(
+                    call.find('.//{*}procedure-designator/{*}named-E/{*}N/{*}n').text)
+            for use_stmt in use_stmts:
+                # Check if this is a USE statement with ONLY clause and takes the 1st argument
+                if 'ONLY' in use_stmt[0].tail.upper():
+                    routine_name = use_stmt.find('.//{*}use-N/{*}N/{*}n').text
+                    if routine_name in routinesCalled:
+                        print("remove of " + alltext(use_stmt))
+                        # remove the USE MODULE, ONLY: ROUTINE statement
+                        self.removeStmtNode(use_stmt, simplifyVar=False, simplifyStruct=False)
+                        # add the #include routine.intfb.h statement
+                        includeNode = createElem('include')
+                        includeNode.text = '#include "'
+                        includeNode.append(
+                            createElem('filename', text=routine_name.lower()+'.intfb.h"'))
+                        includeNode.tail = "\n"
+                        print("insertion of " + alltext(includeNode))
+                        scope.insertStatement(includeNode, first=True)
+
+    @debugDecor
     def convertTypesInCompute(self):
         """
         Convert STR%VAR into single local variable contained in compute (a-stmt)

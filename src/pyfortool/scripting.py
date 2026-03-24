@@ -555,6 +555,9 @@ def updateParserApplications(parser):
     gApplications.add_argument('--removeExtraDOinMnhDoConcurrent', default=False,
                                action='store_true',
                                help='Remove DO and ENDDO instructions inside !$mnh_do_concurrent')
+    gApplications.add_argument('--convertuseModuleToIncludes', default=False,
+                               action='store_true',
+                               help='Convert USE MODULE, ONLY: ROUTINE to #include routine.intfb.h')
 
 
 def updateParserOpenACC(parser):
@@ -852,6 +855,8 @@ def applyTransfoApplications(pft, arg, args, simplify, parserOptions, stopScopes
         pft.splitModuleRoutineFile()
     elif arg == '--removeExtraDOinMnhDoConcurrent':
         pft.removeExtraDOinMnhDoConcurrent()
+    elif arg == '--convertuseModuleToIncludes':
+        pft.convertuseModuleToIncludes()
 
 
 def applyTransfoOpenACC(pft, arg, args, stopScopes):  # pylint: disable=unused-argument
