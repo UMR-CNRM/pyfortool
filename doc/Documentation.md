@@ -219,6 +219,8 @@ if option is 'Warn'; otherwise issue an error message and raise an exception.
 variables needed for mnh_expand directives, issue a warning if option is 'Warn';
 otherwise issue an error message and raise an exception.
 
+**--checkONLY=Warn\|Err* if a USE statement is not followed by an ONLY clause,
+issue a warning if option is 'Warn'; otherwise issue an error message and raise an exception.
 
 ### Dealing with statements
 
