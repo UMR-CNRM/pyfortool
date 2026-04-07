@@ -85,7 +85,7 @@ class PYFT(PYFTscope):
             raise PYFTError("PyForTool needs at least version 3.8 of python")
         self._filename = filename
         self._originalName = filename
-        assert os.path.exists(filename), 'Input filename must exist'
+        assert os.path.exists(filename), f'Input filename ({filename})must exist'
         self._output = output
         tree = Tree() if tree is None else tree
         if self.SHARED_TREE is not None:

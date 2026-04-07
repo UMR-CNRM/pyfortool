@@ -608,6 +608,9 @@ def updateParserChecks(parser):
     gChecks.add_argument('--checkEmptyParensInCall', choices={'Warn', 'Err'}, default=None,
                          help='Send a warning or raise an error if a call argument is an '
                               'array with empty parens.')
+    gChecks.add_argument('--checkONLY', choices={'Warn', 'Err'}, default=None,
+                         help='Send a warning or raise an error if a USE statement is not '
+                              'followed by an ONLY clause.')
 
 
 def updateParserStatements(parser):
@@ -940,6 +943,8 @@ def applyTransfoChecks(pft, arg, args):
         pft.checkPHYEXUnusedLocalVar(args.checkPHYEXUnusedLocalVar == 'Err')
     elif arg == '--checkEmptyParensInCall':
         pft.checkEmptyParensInCall(args.checkEmptyParensInCall == 'Err')
+    elif arg == '--checkONLY':
+        pft.checkONLY(args.checkONLY == 'Err')
 
 
 def applyTransfoStatements(pft, arg, args, simplify):

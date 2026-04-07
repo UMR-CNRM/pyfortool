@@ -367,6 +367,24 @@ class Variables():
                             "file '{}'".format(self.getFileName()))
 
     @debugDecor
+    def checkONLY(self, mustRaise=False):
+        """
+        :param mustRaise: True to raise
+        Issue a logging.warning if some "ONLY" clauses are missing
+        If mustRaise is True, issue a logging.error instead and raise an error
+        """
+        ok = True
+        log = logging.error if mustRaise else logging.warning
+        for useStmt in self.findall('.//{*}use-stmt'):
+            module = useStmt.find('.//{*}module-N')
+            if module.tail is None or module.tail.replace(' ', '').upper() != ',ONLY:':
+                log(f"USE {n2name(module.find('.//{*}N'))} is not followed by an ONLY clause " +
+                    f"in file'{self.getFileName()}'.")
+        if not ok and mustRaise:
+            raise PYFTError("There are USE statements not followed by an ONLY clause " +
+                            f"file '{self.getFileName()}'")
+
+    @debugDecor
     @noParallel
     @updateVarList
     @updateTree('signal')
