@@ -109,6 +109,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:af24344c278e49ee1188872d61acc7406"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abe004a6d18daaeb4e1ee522fb6106a5f" id="r_abe004a6d18daaeb4e1ee522fb6106a5f"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpyfortool_1_1variables_1_1Variables.html#abe004a6d18daaeb4e1ee522fb6106a5f">checkIntent</a> (self, mustRaise=False)</td></tr>
 <tr class="separator:abe004a6d18daaeb4e1ee522fb6106a5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac2086f93aa5c550bc7c76a0f1005e177" id="r_ac2086f93aa5c550bc7c76a0f1005e177"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpyfortool_1_1variables_1_1Variables.html#ac2086f93aa5c550bc7c76a0f1005e177">checkONLY</a> (self, mustRaise=False)</td></tr>
+<tr class="separator:ac2086f93aa5c550bc7c76a0f1005e177"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af7129fff6519319b344d0ef47f75e4b6" id="r_af7129fff6519319b344d0ef47f75e4b6"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpyfortool_1_1variables_1_1Variables.html#af7129fff6519319b344d0ef47f75e4b6">removeVar</a> (self, <a class="el" href="classpyfortool_1_1variables_1_1Variables.html#a3887efab390d8d20867b9be1b4c6ebd9">varList</a>, simplify=False)</td></tr>
 <tr class="separator:af7129fff6519319b344d0ef47f75e4b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aca084320ed0e4abd8cce3af3813ab22a" id="r_aca084320ed0e4abd8cce3af3813ab22a"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpyfortool_1_1variables_1_1Variables.html#aca084320ed0e4abd8cce3af3813ab22a">addVar</a> (self, <a class="el" href="classpyfortool_1_1variables_1_1Variables.html#a3887efab390d8d20867b9be1b4c6ebd9">varList</a>)</td></tr>
@@ -515,7 +517,7 @@ where the variable exists or a scope in stopScopes
 
 Argument is inserted only on paths leading to one of scopes listed in stopScopes
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01422">1422</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01440">1440</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -599,7 +601,7 @@ Here is the call graph for this function:</div>
 </div><div class="memdoc">
 <pre class="fragment">Look for arrays and add parenthesis. A =&gt; A(:)
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00784">784</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00802">802</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -668,7 +670,7 @@ Here is the caller graph for this function:</div>
 <pre class="fragment">Look for arrays and add parenthesis. A =&gt; A(:)
 :param node: xml node in which ':' must be added
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00828">828</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00846">846</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -739,7 +741,7 @@ Here is the call graph for this function:</div>
 <pre class="fragment">Replace ':' by explicit arrays bounds.
 :param node: xml node in which ':' must be replaced (None to replace everywhere)
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00728">728</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00746">746</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -806,7 +808,7 @@ For example addModuleVar('sub:FOO', 'MODD_XX', 'Y') will add the following line 
 subroutine FOO:
 USE MODD_XX, ONLY: Y
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00597">597</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00615">615</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -887,7 +889,7 @@ Here is the caller graph for this function:</div>
                 - position of the variable in the list of dummy argument,
                   None for a local variable
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00507">507</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00525">525</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -982,7 +984,7 @@ Both the array-R and the parens-R nodes are inside a R-LT node
 :param table: dictionnary returned by the decode function
 :param varList: None or a VarList object in which varaibles are searched for
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01107">1107</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01125">1125</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1187,6 +1189,56 @@ Here is the call graph for this function:</div>
 
 </div>
 </div>
+<a id="ac2086f93aa5c550bc7c76a0f1005e177" name="ac2086f93aa5c550bc7c76a0f1005e177"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac2086f93aa5c550bc7c76a0f1005e177">&#9670;&#160;</a></span>checkONLY()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">pyfortool.variables.Variables.checkONLY </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>self</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>mustRaise</em> = <code>False</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<pre class="fragment">:param mustRaise: True to raise
+Issue a logging.warning if some "ONLY" clauses are missing
+If mustRaise is True, issue a logging.error instead and raise an error
+</pre> 
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00370">370</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="classpyfortool_1_1variables_1_1Variables_ac2086f93aa5c550bc7c76a0f1005e177_cgraph.png" border="0" usemap="#aclasspyfortool_1_1variables_1_1Variables_ac2086f93aa5c550bc7c76a0f1005e177_cgraph" alt=""/></div>
+<map name="aclasspyfortool_1_1variables_1_1Variables_ac2086f93aa5c550bc7c76a0f1005e177_cgraph" id="aclasspyfortool_1_1variables_1_1Variables_ac2086f93aa5c550bc7c76a0f1005e177_cgraph">
+<area shape="rect" title=" " alt="" coords="5,29,291,55"/>
+<area shape="rect" href="classpyfortool_1_1scope_1_1ElementView.html#a16495974c6c803a6a3582bce4c738133" title=" " alt="" coords="339,29,595,55"/>
+<area shape="poly" title=" " alt="" coords="291,39,325,39,325,45,291,45"/>
+<area shape="poly" title=" " alt="" coords="421,31,411,21,416,11,435,5,467,3,508,7,519,12,522,18,517,21,515,16,506,12,467,8,436,10,420,15,417,20,425,27"/>
+<area shape="rect" href="classpyfortool_1_1scope_1_1ElementView.html#a7a1db7bc1c5100e0e9b813edf25d9239" title=" " alt="" coords="643,22,859,62"/>
+<area shape="poly" title=" " alt="" coords="595,39,629,39,629,45,595,45"/>
+<area shape="rect" href="classpyfortool_1_1scope_1_1ElementView.html#a1dbaf54daab3dba3a8d608ab623ca736" title=" " alt="" coords="907,29,1147,55"/>
+<area shape="poly" title=" " alt="" coords="859,48,893,48,893,54,859,53"/>
+<area shape="poly" title=" " alt="" coords="906,36,872,36,872,30,906,30"/>
+<area shape="poly" title=" " alt="" coords="982,31,973,21,978,11,996,5,1027,3,1066,7,1077,12,1080,18,1076,20,1073,16,1065,12,1027,8,997,10,981,15,978,20,986,27"/>
+</map>
+</div>
+
+</div>
+</div>
 <a id="a97779ffb5d84ea55018afda0ada031a0" name="a97779ffb5d84ea55018afda0ada031a0"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a97779ffb5d84ea55018afda0ada031a0">&#9670;&#160;</a></span>checkUnusedLocalVar()</h2>
 
@@ -1223,7 +1275,7 @@ Here is the call graph for this function:</div>
 Issue a logging.warning if there are unused local variables
 If mustRaise is True, issue a logging.error instead and raise an error
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00676">676</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00694">694</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1337,7 +1389,7 @@ Here is the caller graph for this function:</div>
 
 In case the loop variable cannot be defined, the function returns (None, [])
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01201">1201</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01219">1219</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1417,7 +1469,7 @@ loopName can be:
     - False to discard this index
     - True to create a new variable to loop with
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01053">1053</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01071">1071</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1506,7 +1558,7 @@ If exactScope is False:
 
 To know if a variable can be removed, you must use exactScope=False
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01325">1325</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01343">1343</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1621,7 +1673,7 @@ declaration statement was "A(I, I:J, 0:I)". The template
  ALLOCATE({name}({shape}))#DEALLOCATE({name})"
 replaces automatic arrays by allocatables
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00888">888</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00906">906</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1680,7 +1732,7 @@ Here is the call graph for this function:</div>
 <pre class="fragment">Look for arrays and remove parenthesis if no index selection A(:,:) =&gt; A
 :param node: xml node in which ':' must be removed
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00860">860</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00878">878</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1761,7 +1813,7 @@ Here is the call graph for this function:</div>
                  variable as kind selector, and if this variable is not used else where,
                  we also delete it)
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00708">708</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00726">726</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1864,7 +1916,7 @@ Here is the caller graph for this function:</div>
                  we also delete it)
 Remove the variable from declaration, and from the argument list if needed
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00373">373</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00391">391</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1986,7 +2038,7 @@ Here is the caller graph for this function:</div>
 :return: the varList without the unremovable variables
 If possible, remove the variable from declaration, and from the argument list if needed
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01294">1294</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01312">1312</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -2085,7 +2137,7 @@ Here is the caller graph for this function:</div>
 <pre class="fragment">:param oldName: old name of the variable
 :param newName: new name of the variable
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01280">1280</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01298">1298</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -2123,7 +2175,7 @@ Here is the call graph for this function:</div>
 </div><div class="memdoc">
 <pre class="fragment">Displays on stdout a list of unused variables
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00660">660</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00678">678</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -2276,7 +2328,7 @@ Here is the caller graph for this function:</div>
 (e.g. outside of PHYEX)
 :return: the associated declarative statement
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01012">1012</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01030">1030</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
