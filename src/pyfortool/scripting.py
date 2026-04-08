@@ -442,6 +442,8 @@ def updateParserVariables(parser):
                                  'the third one is the position (python indexing) the new ' +
                                  'variable will have in the calling statement of the ' +
                                  'routine. Needs the --stopScopes argument')
+    gVariables.add_argument('--addONLY', default=False, action='store_true',
+                            help='Add missing ONLY clause to USE statements.')
 
 
 def updateParserCosmetics(parser):
@@ -785,6 +787,8 @@ def applyTransfoVariables(pft, arg, args, simplify, parserOptions, stopScopes):
             pft.addArgInTree(varName, declStmt, int(pos), stopScopes,
                              parserOptions=parserOptions,
                              wrapH=args.wrapH)
+    elif arg == '--addONLY':
+        pft.addONLY(parserOptions=parserOptions, wrapH=args.wrapH)
 
 
 def applyTransfoApplications(pft, arg, args, simplify, parserOptions, stopScopes):

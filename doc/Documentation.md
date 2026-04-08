@@ -154,10 +154,12 @@ replaces automatic arrays by allocatables.
 
 **--addArgInTree** Add an argument variable recursively begining at the scope path
 defined with the --restrictScope option. The first argument is the variable name,
-the second one is the declarative statement to insert, the third one fourth is the position
+the second one is the declarative statement to insert, the third one is the position
 (python indexing) the new variable will have in the calling statment of the routine.
 The recursive inclusion of the argument variable stops at the scopes defined by the
 --stopScopes option.
+
+**--addONLY** Add ONLY clause to use statments (if missing)
 
 ### Cosmetics
 

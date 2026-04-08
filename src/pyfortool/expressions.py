@@ -12,17 +12,23 @@ from pyfortool.util import debugDecor, isint, isfloat, fortran2xml, PYFTError
 from pyfortool import NAMESPACE
 
 
-def createElem(tagName, text=None, tail=None):
+def createElem(tagName, text=None, tail=None, childs=None):
     """
     :param tagName: tag of the element to create
     :param text: None or text of the element
     :param tail: None or tail of the element
+    :param childs: None or element or list of elements to insert
     """
     node = ET.Element(f'{{{NAMESPACE}}}{tagName}')
     if text is not None:
         node.text = text
     if tail is not None:
         node.tail = tail
+    if childs is not None:
+        if isinstance(childs, list):
+            node.extend(childs)
+        else:
+            node.append(childs)
     return node
 
 

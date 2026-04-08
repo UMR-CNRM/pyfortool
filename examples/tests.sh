@@ -42,7 +42,7 @@ DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 cp $DIR/*.F90 $DIR/*.h $TMP_LOC
 cd $TMP_LOC
 
-#descTree fils must not exist
+#descTree file must not exist
 [ "$debug" == 'y' ] && jsonpath="$DIR/" || jsonpath=""
 [ -f ${jsonpath}desctree.json ] && rm ${jsonpath}desctree.json
 

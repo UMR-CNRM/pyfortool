@@ -1437,6 +1437,90 @@ class Variables():
 
     @debugDecor
     @updateVarList
+    @updateTree('signal')
+    def addONLY(self, parserOptions=None, wrapH=False):
+        """
+        Adds missing ONLY clause to USE statements
+        :param parserOptions, wrapH: see the PYFT class
+        """
+        for useStmt in self.findall('.//{*}use-stmt'):
+            module = useStmt.find('.//{*}module-N')
+            if module.tail is None or module.tail.replace(' ', '').upper() != ',ONLY:':
+                # A USE statement without the ONLY clause has been found
+                modulename = n2name(module.find('.//{*}N')).upper()
+                modulescope = 'module:' + modulename
+                modulefile = self.tree.scopeToFiles(modulescope)
+                if len(modulefile) != 1:
+                    raise PYFTError(f'No or several files define the {modulename} module')
+                symbols = []
+                pft = None
+                try:
+                    # Open file to get the symbol list defined in the module
+                    if self.getFileName() == os.path.normpath(modulefile[0]):
+                        # interface declared in same file
+                        xml = self.mainScope
+                        pft = None
+                    else:
+                        pft = pyfortool.pyfortool.conservativePYFT(
+                                  modulefile[0], parserOptions, wrapH, tree=self.tree,
+                                  clsPYFT=self._mainScope.__class__)
+                        xml = pft
+
+                    # variable list
+                    symbols.extend(v['n'] for v in xml.varList.restrict(modulescope, True))
+                    # subroutine, functions and interfaces
+                    for scope in xml.getScopeNode(modulescope,
+                                                  excludeContains=False).getScopes(
+                                                      level=2,
+                                                      excludeContains=False,
+                                                      includeItself=False):
+                        if scope.path.split('/')[1].split(':')[0] == 'interface':
+                            if scope.path.split('/')[1].split(':')[1] != '--UNKNOWN--':
+                                # Named interface is a symbol
+                                symbols.append(scope.path.split('/')[1].split(':')[1])
+                            if len(scope.path.split('/')) == 3:
+                                # Subroutine and functions defined in the interface
+                                symbols.append(scope.path.split('/')[2].split(':')[1])
+                        else:
+                            symbols.append(scope.path.split('/')[1].split(':')[1])
+                    symbols = sorted(set(symbols))
+                    # Add all the symbols in the ONLY clause
+                    # <f:use-stmt>USE <f:module-N><f:N><f:n>MODNAME</f:n></f:N></f:module-N>, ONLY:
+                    #     <f:rename-LT>
+                    #         <f:rename><f:use-N><f:N><f:n>S1</f:n></f:N></f:use-N></f:rename>,
+                    #         <f:rename><f:use-N><f:N><f:n>S2</f:n></f:N></f:use-N></f:rename>
+                    #     </f:rename-LT></f:use-stmt>
+                    module.tail = ', ONLY: '
+                    renameLT = createElem('rename-LT')
+                    useStmt.append(renameLT)
+                    rename = None
+                    parent = self.getScopePath(useStmt)
+                    isVarUsed = self.isVarUsed([(parent, symbol.upper()) for symbol in symbols])
+                    for symbol in symbols:
+                        if isVarUsed[(parent, symbol.upper())]:
+                            useN = createElem('use-N', childs=createElem('N',
+                                              childs=createElem('n', text=symbol)))
+                            rename = createElem('rename', tail=', ', childs=useN)
+                            renameLT.append(rename)
+                    if rename is None:
+                        # Module is unused, we suppress it
+                        previous = self.getSiblings(useStmt, before=True, after=False)
+                        previous = None if len(previous) == 0 else previous[-1]
+                        if previous is not None and useStmt.tail is not None:
+                            if previous.tail is None:
+                                previous.tail = ''
+                            previous.tail += useStmt.tail
+                        self.getParent(useStmt).remove(useStmt)
+                        self.tree.signal(self)  # Tree must be updated
+                    else:
+                        # Remove the comma after the last child
+                        rename.tail = None
+                finally:
+                    if pft is not None:
+                        pft.close()
+
+    @debugDecor
+    @updateVarList
     def addArgInTree(self, varName, declStmt, pos, stopScopes, moduleVarList=None,
                      otherNames=None,
                      parserOptions=None, wrapH=False):
