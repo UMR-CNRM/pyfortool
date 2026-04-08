@@ -1494,7 +1494,7 @@ class Applications():
                                             # Shumans
                                             var, inested = None, 0
                                             # pylint: disable-next=unsubscriptable-object
-                                            while not var or len(var['as']) == 0:
+                                            while not var or var['as'] is None or len(var['as']) == 0:
                                                 # While the var is not an array already declared
                                                 # callVar[0] is the first array on which the
                                                 # function is applied
