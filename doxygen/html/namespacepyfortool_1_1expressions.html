@@ -82,8 +82,8 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a3e61f8fabbb14bbb735c4d75fd7e7e39" id="r_a3e61f8fabbb14bbb735c4d75fd7e7e39"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepyfortool_1_1expressions.html#a3e61f8fabbb14bbb735c4d75fd7e7e39">createElem</a> (tagName, text=None, tail=None)</td></tr>
-<tr class="separator:a3e61f8fabbb14bbb735c4d75fd7e7e39"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad0b764a0fa30b050391a6a5967700c4a" id="r_ad0b764a0fa30b050391a6a5967700c4a"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepyfortool_1_1expressions.html#ad0b764a0fa30b050391a6a5967700c4a">createElem</a> (tagName, text=None, tail=None, childs=None)</td></tr>
+<tr class="separator:ad0b764a0fa30b050391a6a5967700c4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad1a1a8a9ade94257e10e8c75785df112" id="r_ad1a1a8a9ade94257e10e8c75785df112"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepyfortool_1_1expressions.html#ad1a1a8a9ade94257e10e8c75785df112">_cachedCreateExprPart</a> (value)</td></tr>
 <tr class="separator:ad1a1a8a9ade94257e10e8c75785df112"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa5bef8fac93ac6ce5ce529f88b561852" id="r_aa5bef8fac93ac6ce5ce529f88b561852"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepyfortool_1_1expressions.html#aa5bef8fac93ac6ce5ce529f88b561852">createExprPart</a> (value)</td></tr>
@@ -127,7 +127,7 @@ These functions are independent of the PYFT and PYFTscope objects
 <pre class="fragment">:param value: statements to convert into xml
 :return: the xml fragment corresponding to value (list of nodes)
 </pre> 
-<p class="definition">Definition at line <a class="el" href="expressions_8py_source.html#l00099">99</a> of file <a class="el" href="expressions_8py_source.html">expressions.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="expressions_8py_source.html#l00105">105</a> of file <a class="el" href="expressions_8py_source.html">expressions.py</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -177,7 +177,7 @@ If value is:
     the X affectation statement of the code:
     "SUBROUTINE T; X=" + value + "; END". The xml is obtained by calling fxtran.
 </pre> 
-<p class="definition">Definition at line <a class="el" href="expressions_8py_source.html#l00030">30</a> of file <a class="el" href="expressions_8py_source.html">expressions.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="expressions_8py_source.html#l00036">36</a> of file <a class="el" href="expressions_8py_source.html">expressions.py</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -229,12 +229,12 @@ Here is the caller graph for this function:</div>
                 'DOCONCURRENT' for DO CONCURRENT loops
                 'ARRAY' for arrays
 </pre> 
-<p class="definition">Definition at line <a class="el" href="expressions_8py_source.html#l00184">184</a> of file <a class="el" href="expressions_8py_source.html">expressions.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="expressions_8py_source.html#l00190">190</a> of file <a class="el" href="expressions_8py_source.html">expressions.py</a>.</p>
 
 </div>
 </div>
-<a id="a3e61f8fabbb14bbb735c4d75fd7e7e39" name="a3e61f8fabbb14bbb735c4d75fd7e7e39"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3e61f8fabbb14bbb735c4d75fd7e7e39">&#9670;&#160;</a></span>createElem()</h2>
+<a id="ad0b764a0fa30b050391a6a5967700c4a" name="ad0b764a0fa30b050391a6a5967700c4a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad0b764a0fa30b050391a6a5967700c4a">&#9670;&#160;</a></span>createElem()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -255,7 +255,13 @@ Here is the caller graph for this function:</div>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>tail</em> = <code>None</code>&#160;</td>
+          <td class="paramname"><em>tail</em> = <code>None</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>childs</em> = <code>None</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -267,6 +273,7 @@ Here is the caller graph for this function:</div>
 <pre class="fragment">:param tagName: tag of the element to create
 :param text: None or text of the element
 :param tail: None or tail of the element
+:param childs: None or element or list of elements to insert
 </pre> 
 <p class="definition">Definition at line <a class="el" href="expressions_8py_source.html#l00015">15</a> of file <a class="el" href="expressions_8py_source.html">expressions.py</a>.</p>
 
@@ -290,7 +297,7 @@ Here is the caller graph for this function:</div>
 <pre class="fragment">:param value: statements to convert into xml
 :return: the xml fragment corresponding to value (list of nodes)
 </pre> 
-<p class="definition">Definition at line <a class="el" href="expressions_8py_source.html#l00108">108</a> of file <a class="el" href="expressions_8py_source.html">expressions.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="expressions_8py_source.html#l00114">114</a> of file <a class="el" href="expressions_8py_source.html">expressions.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -332,7 +339,7 @@ If value is:
     the X affectation statement of the code:
     "SUBROUTINE T; X=" + value + "; END". The xml is obtained by calling fxtran.
 </pre> 
-<p class="definition">Definition at line <a class="el" href="expressions_8py_source.html#l00080">80</a> of file <a class="el" href="expressions_8py_source.html">expressions.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="expressions_8py_source.html#l00086">86</a> of file <a class="el" href="expressions_8py_source.html">expressions.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -385,7 +392,7 @@ E.g. simplifyExpr('1+1+I+JI-I') =&gt; '2+JI'
 Note: only additions and substractions are considered
       addition and subtraction within parentheses are forbidden
 </pre> 
-<p class="definition">Definition at line <a class="el" href="expressions_8py_source.html#l00117">117</a> of file <a class="el" href="expressions_8py_source.html">expressions.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="expressions_8py_source.html#l00123">123</a> of file <a class="el" href="expressions_8py_source.html">expressions.py</a>.</p>
 
 </div>
 </div>
