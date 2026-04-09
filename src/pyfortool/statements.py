@@ -947,7 +947,8 @@ class Statements():
                     slices += nodeRLT[0].findall('./{*}element-LT/{*}element')
                 else:
                     # No parenthesis
-                    if (descMain is not None and len(descMain['as']) > 0) or \
+                    if (descMain is not None and descMain['as'] is not None and
+                        len(descMain['as']) > 0) or \
                        len(descSub['as']) > 0 or dummy['dim'] is not None:
                         # No parenthesis, but this is an array, we add as many ':' as needed
                         if len(descSub['as']) > 0:
@@ -1028,7 +1029,7 @@ class Statements():
                            not alltext(dummy['dim'][isl]).strip().startswith(':'):
                             offset = alltext(dummy['dim'][isl].find('./{*}lower-bound'))
                         else:
-                            if descMain is not None:
+                            if descMain is not None and descMain['as'] is not None:
                                 offset = descMain['as'][isl][0]
                                 if offset is None:
                                     offset = '1'  # Default FORTRAN value
