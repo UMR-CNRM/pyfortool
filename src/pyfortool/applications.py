@@ -1628,10 +1628,14 @@ class Applications():
                 for sub in sorted(subToInclude):
                     if re.match(r'[MD][XYZ][MF](2D)?_PHY', sub):
                         moduleVars.append((scope.path, 'MODE_SHUMAN_PHY', sub))
+                    if re.match(r'[MD][XYZ][MF](2D)?_DEVICE', sub):
+                        moduleVars.append((scope.path, 'MODI_SHUMAN_DEVICE', sub))
                     else:
                         for kind in ('M', 'U', 'V', 'W'):
                             if re.match(r'G[XYZ]_' + kind + r'_[MUVW]{1,2}_PHY', sub):
                                 moduleVars.append((scope.path, f'MODE_GRADIENT_{kind}_PHY', sub))
+                            elif re.match(r'G[XYZ]_' + kind + r'_[MUVW]{1,2}_DEVICE', sub):
+                                moduleVars.append((scope.path, f'MODI_GRADIENT_{kind}', sub))
                 scope.addModuleVar(moduleVars)
 
                 # Add the missing local variables
