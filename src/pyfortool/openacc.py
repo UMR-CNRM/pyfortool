@@ -1,5 +1,5 @@
 """
-This module implements the Openacc class containing the methods relative to openacc
+This module implements the Openacc class containing the methods relative to OpenACC.
 """
 
 import re
@@ -10,12 +10,21 @@ from pyfortool.expressions import createElem, createExpr
 
 class Openacc():
     """
-    Methods relative to openacc
+    OpenACC directives transformation methods.
+
+    Provides utilities for adding, removing, and transforming OpenACC
+    directives for GPU acceleration.
     """
+
     @debugDecor
     def removeACC(self):
         """
-        Remove openACC directives
+        Remove all OpenACC directives.
+
+        Examples
+        --------
+        >>> pft = PYFT('gpu_code.F90')
+        >>> pft.removeACC()
         """
         self.removeComments(exclDirectives=[],
                             pattern=re.compile(r'^\!\$ACC', re.IGNORECASE))
@@ -23,10 +32,14 @@ class Openacc():
     @debugDecor
     def removebyPassDOCONCURRENT(self):
         """
-        Remove macro !$mnh_(un)def(OPENACC) and !$mnh_(un)def(LOOP) directives
-        for other compiler than Cray
-        """
+        Remove MNH OpenACC bypass macros for non-Cray compilers.
 
+        Removes the following directives:
+        - !$mnh_undef(LOOP)
+        - !$mnh_undef(OPENACC)
+        - !$mnh_define(LOOP)
+        - !$mnh_define(OPENACC)
+        """
         self.removeComments(exclDirectives=[],
                             pattern=re.compile(r'^\!\$mnh_undef\(LOOP\)'))
         self.removeComments(exclDirectives=[],
@@ -39,15 +52,17 @@ class Openacc():
     @debugDecor
     def craybyPassDOCONCURRENT(self):
         """
-        By pass a bug of the CRAY compiler in which the vectorisation is not done with
-        BR_ fonctions use or locally.
-        On all expanded compute kernels with !$acc loop independent collapse(X) placed:
-            - if BR_ fonction is used : !$acc loop independent collapse(X) is removed and
-              the nested DO loops are factorised into DO CONCURRENT
-            - if a mnh_undef(OPENACC) macro is in place, !$acc loop collapse independant(X)
-              is removed
-            - if a mnh_undef(LOOP) macro is in place the nested DO loops are factorised into
-              DO CONCURRENT
+        Handle CRAY compiler vectorization issues with GPU directives.
+
+        On compute kernels with !$acc loop independent collapse(X) directives:
+        - If BR_ functions are used: removes !$acc loop collapse and uses DO CONCURRENT
+        - If !$mnh_undef(OPENACC) is present: removes !$acc loop collapse
+        - If !$mnh_undef(LOOP) is present: converts nested loops to DO CONCURRENT
+
+        Notes
+        -----
+        Works around CRAY compiler vectorization bugs with BR_ (bit-reproducibility)
+        functions and OpenACC directives.
         """
         def checkPresenceofBR(node):
             """Return True if a BR_ (math BIT-REPRODUCTIBILITY) function is present in the node"""
@@ -132,11 +147,19 @@ class Openacc():
     @debugDecor
     def allocatetoHIP(self):
         """
-        Convert (DE)ALLOCATE to (DE)ALLOCATE_HIP on variables only sent to the GPU via
-        !$acc enter data copyin
-        or
-        !$acc enter data create
-        This is necessary for using the managed memory with GPU AMD MI250X (on Adastra)
+        Convert ALLOCATE/DEALLOCATE to HIP versions for AMD GPUs.
+
+        Transforms memory allocation calls for variables that are:
+        - Sent to GPU via !$acc enter data copyin
+        - Created on GPU via !$acc enter data create
+
+        Required for AMD MI250X GPU managed memory usage (e.g., Adastra cluster).
+
+        Examples
+        --------
+        >>> pft = PYFT('gpu_code.F90')
+        >>> pft.allocatetoHIP()
+        # ALLOCATE(X) becomes CALL MNH_HIPALLOCATE(X)
         """
         scopes = self.getScopes()
         for scope in scopes:
@@ -220,10 +243,18 @@ class Openacc():
     @debugDecor
     def addACCData(self):
         """
-        1) Add after declaration:
-        !$acc data present ( list of intent arrays)
-        2) Add at the end of the routine
-        !$acc end data
+        Add !$acc data directives for GPU data transfer.
+
+        For each subroutine, inserts:
+        - !$acc data present (array1, array2, ...) after declarations
+        - !$acc end data at the end of the routine
+
+        Only affects INTENT arrays (IN, OUT, INOUT).
+
+        Examples
+        --------
+        >>> pft = PYFT('gpu_code.F90')
+        >>> pft.addACCData()
         """
         scopes = self.getScopes()
         if scopes[0].path.split('/')[-1].split(':')[1][:4] == 'MODD':
@@ -269,8 +300,18 @@ class Openacc():
     @debugDecor
     def addACCRoutineSeq(self, stopScopes):
         """
-        Adds the '!$acc routine (<name>) seq' directive
-        :param stopScopes: scope paths where we stop to add the directive
+        Add !$acc routine seq directive to subroutines.
+
+        Parameters
+        ----------
+        stopScopes : list of str
+            Scope paths where to stop adding directives.
+
+        Examples
+        --------
+        >>> pft = PYFT('gpu_code.F90')
+        >>> pft.addACCRoutineSeq(['module:MOD/sub:SUB'])
+        # Adds !$acc routine (SUB) seq to SUB subroutine
         """
         for scope in self.getScopes():
             if self.tree.isUnderStopScopes(scope.path, stopScopes,

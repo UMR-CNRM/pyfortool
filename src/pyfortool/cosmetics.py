@@ -10,12 +10,22 @@ from pyfortool import NAMESPACE
 
 class Cosmetics():
     """
-    Methods to deal with cosmetics
+    Code formatting and style transformation methods.
+
+    Provides utilities for modifying code appearance including case,
+    indentation, spacing, and comment handling.
     """
+
     @debugDecor
     def upperCase(self):
         """
-        :return: same object but with upper case letters for FORTRAN code
+        Convert all FORTRAN keywords to uppercase.
+
+        Examples
+        --------
+        >>> pft = PYFT('mixed.F90')
+        >>> pft.upperCase()
+        # WRITE -> write becomes WRITE
         """
         for elem in self.iter():
             if (not nonCode(elem)) and elem is not None and elem.text is not None:
@@ -24,7 +34,13 @@ class Cosmetics():
     @debugDecor
     def lowerCase(self):
         """
-        :return: same objetc but with lower case letters for FORTRAN code
+        Convert all FORTRAN keywords to lowercase.
+
+        Examples
+        --------
+        >>> pft = PYFT('MIXED.F90')
+        >>> pft.lowerCase()
+        # WRITE -> write
         """
         for elem in self.iter():
             if (not nonCode(elem)) and elem is not None and elem.text is not None:
@@ -34,18 +50,32 @@ class Cosmetics():
     def indent(self, nodeToUpdate=None, indentProgramunit=0, indentBranch=2,
                exclDirectives=None):
         """
-        :param nodeToUpdate: if None, the entire object is indented
-        :param indentProgramunit: number of space characters inside program unit
-        :param indentBranch: number of space characters fr other branches (do, if...)
-        :param exclDirectives: some lines are directives and must stay unindented. The cpp
-                               directives are automatically recognized by fxtran but others
-                               appear as FORTRAN comments and must be indentified here. This
-                               option can take the following values:
-                                - None: to recognize as directives the lines begining
-                                        with '!$OMP' (default)
-                                - []: to suppress the exclusion
-                                - [...]: to give another list of line beginings to consider
-        :return: same object but with indentation corrected
+        Fix code indentation.
+
+        Parameters
+        ----------
+        nodeToUpdate : Element, optional
+            Specific node to indent. If None, indents entire file.
+        indentProgramunit : int, optional
+            Number of spaces for program unit contents. Default is 0.
+        indentBranch : int, optional
+            Number of spaces for nested constructs (do, if, etc.). Default is 2.
+        exclDirectives : list, optional
+            Lines to exclude from indentation:
+            - None: Exclude '!$OMP' lines (default).
+            - []: Include all lines.
+            - ['!$acc', '!$mnh']: Custom directive list.
+
+        Returns
+        -------
+        self
+            Returns self for chaining.
+
+        Examples
+        --------
+        >>> pft = PYFT('input.F90')
+        >>> pft.indent()  # Default indentation
+        >>> pft.indent(indentProgramunit=0, indentBranch=4)  # Custom
         """
 
         if nodeToUpdate is None:
@@ -165,15 +195,24 @@ class Cosmetics():
     @debugDecor
     def removeComments(self, exclDirectives=None, pattern=None):
         """
-        :param exclDirectives: some lines are directives and must stay unindented. The cpp
-                               directives are automatically recognized by fxtran but others
-                               appear as FORTRAN comments and must be indentified here. This
-                               option can take the following values:
-                                - None: to recognize as directives the lines begining
-                                        with '!$OMP', '!$mnh', '!$acc' or '!$ACC' (default)
-                                - []: to suppress the exclusion
-                                - [...]: to give another list of line beginings to consider
-        :param pattern: remove only comments matching the pattern (string or re.compile output)
+        Remove comments from the source code.
+
+        Parameters
+        ----------
+        exclDirectives : list, optional
+            Comments to preserve (directives to exclude):
+            - None: Preserve '!$OMP', '!$mnh', '!$ACC' lines (default).
+            - []: Remove all comments.
+            - ['!$acc']: Preserve only specific directives.
+        pattern : str or re.Pattern, optional
+            Only remove comments matching this pattern.
+
+        Examples
+        --------
+        >>> pft = PYFT('input.F90')
+        >>> pft.removeComments()  # Keep OpenMP/directives
+        >>> pft.removeComments(exclDirectives=[])  # Remove all
+        >>> pft.removeComments(pattern=re.compile(r'!.*TODO'))
         """
         if exclDirectives is None:
             exclDirectives = ['!$OMP', '!$mnh', '!$ACC', '!$acc']
@@ -852,16 +891,27 @@ class Cosmetics():
     @debugDecor
     def changeIfStatementsInIfConstructs(self, singleItem=None):
         """
-        Convert if-stmt to if-then-stmt. If singleItem is not filled, conversion to entire
-        object is performed.
-        E.g., before :
-        IF(A=B) print*,"C
-        after :
-        IF(A=B) THEN
-            print*,"C
-        END IF
-        Conversion is not done if 'CYLE' is found in action-stmt
-        :param singleItem: single if-stmt; in case transformation is applied on one if-stmt only
+        Convert one-line IF statements to IF-THEN-ENDIF blocks.
+
+        Parameters
+        ----------
+        singleItem : Element, optional
+            Specific IF statement node to convert. If None, converts all.
+
+        Transformation
+        -------------
+        Before:
+            IF(A=B) print*, "C"
+
+        After:
+            IF(A=B) THEN
+                print*, "C"
+            END IF
+
+        Examples
+        --------
+        >>> pft = PYFT('input.F90')
+        >>> pft.changeIfStatementsInIfConstructs()
         """
         if singleItem is not None:
             ifstmt = [singleItem]

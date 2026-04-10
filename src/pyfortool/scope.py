@@ -20,13 +20,22 @@ from pyfortool.expressions import createElem, createExpr
 
 class ElementView():
     """
-    This class acts as a view of an ElementTree exposing only a part of the subelements
+    View of an ElementTree exposing a subset of subelements.
+
+    Provides filtering capabilities for XML trees, particularly for
+    excluding CONTAINS sections from scope traversal.
     """
 
     def __init__(self, xml, excludeContains=False):
         """
-        :param xml: xml corresponding to a scope
-        :param excludeContains: do not take into account the CONTAINS part
+        Initialize ElementView.
+
+        Parameters
+        ----------
+        xml : xml element
+            Root XML element for this view.
+        excludeContains : bool, optional
+            If True, ignore elements after CONTAINS statement.
         """
         super().__init__()
         self._excludeContains = excludeContains
@@ -198,7 +207,27 @@ class ElementView():
 
 class PYFTscope(ElementView, Variables, Cosmetics, Applications, Statements, Cpp, Openacc):
     """
-    This class wrapps the xml node representing a FORTRAN scope
+    Wrap an XML node representing a FORTRAN scope.
+
+    PYFTscope provides methods to navigate, query, and modify FORTRAN
+    source code at the scope level (modules, subroutines, functions, types).
+
+    Scope Path Format
+    -----------------
+    Scope paths are '/' separated strings identifying the location in the
+    source tree. Examples:
+    - 'module:MODULE' - a module
+    - 'module:MOD/sub:SUB' - subroutine SUB in module MODULE
+    - 'module:MOD/type:TYPE' - type TYPE in module MODULE
+    - 'module:MOD/sub:SUB/func:FUNC' - function FUNC in subroutine SUB
+
+    Examples
+    --------
+    >>> pft = PYFT('myfile.F90')
+    >>> scopes = pft.getScopes()  # Get all scopes
+    >>> sub = pft.getScopeNode('module:MOD/sub:SUB')  # Get specific scope
+    >>> for scope in pft.getScopes(excludeKinds=['type']):
+    ...     print(scope.path)
     """
     SCOPE_STMT = {'module': 'module-stmt',
                   'func': 'function-stmt',
@@ -218,12 +247,22 @@ class PYFTscope(ElementView, Variables, Cosmetics, Applications, Statements, Cpp
     def __init__(self, xml, scopePath='/', parentScope=None,
                  enableCache=False, tree=None, excludeContains=False):
         """
-        :param xml: xml corresponding to this PYFTscope
-        :param scopePath: scope path ('/' separated string) of this node
-        :param parentScope: parent PYFTscope instance
-        :param enableCache: True to cache node parents
-        :param tree: an optional Tree instance
-        :param excludeContains: do not take into account the CONTAINS part
+        Initialize a PYFTscope instance.
+
+        Parameters
+        ----------
+        xml : xml element
+            XML element representing the scope.
+        scopePath : str, optional
+            Path string identifying this scope (e.g., 'module:MOD/sub:SUB').
+        parentScope : PYFTscope, optional
+            Parent scope instance.
+        enableCache : bool, optional
+            If True, cache parent nodes for faster traversal.
+        tree : Tree, optional
+            Tree instance for cross-file analysis.
+        excludeContains : bool, optional
+            If True, ignore CONTAINS sections in scope traversal.
         """
         super().__init__(xml=xml, excludeContains=excludeContains)
         self._mainScope = self if parentScope is None else parentScope._mainScope
@@ -263,30 +302,55 @@ class PYFTscope(ElementView, Variables, Cosmetics, Applications, Statements, Cpp
     @property
     def path(self):
         """
-        Return the current path
+        Get the scope path.
+
+        Returns
+        -------
+        str
+            Scope path string (e.g., 'module:MOD/sub:SUB').
         """
         return self._path
 
     @property
     def mainScope(self):
         """
-        Return the main scope (the upper scope in the file)
+        Get the main (root) scope.
+
+        Returns
+        -------
+        PYFTscope
+            The top-level scope in the file.
         """
         return self._mainScope
 
     @property
     def parentScope(self):
         """
-        Return the parent of the current scope
+        Get the parent scope.
+
+        Returns
+        -------
+        PYFTscope or None
+            Parent scope, or None if this is the root scope.
         """
         return self._parentScope
 
     # No @debugDecor for this low-level method
     def getParent(self, item, level=1):
         """
-        :param item: item whose parent is to be searched
-        :param level: number of degrees (1 to get the parent, 2 to get
-                      the parent of the parent...)
+        Get the parent element of an XML node.
+
+        Parameters
+        ----------
+        item : xml element
+            Element whose parent to find.
+        level : int, optional
+            Number of levels to traverse (1 = direct parent, 2 = grandparent, etc.).
+
+        Returns
+        -------
+        xml element or None
+            Parent element at the specified level.
         """
         # pylint: disable=protected-access
         def check(node):
@@ -312,10 +376,26 @@ class PYFTscope(ElementView, Variables, Cosmetics, Applications, Statements, Cpp
 
     def getSiblings(self, item, before=True, after=True):
         """
-        :param item: item whose siblings are to be searched
-        :param before: returns siblings before
-        :param after: returns siblings after
-        By default before and after are True so that all siblings are returned
+        Get sibling elements.
+
+        Parameters
+        ----------
+        item : xml element
+            Element whose siblings to find.
+        before : bool, optional
+            If True, include siblings before the item. Default is True.
+        after : bool, optional
+            If True, include siblings after the item. Default is True.
+
+        Returns
+        -------
+        list
+            List of sibling elements.
+
+        Examples
+        --------
+        >>> siblings = scope.getSiblings(node)  # All siblings
+        >>> before = scope.getSiblings(node, after=False)  # Only before
         """
 
         siblings = self.getParent(item).findall('./{*}*')
@@ -364,7 +444,24 @@ class PYFTscope(ElementView, Variables, Cosmetics, Applications, Statements, Cpp
     @staticmethod
     def normalizeScope(scopePath):
         """
-        Method to normalize a scope path
+        Normalize a scope path to standard format.
+
+        Converts scope path to lowercase prefix and uppercase names.
+
+        Parameters
+        ----------
+        scopePath : str
+            Scope path to normalize.
+
+        Returns
+        -------
+        str
+            Normalized scope path.
+
+        Examples
+        --------
+        >>> PYFTscope.normalizeScope('module:Test/sub:Sub')
+        'module:TEST/sub:SUB'
         """
         return '/'.join([(k.lower() + ':' + w.upper())
                          for (k, w) in [component.split(':')
@@ -373,8 +470,22 @@ class PYFTscope(ElementView, Variables, Cosmetics, Applications, Statements, Cpp
     @debugDecor
     def showScopesList(self, includeItself=False):
         """
-        Shows the list of scopes found in the source code
-        :param includeItself: include itself if self represent a "valid" scope (not a file)
+        Display all scopes found in the source code.
+
+        Parameters
+        ----------
+        includeItself : bool, optional
+            If True, include the current scope in the output.
+            Default is False.
+
+        Examples
+        --------
+        >>> pft = PYFT('myfile.F90')
+        >>> pft.showScopesList()
+        These scopes have been found in the source code:
+          - /module:MOD
+          - /module:MOD/sub:SUB
+          - /module:MOD/func:FUNC
         """
         print("These scopes have been found in the source code:")
         print("\n".join(['  - ' + scope.path
@@ -383,17 +494,35 @@ class PYFTscope(ElementView, Variables, Cosmetics, Applications, Statements, Cpp
     @debugDecor
     def getScopes(self, level=-1, excludeContains=True, excludeKinds=None, includeItself=True):
         """
-        :param level: -1 to get all child scopes
-                      1 to get only direct child scopes
-                      2 to get direct and direct of direct ...
-        :param excludeContains: if True, each PYFTscope which is a module, function or subroutine
-                                that contain (after a 'CONTAINS' statement) other subroutines or
-                                functions, those contained subroutines or functions are excluded
-                                from the result; but the PYFTscope contains the 'END' statement
-                                of the module/subroutine or function.
-        :param excludeKinds: if not None, is a list of scope kinds to exclude
-        :param includeItself: include itself if self represent a "valid" scope (not a file)
-        :return: list of PYFTscope found in the current scope
+        Get child scopes from the current scope.
+
+        Parameters
+        ----------
+        level : int, optional
+            Depth of scope traversal:
+            - -1 (default): All child scopes recursively.
+            - 1: Direct children only.
+            - 2: Children and grandchildren, etc.
+        excludeContains : bool, optional
+            If True (default), exclude scopes from CONTAINS sections
+            (nested subroutines/functions).
+        excludeKinds : list of str, optional
+            Scope kinds to exclude. Options: 'module', 'sub', 'func',
+            'type', 'prog', 'interface', 'submodule'.
+        includeItself : bool, optional
+            If True (default), include the current scope in results.
+
+        Returns
+        -------
+        list of PYFTscope
+            List of scope instances matching the criteria.
+
+        Examples
+        --------
+        >>> pft = PYFT('myfile.F90')
+        >>> all_scopes = pft.getScopes()  # All scopes
+        >>> subs = pft.getScopes(excludeKinds=['module', 'func', 'type'])
+        >>> direct = pft.getScopes(level=1)
         """
         assert level == -1 or level > 0, 'level must be -1 or a positive int'
 
@@ -428,10 +557,32 @@ class PYFTscope(ElementView, Variables, Cosmetics, Applications, Statements, Cpp
     @debugDecor
     def getScopeNode(self, scopePath, excludeContains=True, includeItself=True):
         """
-        :param scopePath: scope path to search for
-        :param excludeContains: see getScopes
-        :param includeItself: include itself if self represent a "valid" scope (not a file)
-        :return: PYFTscope whose path is the path asked for
+        Get a specific scope by path.
+
+        Parameters
+        ----------
+        scopePath : str
+            Scope path to search for (e.g., 'module:MOD/sub:SUB').
+        excludeContains : bool, optional
+            See getScopes. Default is True.
+        includeItself : bool, optional
+            See getScopes. Default is True.
+
+        Returns
+        -------
+        PYFTscope
+            Scope instance matching the path.
+
+        Raises
+        ------
+        PYFTError
+            If scope not found or found multiple times.
+
+        Examples
+        --------
+        >>> pft = PYFT('myfile.F90')
+        >>> sub = pft.getScopeNode('module:MOD/sub:SUB')
+        >>> func = pft.getScopeNode('/module:MOD/func:FUNC')
         """
         scope = [scope for scope in self.getScopes(excludeContains=excludeContains,
                                                    includeItself=includeItself)
@@ -445,20 +596,48 @@ class PYFTscope(ElementView, Variables, Cosmetics, Applications, Statements, Cpp
     @debugDecor
     def isScopeNode(self, node):
         """
-        :param node: node to test
-        :return: True if node is a scope node (construct node around a
-                 module, subroutine, function or type declaration)
+        Check if a node is a scope-level construct.
+
+        Parameters
+        ----------
+        node : xml element
+            Node to check.
+
+        Returns
+        -------
+        bool
+            True if node is a scope construct (program-unit, interface-construct,
+            or T-construct).
+
+        Examples
+        --------
+        >>> node = pft.find('.//{*}subroutine-stmt/..')
+        >>> pft.isScopeNode(node)
+        True
         """
         return tag(node) in self.SCOPE_CONSTRUCT.values()
 
     @debugDecor
     def getParentScopeNode(self, item, mustRaise=True):
         """
-        :param item: item whose scope parent is to be searched
-        :param mustRaise: True to raise an exception if parent is not found
-        :return: the scope parent node of item
-        Example: if item is a call statement, result is the program-unit node
-                 in which the call statement is
+        Get the scope containing an element.
+
+        Parameters
+        ----------
+        item : xml element
+            Element whose containing scope to find.
+        mustRaise : bool, optional
+            If True (default), raise PYFTError if scope not found.
+
+        Returns
+        -------
+        xml element or None
+            The scope node containing the item.
+
+        Examples
+        --------
+        >>> call = pft.find('.//{*}call-stmt')
+        >>> scope = pft.getParentScopeNode(call)
         """
         result = self.getParent(item)
         while result is not None and not self.isScopeNode(result):
@@ -470,9 +649,25 @@ class PYFTscope(ElementView, Variables, Cosmetics, Applications, Statements, Cpp
     @debugDecor
     def getScopePath(self, item, includeItself=True):
         """
-        :param item: item whose path must be determined
-        :param includeItself: include the item if it is a scope node
-        :return: the full path of the structure containing item
+        Get the scope path for an element.
+
+        Parameters
+        ----------
+        item : xml element
+            Element whose scope path to determine.
+        includeItself : bool, optional
+            If True (default) and item is a scope node, include it.
+
+        Returns
+        -------
+        str
+            Full scope path of the element's containing scope.
+
+        Examples
+        --------
+        >>> node = pft.find('.//{*}a-stmt')
+        >>> pft.getScopePath(node)
+        '/module:MOD/sub:SUB'
         """
         if includeItself and self.isScopeNode(item):
             result = [self._getNodePath(item)]
@@ -486,8 +681,18 @@ class PYFTscope(ElementView, Variables, Cosmetics, Applications, Statements, Cpp
 
     def getFileName(self):
         """
-        :return: the name of the input file name or 'unknown' if not available
-                 in the xml fragment provided
+        Get the source filename.
+
+        Returns
+        -------
+        str
+            Normalized path to the source file.
+
+        Examples
+        --------
+        >>> pft = PYFT('/path/to/file.F90')
+        >>> pft.getFileName()
+        '/path/to/file.F90'
         """
         return os.path.normpath(self.mainScope.find('.//{*}file').attrib['name'])
 
@@ -495,10 +700,27 @@ class PYFTscope(ElementView, Variables, Cosmetics, Applications, Statements, Cpp
     @updateVarList
     def empty(self, addStmt=None, simplify=False):
         """
-        Empties the scope by removing all statements except dummy arguments declaration
-        and USE statements (because they can be useful for the dummy argument declarations).
-        :param addStmt: add this statement in the body of the emptied scopes
-        :param simplify: try to simplify code
+        Remove all statements from scopes.
+
+        Removes all executable statements from scopes while preserving:
+        - Dummy argument declarations
+        - USE statements
+        - Scope declarations and endings
+
+        Parameters
+        ----------
+        addStmt : str or list, optional
+            Statement(s) to insert into the body of emptied scopes.
+        simplify : bool, optional
+            If True, also remove unused local variables.
+
+        Examples
+        --------
+        >>> pft = PYFT('myfile.F90')
+        >>> pft.empty()  # Remove all statements
+
+        Empty and add a comment:
+        >>> pft.empty(addStmt='! TODO: Implement')
         """
         scopes = []  # list of scopes to empty
         for scope in self.getScopes(level=1, excludeContains=False):

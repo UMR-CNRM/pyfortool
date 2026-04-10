@@ -18,9 +18,19 @@ import pyfortool.pyfortool
 # No @debugDecor for this low-level method
 def _getDeclStmtTag(scopePath):
     """
-    Internal function
-    :param scopePath: a scope path
-    :return: the declaration statement we can find in this scope path
+    Get the declaration statement tag for a given scope path.
+
+    Parameters
+    ----------
+    scopePath : str
+        A scope path (e.g., 'module:MOD/sub:SUB' or 'type:MYTYPE').
+
+    Returns
+    -------
+    str
+        The XML tag for declaration statements:
+        - 'component-decl-stmt' for type declarations
+        - 'T-decl-stmt' for other scopes (module, subroutine, function)
     """
     if scopePath.split('/')[-1].split(':')[0] == 'type':
         declStmt = 'component-decl-stmt'
@@ -31,7 +41,10 @@ def _getDeclStmtTag(scopePath):
 
 def updateVarList(func):
     """
-    Decorator to signal that a varList update is needed
+    Decorator to invalidate the variable list cache.
+
+    Signals that the variable list needs to be recomputed after
+    a modification to the code tree.
     """
     @wraps(func)
     def wrapper(self, *args, **kwargs):
@@ -43,7 +56,34 @@ def updateVarList(func):
 
 class VarList():
     """
-    The VarList class stores the characterisitcs of all variables contained in a source code
+    Store the characteristics of all variables contained in a source code.
+
+    This class provides methods to query, search, and manage variables
+    declared in a FORTRAN scope (module, subroutine, function, or type).
+
+    Attributes
+    ----------
+    _varList : list
+        List of variable descriptors for the current scope.
+    _fullVarList : list
+        Complete list of variable descriptors for the whole file.
+    _scopePath : str
+        Path of the current scope (e.g., 'module:MODULE/sub:SUB').
+
+    Notes
+    -----
+    - Variables are found in modules only if the 'ONLY' attribute is used.
+    - Array specification and type are unknown for module variables.
+    - 'ASSOCIATE' statements are not followed.
+
+    Examples
+    --------
+    >>> pft = PYFT('myfile.F90')
+    >>> vl = pft.varList
+    >>> vl.findVar('X')
+    {'n': 'X', 't': 'REAL', 'as': [(None, '10')], 'i': None, ...}
+    >>> vl.findVar('Y', array=True)  # Search only arrays
+    {'n': 'Y', 't': 'REAL', 'as': [(None, '100'), (None, '100')], ...}
     """
     def __init__(self, mainScope, _preCompute=None):
         """
@@ -173,8 +213,28 @@ class VarList():
 
     def restrict(self, scopePath, excludeContains):
         """
-        :param scopePath: return a varList restricted to this scope path
-        :param excludeContains: exclude variables declared in contained parts
+        Return a VarList restricted to a specific scope.
+
+        Parameters
+        ----------
+        scopePath : str
+            Scope path to restrict to (e.g., 'module:MOD/sub:SUB').
+            Use empty string or '/' for root scope.
+        excludeContains : bool
+            If True, exclude variables declared in CONTAINS sections
+            (nested subroutines/functions).
+
+        Returns
+        -------
+        VarList
+            New VarList instance restricted to the specified scope.
+
+        Examples
+        --------
+        >>> vl = pft.varList
+        >>> sub_vl = vl.restrict('module:MOD/sub:SUB', excludeContains=True)
+        >>> sub_vl.findVar('X')
+        {'n': 'X', ...}
         """
         scopePath = '' if scopePath == '/' else scopePath
         root = scopePath + '/' if scopePath == '/' else scopePath
@@ -187,21 +247,53 @@ class VarList():
     @debugDecor
     def findVar(self, varName, array=None, exactScope=False, extraVarList=None):
         """
-        Search for a variable in a list of declared variables
-        :param varName: variable name
-        :param array: True to limit search to arrays,
-                      False to limit search to non array,
-                      None to return anything
-        :param exactScope: True to limit search to variables declared in the scopePath
-        :param extraVarList: None or list of variables (such as those contained in a VarList object)
-                             defined but not yet available in the self.varList object.
-        :return: None if not found or the description of the variable
+        Search for a variable in the list of declared variables.
 
-        The function is designed to return the declaration of a given variable.
-        If we know that the variable is (is not) an array, the last declaration statement
-        must (must not) be an array declaration. If the last declaration statement found doesn't
-        correspond to what is expected, we don't return it.
-        In case array is None, we return the last declaration statement without checking its kind.
+        Parameters
+        ----------
+        varName : str
+            Name of the variable to search for.
+        array : bool, optional
+            True to limit search to arrays only,
+            False to limit search to non-array (scalar) variables only,
+            None (default) to return any variable type.
+        exactScope : bool, optional
+            If True, only search for variables declared in the current scope path.
+            If False (default), search in current scope and all parent scopes.
+        extraVarList : list, optional
+            Additional list of variable descriptors to search in.
+            Useful when variables are defined but not yet in varList.
+
+        Returns
+        -------
+        dict or None
+            Variable descriptor dictionary with keys:
+            - 'n': variable name (uppercase)
+            - 't': type specification (e.g., 'REAL', 'INTEGER')
+            - 'as': array specification as list of (lower, upper) tuples
+            - 'i': intent specification (e.g., 'IN', 'OUT', 'INOUT')
+            - 'arg': True if dummy argument
+            - 'scopePath': path where variable is declared
+            - 'use': module name if imported via USE statement
+            Returns None if variable not found.
+
+        Notes
+        -----
+        The function returns the declaration of the variable found in the
+        deepest (most specific) scope. If `array` is specified, only
+        returns the variable if its declaration matches the expected kind.
+
+        Examples
+        --------
+        >>> vl = pft.varList
+        >>> vl.findVar('X')  # Find any variable named X
+        {'n': 'X', 't': 'REAL', 'as': [], 'i': None, ...}
+        >>> vl.findVar('Y', array=True)  # Find array Y
+        {'n': 'Y', 't': 'REAL', 'as': [(None, '100')], ...}
+        >>> vl.findVar('Z', array=False)  # Find scalar Z
+        {'n': 'Z', 't': 'INTEGER', 'as': [], ...}
+        >>> vl.findVar('P', exactScope=True)  # Only in current scope
+        {'n': 'P', 't': 'REAL', ...}
         """
         extraVarList = extraVarList if extraVarList is not None else []
         # Select all the variables declared in the current scope or upper,
@@ -224,7 +316,25 @@ class VarList():
     @debugDecor
     def showVarList(self):
         """
-        Display on stdout a nice view of all the variables
+        Display a formatted list of all variables.
+
+        Prints detailed information about each variable including:
+        - Name and type
+        - Whether it's scalar or array (with dimensions)
+        - Whether it's a dummy argument (with intent) or local variable
+        - Module origin for imported variables
+
+        Examples
+        --------
+        >>> pft = PYFT('input.F90')
+        >>> pft.varList.showVarList()
+        List of variables declared in /module:MOD/sub:SUB:
+          Variable X:
+            is scalar
+            is a dummy argument with intent IN
+          Variable Y:
+            is of rank 2, with dimensions (:,1:10)
+            is a local variable
         """
         for sc in set(v['scopePath'] for v in self._varList):
             print(f'List of variables declared in {sc}:')
@@ -252,18 +362,40 @@ class VarList():
 
 class Variables():
     """
-    Methos to deal with variables
+    Methods to manage and manipulate FORTRAN variables.
+
+    Provides functionality for declaring, removing, and checking variables
+    in FORTRAN source code.
     """
+
     def __init__(self, **kwargs):  # pylint: disable=unused-argument
         """
-        **kwargs is used to enable the use of super().__init__
+        Initialize the Variables handler.
+
+        Parameters
+        ----------
+        **kwargs
+            Keyword arguments for compatibility with parent class initialization.
         """
         self._varList = None
 
     @property
     def varList(self):
         """
-        Returns the varList object corresponding to the node
+        Get the VarList for this scope.
+
+        Returns
+        -------
+        VarList
+            VarList instance containing all variables in the current scope.
+            The list is lazily computed on first access.
+
+        Examples
+        --------
+        >>> pft = PYFT('input.F90')
+        >>> vl = pft.varList
+        >>> vl.findVar('X')
+        {'n': 'X', 't': 'REAL', ...}
         """
         # Evaluate the varList object if not already done
         if self.mainScope._varList is None:  # pylint: disable=protected-access
@@ -299,15 +431,32 @@ class Variables():
     @debugDecor
     def attachArraySpecToEntity(self):
         """
-        Find all T-decl-stmt elements that have a child element 'attribute' with
-        attribute-N="DIMENSION" and move the attribute into EN-N elements
-        E.g., before :
-        REAL, DIMENSION(D%NIJT,D%NKT) :: ZTLK, ZRT
-        INTEGER, PARAMETER, DIMENSION(1,1) :: IBUEXTRAIND=(/18, 30/)
-        after :
-        REAL :: ZTLK(D%NIJT,D%NKT), ZRT(D%NIJT,D%NKT)
-        INTEGER, PARAMETER  :: IBUEXTRAIND(1,1)=(/18, 30/)
-        Limitations : "DIMENSION" must be in upper case in attribute.text
+        Move DIMENSION attribute from declaration statement to individual entities.
+
+        Finds all type declaration statements (T-decl-stmt) that have a DIMENSION
+        attribute and moves the array specification to each declared variable.
+
+        Transformation
+        -------------
+        Before:
+            REAL, DIMENSION(D%NIJT,D%NKT) :: ZTLK, ZRT
+            INTEGER, PARAMETER, DIMENSION(1,1) :: IBUEXTRAIND=(/18, 30/)
+
+        After:
+            REAL :: ZTLK(D%NIJT,D%NKT), ZRT(D%NIJT,D%NKT)
+            INTEGER, PARAMETER  :: IBUEXTRAIND(1,1)=(/18, 30/)
+
+        Limitations
+        -----------
+        - DIMENSION attribute must be in uppercase in the source code.
+        - Allocatable arrays (with ':') are not modified.
+        - Variables with existing array specifications are not modified.
+
+        Examples
+        --------
+        >>> pft = PYFT('input.F90')
+        >>> pft.attachArraySpecToEntity()
+        >>> pft.write()  # Writes transformed code
         """
         # Find all T-decl-stmt elements that have a child element 'attribute'
         # with attribute-N="DIMENSION"
@@ -329,9 +478,22 @@ class Variables():
     @debugDecor
     def checkImplicitNone(self, mustRaise=False):
         """
-        :param mustRaise: True to raise
-        Issue a logging.warning if the "IMPLICIT NONE" statment is missing
-        If mustRaise is True, issue a logging.error instead and raise an error
+        Check for missing IMPLICIT NONE statements in scopes.
+
+        Issues a logging warning if IMPLICIT NONE is not declared in a scope.
+        When mustRaise is True, logs an error and raises PYFTError instead.
+
+        Parameters
+        ----------
+        mustRaise : bool, optional
+            If False (default), issue a warning and continue.
+            If True, issue an error and raise PYFTError.
+
+        Examples
+        --------
+        >>> pft = PYFT('input.F90')
+        >>> pft.checkImplicitNone()  # Issues warning if missing
+        >>> pft.checkImplicitNone(mustRaise=True)  # Raises error if missing
         """
         for scope in self.getScopes():
             # The IMPLICIT NONE statement is inherited from the top unit, control at top
@@ -351,9 +513,22 @@ class Variables():
     @debugDecor
     def checkIntent(self, mustRaise=False):
         """
-        :param mustRaise: True to raise
-        Issue a logging.warning if some "INTENT" attributes are missing
-        If mustRaise is True, issue a logging.error instead and raise an error
+        Check for missing INTENT attributes on dummy arguments.
+
+        Issues a logging warning for each dummy argument without an INTENT attribute.
+        When mustRaise is True, logs an error and raises PYFTError.
+
+        Parameters
+        ----------
+        mustRaise : bool, optional
+            If False (default), issue warnings and continue.
+            If True, issue errors and raise PYFTError.
+
+        Examples
+        --------
+        >>> pft = PYFT('input.F90')
+        >>> pft.checkIntent()  # Issues warning for missing INTENT
+        >>> pft.checkIntent(mustRaise=True)  # Raises error
         """
         ok = True
         log = logging.error if mustRaise else logging.warning
@@ -369,9 +544,23 @@ class Variables():
     @debugDecor
     def checkONLY(self, mustRaise=False):
         """
-        :param mustRaise: True to raise
-        Issue a logging.warning if some "ONLY" clauses are missing
-        If mustRaise is True, issue a logging.error instead and raise an error
+        Check for missing ONLY clauses in USE statements.
+
+        Issues a logging warning for each USE statement not followed by an ONLY clause.
+        When mustRaise is True, logs an error and raises PYFTError.
+
+        Parameters
+        ----------
+        mustRaise : bool, optional
+            If False (default), issue warnings and continue.
+            If True, issue errors and raise PYFTError.
+
+        Examples
+        --------
+        >>> pft = PYFT('input.F90')
+        >>> pft.checkONLY()  # Issues warning for missing ONLY
+        WARNING: USE MODULE is not followed by an ONLY clause...
+        >>> pft.checkONLY(mustRaise=True)  # Raises error
         """
         ok = True
         log = logging.error if mustRaise else logging.warning
@@ -390,16 +579,37 @@ class Variables():
     @updateTree('signal')
     def removeVar(self, varList, simplify=False):
         """
-        :param varList: list of variables to remove. Each item is a list or tuple of two elements.
-                        The first one describes where the variable is used, the second one is
-                        the name of the variable. The first element is a '/'-separated path with
-                        each element having the form 'module:<name of the module>',
-                        'sub:<name of the subroutine>', 'func:<name of the function>' or
-                        'type:<name of the type>'
-        :param simplify: try to simplify code (if we delete a declaration statement that used a
-                         variable as kind selector, and if this variable is not used else where,
-                         we also delete it)
-        Remove the variable from declaration, and from the argument list if needed
+        Remove variables from declarations and argument lists.
+
+        Parameters
+        ----------
+        varList : list of tuple
+            List of variables to remove. Each item is a list or tuple of two elements:
+            - First element: scope path where the variable is used (or declared).
+              This is a '/' separated path where each element has the form:
+              'module:<name>', 'sub:<name>', 'func:<name>', or 'type:<name>'.
+            - Second element: variable name (string).
+
+            Example: [('module:MOD/sub:SUB', 'X'), ('module:MOD/sub:SUB', 'Y')]
+        simplify : bool, optional
+            If True, also remove variables that become unused after the deletion
+            (e.g., kind selectors used only by the removed variable).
+
+        Examples
+        --------
+        Remove variable X from subroutine SUB in module MOD:
+        >>> pft = PYFT('input.F90')
+        >>> pft.removeVar([('module:MOD/sub:SUB', 'X')])
+
+        Remove multiple variables with simplification:
+        >>> pft.removeVar([('module:MOD/sub:SUB', 'KIND_VAR')], simplify=True)
+
+        Notes
+        -----
+        - Dummy arguments are removed from both declarations and argument lists.
+        - USE statement variables are removed from ONLY clauses.
+        - If all variables in a declaration statement are removed, the statement
+          itself is deleted (unless simplify=True, which may delete additional unused variables).
         """
         varList = self._normalizeUniqVar(varList)
 
@@ -524,14 +734,40 @@ class Variables():
     @updateVarList
     def addVar(self, varList):
         """
-        :param varList: list of variable specification to insert in the xml code
-                        a variable specification is a list of four elements:
-                        - variable scope path (path to module, subroutine, function or type
-                          declaration)
-                        - variable name
-                        - declarative statment
-                        - position of the variable in the list of dummy argument,
-                          None for a local variable
+        Add variables to declarations and argument lists.
+
+        Parameters
+        ----------
+        varList : list of list/tuple
+            List of variable specifications to insert. Each specification is a list
+            of four elements:
+            - Scope path (str): path to the module, subroutine, function, or type
+              where the variable should be declared (e.g., 'module:MOD/sub:SUB').
+            - Variable name (str): name of the variable to add.
+            - Declaration statement (str): FORTRAN declaration (e.g., 'REAL, INTENT(IN) :: X').
+            - Position (int or None): position in dummy argument list for arguments,
+              None for local variables.
+
+        Examples
+        --------
+        Add a local variable:
+        >>> pft = PYFT('input.F90')
+        >>> pft.addVar([('module:MOD/sub:SUB', 'LOCAL_VAR', 'INTEGER :: LOCAL_VAR', None)])
+
+        Add a dummy argument at position 0:
+        >>> pft.addVar([('module:MOD/sub:SUB', 'ARG', 'REAL, INTENT(IN) :: ARG', 0)])
+
+        Add multiple variables:
+        >>> pft.addVar([
+        ...     ('module:MOD/sub:SUB', 'X', 'REAL :: X', None),
+        ...     ('module:MOD/sub:SUB', 'Y', 'INTEGER :: Y', None)
+        ... ])
+
+        Notes
+        -----
+        - If adding to an argument list, the declaration is automatically updated
+          with the INTENT attribute if specified.
+        - Declaration statements are inserted before the first executable statement.
         """
         varList = self._normalizeUniqVar(varList)
 
@@ -614,16 +850,43 @@ class Variables():
     @updateTree('signal')
     def addModuleVar(self, moduleVarList):
         """
-        :param moduleVarList: list of module variable specification to insert in the xml code
-                              a module variable specification is a list of three elements:
-                              - scope path (path to module, subroutine, function or type
-                                declaration)
-                              - module name
-                              - variable name or or list of variable names
-                                or None to add a USE statement without the ONLY attribute
-        For example addModuleVar('sub:FOO', 'MODD_XX', 'Y') will add the following line in
-        subroutine FOO:
-        USE MODD_XX, ONLY: Y
+        Add USE statements for module variables.
+
+        Parameters
+        ----------
+        moduleVarList : list of list/tuple
+            List of module variable specifications. Each specification is a list
+            of three elements:
+            - Scope path (str): path to the location where USE should be added
+              (e.g., 'module:MOD/sub:SUB').
+            - Module name (str): name of the module to USE.
+            - Variable name(s) (str, list, or None):
+              - str: single variable name to import.
+              - list: list of variable names to import.
+              - None: add USE without ONLY clause (import all).
+
+        Examples
+        --------
+        Import single variable Y from MODD_XX into subroutine FOO:
+        >>> pft = PYFT('input.F90')
+        >>> pft.addModuleVar([('sub:FOO', 'MODD_XX', 'Y')])
+        ! Adds: USE MODD_XX, ONLY: Y
+
+        Import multiple variables:
+        >>> pft.addModuleVar([('sub:FOO', 'MODD_XX', ['X', 'Y', 'Z'])])
+        ! Adds: USE MODD_XX, ONLY: X, Y, Z
+
+        Add USE without ONLY (import all):
+        >>> pft.addModuleVar([('sub:FOO', 'MODD_XX', None)])
+        ! Adds: USE MODD_XX
+
+        Import into a module:
+        >>> pft.addModuleVar([('module:MOD', 'OTHER_MOD', 'VAR')])
+
+        Notes
+        -----
+        - Existing USE statements for the same module are updated to include new variables.
+        - Duplicate imports are avoided (variables already imported are not re-added).
         """
         moduleVarList = self._normalizeScopeVar(moduleVarList)
 
@@ -677,7 +940,18 @@ class Variables():
     @debugDecor
     def showUnusedVar(self):
         """
-        Displays on stdout a list of unused variables
+        Display unused variables on stdout.
+
+        Searches through all scopes and displays variables that are declared
+        but never used in the code.
+
+        Examples
+        --------
+        >>> pft = PYFT('input.F90')
+        >>> pft.showUnusedVar()
+        Some variables declared in /module:MOD/sub:SUB are unused:
+          - LOCAL_VAR
+          - UNUSED_ARRAY
         """
         scopes = self.getScopes(excludeKinds=['type'])
         varUsed = self.isVarUsed([(scope.path, v['n'])
@@ -691,12 +965,29 @@ class Variables():
                 print('  - ' + ('\n  - '.join(varList)))
 
     @debugDecor
-    def checkUnusedLocalVar(self,  mustRaise=False, excludeList=None):
+    def checkUnusedLocalVar(self, mustRaise=False, excludeList=None):
         """
-        :param mustRaise: True to raise
-        :param excludeList: list of variable names to exclude from the check
-        Issue a logging.warning if there are unused local variables
-        If mustRaise is True, issue a logging.error instead and raise an error
+        Check for unused local variables in scopes.
+
+        Issues a logging warning for each local variable that is declared but never used.
+        When mustRaise is True, logs an error and raises PYFTError.
+
+        Parameters
+        ----------
+        mustRaise : bool, optional
+            If False (default), issue warnings and continue.
+            If True, issue errors and raise PYFTError.
+        excludeList : list of str, optional
+            List of variable names to exclude from the check.
+            These variables will not trigger warnings even if unused.
+
+        Examples
+        --------
+        >>> pft = PYFT('input.F90')
+        >>> pft.checkUnusedLocalVar()  # Issues warnings
+        WARNING: The LOCAL_VAR variable is not used...
+        >>> pft.checkUnusedLocalVar(excludeList=['TEMP'])  # Exclude TEMP
+        >>> pft.checkUnusedLocalVar(mustRaise=True)  # Raises error
         """
 
         if excludeList is None:
@@ -725,11 +1016,36 @@ class Variables():
     @debugDecor
     def removeUnusedLocalVar(self, excludeList=None, simplify=False):
         """
-        Remove unused local variables (dummy and module variables are not suppressed)
-        :param excludeList: list of variable names to exclude from removal (even if unused)
-        :param simplify: try to simplify code (if we delete a declaration statement that used a
-                         variable as kind selector, and if this variable is not used else where,
-                         we also delete it)
+        Remove unused local variables from declarations.
+
+        Removes variables that are declared but never used in the code.
+        Dummy arguments and module variables are not removed.
+
+        Parameters
+        ----------
+        excludeList : list of str, optional
+            List of variable names to exclude from removal.
+            These variables will be kept even if unused.
+        simplify : bool, optional
+            If True, also remove variables that become unused after removal
+            (e.g., kind selectors).
+
+        Examples
+        --------
+        >>> pft = PYFT('input.F90')
+        >>> pft.removeUnusedLocalVar()  # Remove all unused locals
+
+        Remove unused locals except TEMP and COUNTER:
+        >>> pft.removeUnusedLocalVar(excludeList=['TEMP', 'COUNTER'])
+
+        With simplification (remove cascading unused vars):
+        >>> pft.removeUnusedLocalVar(simplify=True)
+
+        Notes
+        -----
+        - Only local variables (declared in SUBROUTINE/FUNCTION scope) are removed.
+        - Dummy arguments (subroutine parameters) are preserved.
+        - Variables imported via USE statements are preserved.
         """
         if excludeList is None:
             excludeList = []
@@ -745,8 +1061,30 @@ class Variables():
     @debugDecor
     def addExplicitArrayBounds(self, node=None):
         """
-        Replace ':' by explicit arrays bounds.
-        :param node: xml node in which ':' must be replaced (None to replace everywhere)
+        Replace implicit array bounds with explicit bounds from declarations.
+
+        Transforms array slice notation (e.g., A(:)) into explicit bounds
+        based on the array's declaration.
+
+        Parameters
+        ----------
+        node : xml element, optional
+            Specific XML node to transform. If None (default), transforms
+            all implicit bounds in all scopes.
+
+        Examples
+        --------
+        Given declaration: REAL, DIMENSION(1:10) :: A
+        And usage: B(:) = A(:)
+
+        After transformation:
+        B(1:10) = A(1:10)
+
+        Notes
+        -----
+        - Only handles 1D array slices (A(:) notation).
+        - Does not modify allocatable arrays (where ':' is part of declaration).
+        - Does not modify character type arrays.
         """
         if node is None:
             nodes = [(scope, scope) for scope in self.getScopes()]
@@ -801,7 +1139,25 @@ class Variables():
     @noParallel
     def addArrayParentheses(self):
         """
-        Look for arrays and add parenthesis. A => A(:)
+        Add explicit array parentheses to array variables.
+
+        Transforms array variable references to include explicit slice notation.
+        For example, A becomes A(:) when A is declared as an array.
+
+        Examples
+        --------
+        Given declaration: REAL, DIMENSION(10) :: A
+        And usage: B = A + C
+
+        After transformation:
+        B = A(:) + C(:)
+
+        Notes
+        -----
+        - Only modifies known arrays (declared with dimensions).
+        - Excludes arrays in ALLOCATED, ASSOCIATED, and PRESENT intrinsic calls.
+        - Does not modify pointer/allocatable arrays in call statements
+          (to maintain interface compatibility).
         """
         # Loop on scopes
         for scope in self.getScopes():
@@ -845,8 +1201,23 @@ class Variables():
     @debugDecor
     def addArrayParenthesesInNode(self, node):
         """
-        Look for arrays and add parenthesis. A => A(:)
-        :param node: xml node in which ':' must be added
+        Add explicit array parentheses to arrays within a specific XML node.
+
+        Parameters
+        ----------
+        node : xml element
+            XML node in which to add array parentheses.
+            Only processes named-E elements within this node.
+
+        See Also
+        --------
+        addArrayParentheses : Add parentheses in all scopes.
+
+        Examples
+        --------
+        >>> pft = PYFT('input.F90')
+        >>> node = pft.find('.//{*}a-stmt')
+        >>> pft.addArrayParenthesesInNode(node)
         """
         # Loop on variables
         for namedE in node.findall('.//{*}named-E'):
@@ -877,8 +1248,26 @@ class Variables():
     @debugDecor
     def removeArrayParenthesesInNode(self, node):
         """
-        Look for arrays and remove parenthesis if no index selection A(:,:) => A
-        :param node: xml node in which ':' must be removed
+        Remove array parentheses if no index selection is needed.
+
+        When an array has full slice notation (e.g., A(:,:)) that matches
+        the entire array, removes the parentheses.
+
+        Parameters
+        ----------
+        node : xml element
+            XML node in which to remove unnecessary parentheses.
+
+        Transformation
+        -------------
+        Before: A(:,:)  (when A is declared as 2D with full bounds)
+        After:  A
+
+        Notes
+        -----
+        - Only removes parentheses when all dimensions use full slice (:) notation.
+        - Preserves parentheses if any dimension has explicit index selection.
+        - Excludes arrays in ALLOCATED, ASSOCIATED, and PRESENT intrinsic calls.
         """
         # Loop on variables
         for namedE in node.findall('.//{*}named-E'):
@@ -905,20 +1294,68 @@ class Variables():
     @updateVarList
     def modifyAutomaticArrays(self, declTemplate=None, startTemplate=None, endTemplate=None):
         """
-        :param declTemplate: declaration template
-        :param startTemplate: template for the first executable statement
-        :param: endTemplate: template for the last executable statement
-        :return: number of arrays modified
-        Modifies all automatic arrays declaration in subroutine and functions. The declaration is
-        replaced by the declaration template, the start template is inserted as first executable
-        statement and the end template as last executable statement. Each template can use the
-        following place holders:
-        "{doubledotshape}", "{shape}", "{lowUpList}", "{name}" and "{type}" wich are, respectively
-        modified into ":, :, :", "I, I:J, 0:I", "1, I, I, J, 0, I", "A", "REAL" if the original
-        declaration statement was "A(I, I:J, 0:I)". The template
-        "{type}, DIMENSION({doubledotshape}), ALLOCATABLE :: {name}#
-         ALLOCATE({name}({shape}))#DEALLOCATE({name})"
-        replaces automatic arrays by allocatables
+        Transform automatic arrays using customizable templates.
+
+        Modifies automatic array declarations in subroutines and functions by
+        applying templates for declaration, initialization, and cleanup.
+
+        Parameters
+        ----------
+        declTemplate : str, optional
+            Template for the array declaration. If None, declaration is unchanged.
+        startTemplate : str, optional
+            Template for code to insert as the first executable statement
+            (e.g., allocation).
+        endTemplate : str, optional
+            Template for code to insert as the last executable statement
+            (e.g., deallocation).
+
+        Returns
+        -------
+        int
+            Number of arrays modified.
+
+        Placeholders
+        ------------
+        Each template can use the following placeholders (case-sensitive):
+
+        ============  ==================================================
+        Placeholder   Description (for declaration "A(I, I:J, 0:I)")
+        ============  ==================================================
+        {name}        Variable name (e.g., "A")
+        {type}        Type specification (e.g., "REAL")
+        {doubledotshape} Colon-separated dimensions (e.g., ":, :, :")
+        {shape}       Bounds with indices (e.g., "I, I:J, 0:I")
+        {lowUpList}   Flattened bounds (e.g., "1, I, I, J, 0, I")
+        ============  ==================================================
+
+        Examples
+        --------
+        Transform automatic arrays to allocatables:
+
+        >>> pft = PYFT('input.F90')
+        >>> pft.modifyAutomaticArrays(
+        ...     declTemplate="{type}, DIMENSION({doubledotshape}), ALLOCATABLE :: {name}",
+        ...     startTemplate="ALLOCATE({name}({shape}))",
+        ...     endTemplate="DEALLOCATE({name})"
+        ... )
+
+        Given input:
+            REAL, DIMENSION(I, I:J, 0:I) :: A
+            A = 1.0
+
+        Produces:
+            REAL, DIMENSION(:,:,:), ALLOCATABLE :: A
+            ALLOCATE(A(I, I:J, 0:I))
+            A = 1.0
+            DEALLOCATE(A)
+
+        Notes
+        -----
+        - Only processes automatic arrays (stack-allocated based on parameters).
+        - Excludes dummy arguments, allocatable, pointer, and function result arrays.
+        - Arrays with initial values are not processed.
+        - Variables are processed in dependency order to handle interdependencies.
         """
         templates = {'decl': declTemplate if declTemplate is not None else '',
                      'start': startTemplate if startTemplate is not None else '',

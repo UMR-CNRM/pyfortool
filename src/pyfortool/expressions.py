@@ -1,6 +1,8 @@
 """
-This module includes functions to deal with expressions
-These functions are independent of the PYFT and PYFTscope objects
+Expression manipulation functions.
+
+These functions are independent of PYFT and PYFTscope objects and provide
+low-level utilities for creating and manipulating FORTRAN expression XML nodes.
 """
 
 import re
@@ -14,10 +16,29 @@ from pyfortool import NAMESPACE
 
 def createElem(tagName, text=None, tail=None, childs=None):
     """
-    :param tagName: tag of the element to create
-    :param text: None or text of the element
-    :param tail: None or tail of the element
-    :param childs: None or element or list of elements to insert
+    Create an XML element with the given tag and attributes.
+
+    Parameters
+    ----------
+    tagName : str
+        XML tag name (without namespace).
+    text : str, optional
+        Text content for the element.
+    tail : str, optional
+        Tail text (text after element).
+    childs : Element or list, optional
+        Child element(s) to append.
+
+    Returns
+    -------
+    Element
+        Created XML element.
+
+    Examples
+    --------
+    >>> elem = createElem('named-E')
+    >>> elem = createElem('literal-E', text='42')
+    >>> elem = createElem('n', text='X', tail='\\n')
     """
     node = ET.Element(f'{{{NAMESPACE}}}{tagName}')
     if text is not None:
@@ -85,18 +106,28 @@ def _cachedCreateExprPart(value):
 @debugDecor
 def createExprPart(value):
     """
-    :param value: expression part to put in a *-E node
+    Create an XML node from a FORTRAN expression part.
 
-    If value is:
-      - a FORTRAN string (python sting containing a ' or a "), returns
-        <f:string-E><f:S>...
-      - a FORTRAN value (python string convertible in real or int, or .FALSE./.TRUE.), returns
-        <f:literal-E><f:l>...
-      - a FORTRAN variable name (pyhon string with only alphanumerical characters and _), returns
-        <named-E/><N><n>...
-      - a FORTRAN operation (other python string), returns the right part of
-        the X affectation statement of the code:
-        "SUBROUTINE T; X=" + value + "; END". The xml is obtained by calling fxtran.
+    Parameters
+    ----------
+    value : str
+        Expression part value to convert.
+
+    Returns
+    -------
+    Element
+        XML element representing the expression:
+        - Integer/float: <literal-E><l>value</l></literal-E>
+        - String: <string-E><S>value</S></string-E>
+        - Variable: <named-E><N><n>value</n></N></named-E>
+        - Structure member: <named-E><N><n>A</n></N><R-LT><component-R>%B</component-R></R-LT></named-E>
+        - Expression: parsed via fxtran
+
+    Examples
+    --------
+    >>> createExprPart('42')  # Literal
+    >>> createExprPart('X')   # Variable
+    >>> createExprPart('A%B') # Structure member
     """
     return copy.deepcopy(_cachedCreateExprPart(value))
 
@@ -104,8 +135,17 @@ def createExprPart(value):
 @lru_cache
 def _cachedCreateExpr(value):
     """
-    :param value: statements to convert into xml
-    :return: the xml fragment corresponding to value (list of nodes)
+    Internal cached function for createExpr.
+
+    Parameters
+    ----------
+    value : str
+        FORTRAN statement(s) to convert.
+
+    Returns
+    -------
+    list
+        List of XML nodes from the statement.
     """
     return fortran2xml(f"SUBROUTINE T\n{value}\nEND")[1].find('.//{*}program-unit')[1:-1]
 
@@ -113,8 +153,23 @@ def _cachedCreateExpr(value):
 @debugDecor
 def createExpr(value):
     """
-    :param value: statements to convert into xml
-    :return: the xml fragment corresponding to value (list of nodes)
+    Convert FORTRAN statements to XML nodes.
+
+    Parameters
+    ----------
+    value : str
+        One or more FORTRAN statements to convert.
+
+    Returns
+    -------
+    list
+        List of XML nodes representing the statements.
+
+    Examples
+    --------
+    >>> nodes = createExpr('X = 42')
+    >>> nodes = createExpr('CALL SUB(X, Y)')
+    >>> nodes = createExpr('IF (A > B) THEN\\n  X = 1\\nEND IF')
     """
     return copy.deepcopy(_cachedCreateExpr(value))
 
@@ -122,13 +177,33 @@ def createExpr(value):
 @debugDecor
 def simplifyExpr(expr, add=None, sub=None):
     """
-    :param expr: string containing an expression to simplify
-    :param add: string containing an expression to add
-    :param sub: string containing an expression to substract
-    :return: simplified expression
-    E.g. simplifyExpr('1+1+I+JI-I') => '2+JI'
-    Note: only additions and substractions are considered
-          addition and subtraction within parentheses are forbidden
+    Simplify a numeric expression by combining constants.
+
+    Parameters
+    ----------
+    expr : str
+        Expression to simplify (e.g., '1+I+2+JI-I').
+    add : str, optional
+        Expression to add to the result.
+    sub : str, optional
+        Expression to subtract from the result.
+
+    Returns
+    -------
+    str
+        Simplified expression string.
+
+    Examples
+    --------
+    >>> simplifyExpr('1+1+I+JI-I')
+    '2+JI'
+    >>> simplifyExpr('X+1', add='Y')
+    'X+Y+1'
+
+    Notes
+    -----
+    - Only handles addition and subtraction.
+    - Does not simplify expressions within parentheses.
     """
     # We could have used external module, such as sympy, but this routine
     # (as long as it's sufficient) avoids introducing dependencies.
