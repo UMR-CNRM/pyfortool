@@ -1,0 +1,112 @@
+name: Tests
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.10', '3.11', '3.12']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-cov
+          pip install -e .
+
+      - name: Run pytest unit tests
+        run: |
+          PYTHONPATH=src pytest tests/ -v --tb=short
+        env:
+          PYTHONPATH: src
+
+      - name: Run pytest with coverage
+        if: matrix.python-version == '3.11'
+        run: |
+          PYTHONPATH=src pytest tests/ -v --cov=pyfortool --cov-report=xml --cov-report=html
+        env:
+          PYTHONPATH: src
+
+      - name: Upload coverage to Codecov
+        if: matrix.python-version == '3.11'
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+
+  regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      - name: Run non-regression tests
+        run: |
+          cd examples && ./tests.sh
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install linting tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8
+
+      - name: Run flake8
+        run: |
+          flake8 src/pyfortool --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 src/pyfortool --count --exit-zero --max-complexity=15 --max-line-length=120 --statistics
+
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      - name: Check Doxygen documentation
+        run: |
+          if command -v doxygen &> /dev/null; then
+            cd doc/doxygen && doxygen doxygen_config
+            echo "Doxygen documentation generated successfully"
+          else
+            echo "Doxygen not installed, skipping documentation build"
+          fi

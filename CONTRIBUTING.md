@@ -108,41 +108,91 @@ def myMethod(self, arg1, arg2):
 
 ## Testing
 
-### Test Files
+PyForTool has two test suites:
 
-Tests are in the `examples/` directory:
+### 1. Regression Tests (examples/)
 
-- `*_before.F90` - Input files
-- `*_after.F90` - Expected output files
-- `tests.sh` - Test runner script
-
-### Running Tests
+Non-regression tests using FORTRAN file pairs:
 
 ```bash
-# Run all tests
+# Run all regression tests
 ./examples/tests.sh
 
 # Run specific test
 ./examples/tests.sh test_name
 ```
 
-### Adding Tests
+**Test files:**
+- `*_before.F90` - Input files
+- `*_after.F90` - Expected output files
 
-1. Create `test_name_before.F90` with input code
-2. Transform manually to create `test_name_after.F90`
-3. Add command comment at top of before file:
+### 2. Unit Tests (pytest)
 
-```fortran
-! pyfortool test_name --upperCase
-PROGRAM test_name
-...
-```
-
-4. Run tests to verify:
+Unit tests using pytest framework:
 
 ```bash
-./examples/tests.sh test_name
+# Install pytest
+pip install pytest
+
+# Run all unit tests
+PYTHONPATH=src pytest tests/ -v
+
+# Run specific test file
+PYTHONPATH=src pytest tests/test_pyft.py -v
+
+# Run with coverage
+PYTHONPATH=src pytest tests/ --cov=pyfortool --cov-report=html
 ```
+
+**Test structure:**
+```
+tests/
+├── conftest.py              # Shared fixtures
+├── test_pyft.py             # PYFT class tests
+├── test_scope.py            # PYFTscope tests
+├── test_varList.py          # VarList tests
+├── test_variables.py        # Variables mixin tests
+├── test_statements.py       # Statements mixin tests
+├── test_cosmetics.py        # Cosmetics mixin tests
+├── test_cpp.py              # Cpp mixin tests
+├── test_openacc.py          # Openacc mixin tests
+├── test_applications.py     # Applications mixin tests
+└── test_helpers/
+    ├── test_util.py         # Utility function tests
+    └── test_expressions.py  # Expression helper tests
+```
+
+### Adding Unit Tests
+
+1. Add fixture in `conftest.py` if shared code is needed
+2. Create test file or add to existing:
+   ```python
+   import pytest
+   from pyfortool import PYFT
+
+   def test_my_feature():
+       """Test description."""
+       pft = PYFT('test.F90')
+       pft.myMethod()
+       assert 'expected' in pft.fortran
+   ```
+3. Run tests:
+   ```bash
+   PYTHONPATH=src pytest tests/test_my_file.py -v
+   ```
+
+### CI/CD
+
+Tests run automatically via GitHub Actions on push and pull requests:
+
+| Job | Tests | Trigger |
+|-----|-------|---------|
+| `pytest` | Unit tests (pytest) | Every Python version |
+| `regression` | Non-regression tests (examples/) | Every push |
+| `lint` | flake8 checks | Every push |
+| `docs` | Doxygen build | Every push |
+
+See `.github/workflows/test.yml`.
 
 ## Submitting Changes
 
@@ -237,11 +287,13 @@ pyfortool/
 │   ├── expressions.py   # Expression helpers
 │   └── util.py          # Utilities
 ├── bin/                 # CLI tools
-├── examples/            # Test files
+├── examples/            # Regression test files
+├── tests/               # Pytest unit tests
 ├── doc/                 # Documentation
 │   ├── Documentation.md  # User guide
 │   ├── doxygen/         # API reference
 │   └── developer/        # Developer docs
+├── .github/workflows/   # GitHub Actions
 └── CONTRIBUTING.md      # This file
 ```
 

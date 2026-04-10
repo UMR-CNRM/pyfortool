@@ -8,6 +8,7 @@ For general documentation, see:
 - [Architecture Guide](md__home_sriette_GIT_pyfortool_doc_developer_architecture.html) - Class hierarchy and patterns
 - [Core Concepts](md__home_sriette_GIT_pyfortool_doc_developer_concepts.html) - Scope paths, VarList, decorators
 - [Module Organization](md__home_sriette_GIT_pyfortool_doc_developer_modules.html) - What each module contains
+- [Testing Guide](md__home_sriette_GIT_pyfortool_doc_developer_testing.html) - Unit tests with pytest
 
 ## Main Classes
 

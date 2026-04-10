@@ -446,10 +446,35 @@ From the project root, tests are launched by commands:
 
 ## Examples and tests
 
+### Regression Tests
+
 The examples directory contains a script (tests.sh) that performs a non-regression test.
 But, this directory can also be used as a registry of transformation examples.
 The files \*\_after.F90 are obtained by transforming the \*\_before.F90 files using
 the command line options in comment at the very begining of these files.
+
+### Unit Tests
+
+The `tests/` directory contains pytest unit tests covering:
+
+| Test File | Coverage |
+|-----------|----------|
+| `test_pyft.py` | PYFT class, file I/O, properties |
+| `test_scope.py` | Scope navigation, getScopes, getScopeNode |
+| `test_varList.py` | Variable list management |
+| `test_variables.py` | Variable manipulation methods |
+| `test_statements.py` | Statement operations |
+| `test_cosmetics.py` | Code formatting transformations |
+| `test_cpp.py` | Preprocessor directive handling |
+| `test_openacc.py` | OpenACC transformations |
+| `test_applications.py` | High-level transformations |
+| `test_helpers/` | Utility and expression helper functions |
+
+Run tests with:
+
+```bash
+PYTHONPATH=src pytest tests/ -v
+```
 
 ## See Also
 

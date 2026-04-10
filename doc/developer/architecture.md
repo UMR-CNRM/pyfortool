@@ -406,9 +406,56 @@ classDiagram
     PYFT o-- Tree : uses
 ```
 
+## Testing
+
+PyForTool uses pytest for unit testing. See [Testing Guide](testing.html) for details.
+
+### Running Tests
+
+```bash
+# Unit tests (pytest)
+PYTHONPATH=src pytest tests/ -v
+
+# Non-regression tests
+cd examples && ./tests.sh
+
+# With coverage
+PYTHONPATH=src pytest tests/ --cov=pyfortool --cov-report=html
+```
+
+### CI/CD
+
+Tests run automatically via GitHub Actions:
+
+| Job | Tests | Python |
+|-----|-------|--------|
+| `pytest` | Unit tests | 3.9, 3.10, 3.11, 3.12 |
+| `regression` | Non-regression (examples/) | 3.11 |
+| `lint` | flake8 | 3.11 |
+
+### Test Structure
+
+```
+tests/
+├── conftest.py           # Shared fixtures
+├── test_pyft.py          # PYFT class tests
+├── test_scope.py         # PYFTscope tests
+├── test_varList.py       # VarList tests
+├── test_variables.py     # Variables mixin tests
+├── test_statements.py    # Statements mixin tests
+├── test_cosmetics.py     # Cosmetics mixin tests
+├── test_cpp.py          # Cpp mixin tests
+├── test_openacc.py       # Openacc mixin tests
+├── test_applications.py  # Applications mixin tests
+└── test_helpers/
+    ├── test_util.py      # Utility function tests
+    └── test_expressions.py # Expression helper tests
+```
+
 ## See Also
 
 - [Core Concepts](md__home_sriette_GIT_pyfortool_doc_developer_concepts.html) - Detailed explanation of scope paths, VarList, and decorators
 - [Module Organization](md__home_sriette_GIT_pyfortool_doc_developer_modules.html) - What each module contains
+- [Testing Guide](md__home_sriette_GIT_pyfortool_CONTRIBUTING.html#testing) - How to run and add tests
 - [User's Guide](../Documentation.html) - End-user documentation
 - [API Reference](../html/index.html) - Auto-generated from docstrings
