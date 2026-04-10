@@ -1437,10 +1437,12 @@ class Applications():
                 aStmt = scope.findall('.//{*}a-stmt')
                 callStmts = scope.findall('.//{*}call-stmt')
                 aStmtandCallStmts = aStmt + callStmts
+                funcToSuppress = set()
                 for stmt in aStmtandCallStmts:
                     elemN = stmt.findall('.//{*}n')
                     for el in elemN:
                         if alltext(el) in list(shumansGradients):
+                            funcToSuppress.add(alltext(el))
                             # Expand the single-line if-stmt necessary
                             # to add all the new lines further.
                             parStmt = scope.getParent(stmt)
@@ -1592,8 +1594,9 @@ class Applications():
                         if nbzshugradwk > maxnbZshugradwk:
                             maxnbZshugradwk = nbzshugradwk
 
-                    # Add parenthesis around all variables
-                    scope.addArrayParenthesesInNode(foundStmtandCalls[stmt][0])
+                    # Add parenthesis around all variables, except in call
+                    if tag(foundStmtandCalls[stmt][0]) != 'call-stmt':
+                        scope.addArrayParenthesesInNode(foundStmtandCalls[stmt][0])
 
                     # For the last compute statement, add mnh_expand and acc
                     # kernels if not call statement
@@ -1637,6 +1640,11 @@ class Applications():
                             elif re.match(r'G[XYZ]_' + kind + r'_[MUVW]{1,2}_DEVICE', sub):
                                 moduleVars.append((scope.path, f'MODI_GRADIENT_{kind}', sub))
                 scope.addModuleVar(moduleVars)
+
+                # Remove the USE of the old function
+                for sub in funcToSuppress:
+                    if scope.varList.findVar(sub):
+                        scope.removeVar([(scope.path, sub)])
 
                 # Add the missing local variables
                 for varName in localVariablesToAdd:
