@@ -1,52 +1,78 @@
-# User's guide
+# User's Guide
 
 ## Introduction
 
-This package contains two python script, pyfortool and pyfortool\_parallel,
-that read FORTRAN codes, parse them in xml, perform some manipulation, revert them
-in FORTRAN and write them back on disk.
-pyfortoo performs these tasks on a per file basis whereas pyfortool\_parallel
-perform the transformations in parallel on all files found in a tree.
-In addition, the package can be used for scripting applicative transformations.
+PyForTool is a Python package for source-to-source transformation of FORTRAN code.
+It reads FORTRAN files, parses them to XML using [fxtran](https://github.com/fxcoudert/fxtran),
+applies transformations, and writes the result back.
 
-This package supposes that the original source code is written using UTF-8
-encoding. If not, some special characters could be altered by the double
-conversion. Apart from this, the resulting FORTRAN source code is exactly
-the same as the INPUT source code if no manipulation is performed.
+**Two command-line tools are provided:**
 
-DEPENDENCIES:
+| Tool | Description |
+|------|-------------|
+| `pyfortool` | Transform files sequentially |
+| `pyfortool_parallel` | Transform files in parallel |
 
- - [pyfxtran](https://github.com/SebastienRietteMTO/pyfxtran) must be installed (```pip install pyfxtran```).
- - PyForTool needs, at least, version 3.8 of python
+The package can also be used as a Python library for scripting transformations.
 
-LIMITATIONS:
+## Quick Start
 
- - Depending on where there are put, pre-processor directives can break
-   the parsing by (py)fxtran
- - Other encoding than UTF-8 is not supported
+```bash
+# Install
+pip install pyfortool
 
-Content of this documentation:
+# Transform a file
+pyfortool input.F90 --upperCase --indent --output output.F90
 
-- [presentation of the scope path concept](#concepts)
-- [tool options](#tool-options)
-- [python module short description](#python-module)
-- [examples and tests](#examples-and-tests)
+# Transform in parallel
+pyfortool_parallel --tree /path/to/src --descTree desctree.json --upperCase
+```
+
+### As a Python Library
+
+```python
+from pyfortool import PYFT
+
+pft = PYFT('input.F90')
+pft.upperCase()
+pft.write()
+```
+
+## Dependencies
+
+- [pyfxtran](https://github.com/SebastienRietteMTO/pyfxtran) must be installed (with pip)
+- Python 3.8 or higher
+
+## Limitations
+
+- Pre-processor directives may break parsing depending on placement
+- Only UTF-8 encoding is supported
+
+## Documentation Structure
+
+| Document | Description |
+|----------|-------------|
+| This guide | Tool options and Python module reference |
+| [Developer documentation](developer/index.html) | Architecture and internals |
+| [API Reference](html/index.html) | Auto-generated from source |
 
 ## Concepts
 
-Especially when a FORTRAN source file contains several subroutine, functions
-or type declaration, it is necessary to specify on which part of the source
-code a modification must be done.
-This is achieved through the scope concept.
-The scope path is a string representing a kind of path to access the source code
-fragment on which the action must be performed.
-A scope path is a succession of path elements separated by '/'; each path elements
-has one of the following forms:
+When a FORTRAN file contains multiple subroutines, functions, or types, you need to specify which part to transform. This is done using **scope paths**.
 
- - **module:_NAME_** to refer to the module named _NAME_
- - **sub:_NAME_** to refer to the subroutine named _NAME_
- - **func:_NAME_** to refer to the function named _NAME_
- - **type:_NAME_** to refer to the definition of the type named _NAME_
+A scope path is a `/`-separated string:
+
+| Prefix | Meaning |
+|--------|---------|
+| `module:NAME` | Module named NAME |
+| `sub:NAME` | Subroutine named NAME |
+| `func:NAME` | Function named NAME |
+| `type:NAME` | Type named NAME |
+
+**Examples:**
+- `module:MOD` - Module MOD
+- `module:MOD/sub:SUB` - Subroutine SUB in module MOD
+- `module:MOD/sub:SUB/func:INNER` - Function INNER in subroutine SUB
 
 ## Tool options
 
@@ -424,3 +450,8 @@ The examples directory contains a script (tests.sh) that performs a non-regressi
 But, this directory can also be used as a registry of transformation examples.
 The files \*\_after.F90 are obtained by transforming the \*\_before.F90 files using
 the command line options in comment at the very begining of these files.
+
+## See Also
+
+- [Developer Documentation](developer/index.html) - Architecture and internals
+- [API Reference](html/index.html) - Auto-generated class and method documentation
