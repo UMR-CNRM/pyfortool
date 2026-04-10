@@ -1,5 +1,28 @@
 """
-This module includes the Statements class containing methods to act on statements
+Statement-level code transformations.
+
+Provides the Statements class for manipulating FORTRAN statements including
+CALL statements, array syntax, conditional blocks, and subroutine inlining.
+
+Key Features
+------------
+- Remove CALL statements (with optional cleanup of unused variables)
+- Transform array syntax to explicit DO loops
+- Inline contained subroutines into their parent
+- Conditional flag manipulation (set flags to .FALSE.)
+- Statement node removal with structural simplification
+
+Classes
+-------
+Statements : Mixin class providing statement manipulation methods
+
+Examples
+--------
+>>> pft = PYFT('input.F90')
+>>> pft.removeCall('FOO')  # Remove all CALL FOO statements
+>>> pft.removeArraySyntax()  # Convert A(:) = B(:) to DO loops
+>>> pft.inlineContainedSubroutines()  # Inline helper subroutines
+>>> pft.setFalseIfStmt('LDEBUG')  # Disable debug blocks
 """
 
 import re

@@ -1,6 +1,32 @@
 """
-This module implements the Applications class containing methods
-for high-to-moderate level transformation
+High-level FORTRAN code transformations.
+
+Provides the Applications class for application-specific transformations
+including profiling instrumentation, GPU optimization, and model-specific
+code adaptations.
+
+Key Features
+------------
+- DR_HOOK profiling instrumentation (add/remove)
+- Budget diagnostic removal
+- GPU stack allocation (AROME/MESO-NH models)
+- Structure member inlining for performance
+- PHYEX single-column mode adaptation
+- Array dimension reduction
+- Submodule generation for PHYEX
+
+Classes
+-------
+Applications : Mixin class providing high-level transformations
+
+Examples
+--------
+>>> pft = PYFT('input.F90')
+>>> pft.addDrHook()  # Add timing instrumentation
+>>> pft.deleteDrHook()  # Remove profiling
+>>> pft.addStack('AROME', stopScopes)  # GPU stack allocation
+>>> pft.convertTypesInCompute()  # Inline structure members
+>>> pft.deleteNonColumnCallsPHYEX()  # Remove multi-column dependencies
 """
 
 import copy

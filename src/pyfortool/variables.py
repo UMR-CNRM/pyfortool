@@ -1,5 +1,29 @@
 """
-This module implements the VarList and Variables classes to deal with variables
+Variable management and declaration manipulation.
+
+Provides the VarList and Variables classes for managing FORTRAN variable
+declarations and characteristics.
+
+Key Features
+------------
+- Variable declaration parsing and analysis
+- Array specification management (attach/detach dimensions)
+- Automatic array transformation (stack to heap allocation)
+- Unused variable detection and removal
+- Module and dummy argument handling
+
+Classes
+-------
+VarList : Manages a list of variables for a scope
+Variables : Mixin class providing variable manipulation methods
+
+Examples
+--------
+>>> pft = PYFT('input.F90')
+>>> pft.varList.findVar('X')
+{'n': 'X', 't': 'REAL', 'as': [], 'i': None, ...}
+>>> pft.attachArraySpecToEntity()
+>>> pft.modifyAutomaticArrays(declTemplate="{type}, DIMENSION({doubledotshape}), ALLOCATABLE :: {name}", startTemplate="ALLOCATE({name}({shape}))", endTemplate="DEALLOCATE({name})")
 """
 
 import logging

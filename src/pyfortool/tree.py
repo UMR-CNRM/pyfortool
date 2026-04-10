@@ -1,5 +1,28 @@
 """
-This module contains the Tree class to browse the tree
+Code dependency tree analysis and visualization.
+
+Provides the Tree class for building and navigating compilation and execution
+dependency graphs across multiple FORTRAN source files.
+
+Key Features
+------------
+- Compilation dependency tracking (USE statements)
+- Execution dependency tracking (CALL statements)
+- Source directory scanning
+- Tree serialization to/from JSON
+- Dependency graph visualization (DOT format)
+- Scope reachability analysis
+
+Classes
+-------
+Tree : Manages cross-file dependency analysis
+
+Examples
+--------
+>>> tree = Tree(['/path/to/src'], descTreeFile='tree.json')
+>>> deps = tree.needsFile('file.F90')
+>>> tree.plotExecTreeFromScope('module:MOD/sub:SUB', 'deps.png', 2, 2)
+>>> tree.toJson('tree.json')  # Save for later use
 """
 
 import glob

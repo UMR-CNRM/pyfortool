@@ -1,7 +1,31 @@
 #!/usr/bin/env python3
 
 """
-This module implements the scope stuff
+Scope-level operations for FORTRAN code.
+
+Provides PYFTscope class for navigating and manipulating FORTRAN scopes
+(modules, subroutines, functions, types) with integrated support for
+variables, statements, cosmetics, applications, C++ directives, and OpenACC.
+
+Key Features
+------------
+- Scope path navigation (e.g., 'module:MOD/sub:SUB')
+- XML tree traversal with CONTAINS section filtering
+- Parent/sibling element lookup with caching
+- Integration of Variables, Statements, Cosmetics, Applications, Cpp, Openacc
+
+Classes
+-------
+PYFTscope : Core scope wrapper extending ElementView
+ElementView : XML tree view with optional CONTAINS exclusion
+
+Examples
+--------
+>>> pft = PYFT('input.F90')
+>>> scopes = pft.getScopes()  # Get all scopes
+>>> sub = pft.getScopeNode('module:MOD/sub:SUB')  # Get specific scope
+>>> for scope in pft.getScopes(excludeKinds=['type']):
+...     print(scope.path)
 """
 
 import copy

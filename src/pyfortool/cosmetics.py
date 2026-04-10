@@ -1,5 +1,29 @@
 """
-This module implements the Cosmetics class containg methods to deal with cosmetics
+Code formatting and style transformations.
+
+Provides the Cosmetics class for modifying FORTRAN code appearance including
+case, indentation, spacing, comments, and line continuation.
+
+Key Features
+------------
+- Case conversion (upper/lower FORTRAN keywords)
+- Indentation fixing with directive exclusion
+- Comment removal with directive preservation
+- Whitespace normalization
+- Line continuation alignment
+
+Classes
+-------
+Cosmetics : Mixin class providing code formatting methods
+
+Examples
+--------
+>>> pft = PYFT('input.F90')
+>>> pft.upperCase()  # Convert keywords to UPPER CASE
+>>> pft.lowerCase()  # Convert keywords to lower case
+>>> pft.indent()  # Fix indentation
+>>> pft.removeComments()  # Remove comments (keep directives)
+>>> pft.prettify()  # Full formatting (indent + case + spaces)
 """
 
 import re
