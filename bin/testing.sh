@@ -263,7 +263,7 @@ if [ ${force} -eq 1 -o $(get_statuses "${SHA}" | grep -w "${context}" | wc -l) -
 
   cd "${WORKDIR}/pyfortool"
 
-  for check in version pylint flake8 examples; do
+  for check in version pylint flake8 examples unit; do
     if [ "${check}" == "version" ]; then
       check_message="'version' consistency"
     elif [ "${check}" == "pylint" ]; then
@@ -272,6 +272,8 @@ if [ ${force} -eq 1 -o $(get_statuses "${SHA}" | grep -w "${context}" | wc -l) -
       check_message="flake8 score"
     elif [ "${check}" == "examples" ]; then
       check_message="test examples"
+    elif [ "${check}" == "pytest" ]; then
+      check_message="unit tests"
     fi
     log 1 "Check ${check_message}"
     set +e

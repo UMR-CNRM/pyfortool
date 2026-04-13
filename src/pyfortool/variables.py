@@ -23,7 +23,10 @@ Examples
 >>> pft.varList.findVar('X')
 {'n': 'X', 't': 'REAL', 'as': [], 'i': None, ...}
 >>> pft.attachArraySpecToEntity()
->>> pft.modifyAutomaticArrays(declTemplate="{type}, DIMENSION({doubledotshape}), ALLOCATABLE :: {name}", startTemplate="ALLOCATE({name}({shape}))", endTemplate="DEALLOCATE({name})")
+>>> pft.modifyAutomaticArrays(
+        declTemplate="{type}, DIMENSION({doubledotshape}), ALLOCATABLE :: {name}",
+        startTemplate="ALLOCATE({name}({shape}))",
+        endTemplate="DEALLOCATE({name})")
 """
 
 import logging

@@ -120,7 +120,8 @@ def createExprPart(value):
         - Integer/float: <literal-E><l>value</l></literal-E>
         - String: <string-E><S>value</S></string-E>
         - Variable: <named-E><N><n>value</n></N></named-E>
-        - Structure member: <named-E><N><n>A</n></N><R-LT><component-R>%B</component-R></R-LT></named-E>
+        - Structure member:
+          <named-E><N><n>A</n></N><R-LT><component-R>%B</component-R></R-LT></named-E>
         - Expression: parsed via fxtran
 
     Examples
