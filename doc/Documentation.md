@@ -3,7 +3,7 @@
 ## Introduction
 
 PyForTool is a Python package for source-to-source transformation of FORTRAN code.
-It reads FORTRAN files, parses them to XML using [fxtran](https://github.com/fxcoudert/fxtran),
+It reads FORTRAN files, parses them to XML using [pyfxtran](https://github.com/SebastienRietteMTO/pyfxtran),
 applies transformations, and writes the result back.
 
 **Two command-line tools are provided:**
@@ -53,8 +53,8 @@ pft.write()
 | Document | Description |
 |----------|-------------|
 | This guide | Tool options and Python module reference |
-| [Developer documentation](developer/index.html) | Architecture and internals |
-| [API Reference](html/index.html) | Auto-generated from source |
+| [Developer documentation](developer/developer.md) | Architecture and internals |
+| [API Reference](index.html) | Auto-generated from source |
 
 ## Concepts
 
@@ -475,8 +475,3 @@ Run tests with:
 ```bash
 PYTHONPATH=src pytest tests/ -v
 ```
-
-## See Also
-
-- [Developer Documentation](developer/index.html) - Architecture and internals
-- [API Reference](html/index.html) - Auto-generated class and method documentation

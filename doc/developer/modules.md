@@ -9,16 +9,16 @@ pyfortool/
 ├── __init__.py          # Package initialization, exports PYFT
 ├── pyfortool.py         # PYFT class (file I/O)
 ├── scope.py             # PYFTscope, ElementView classes
-├── variables.py        # VarList, Variables classes
+├── variables.py         # VarList, Variables classes
 ├── statements.py        # Statements class
 ├── cosmetics.py         # Cosmetics class
-├── applications.py     # Applications class
-├── cpp.py              # Cpp class
-├── openacc.py          # Openacc class
-├── tree.py             # Tree class
-├── util.py             # Utility functions
-├── expressions.py      # Expression helpers
-└── scripting.py        # CLI tools implementation
+├── applications.py      # Applications class
+├── cpp.py               # Cpp class
+├── openacc.py           # Openacc class
+├── tree.py              # Tree class
+├── util.py              # Utility functions
+├── expressions.py       # Expression helpers
+└── scripting.py         # CLI tools implementation
 ```
 
 ## pyfortool.py - File Operations
@@ -445,6 +445,10 @@ pyfortool_parallel --tree /path/to/src ...
 
 ## See Also
 
-- [Architecture Guide](md__home_sriette_GIT_pyfortool_doc_developer_architecture.html) - How modules fit together
-- [Core Concepts](md__home_sriette_GIT_pyfortool_doc_developer_concepts.html) - Detailed concept explanations
+- Also in the Developer's Guide
+  - [Architecture Guide](architecture.md) - Class hierarchy and data flow
+  - [Core Concepts](concepts.md) - Detailed concept explanations
+  - [Testing Guide](testing.md) - How to run and add tests
+  - [CONTRIBUTING.md](../../CONTRIBUTING.md) - Contributing guidelines
+- [User's Guide](../Documentation.md) - End-user documentation
 - [API Reference](../html/index.html) - Method documentation

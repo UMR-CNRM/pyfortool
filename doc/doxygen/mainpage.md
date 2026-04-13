@@ -4,11 +4,8 @@ This section contains the auto-generated API reference from source code docstrin
 
 For general documentation, see:
 
-- [User's Guide](md__home_sriette_GIT_pyfortool_doc_Documentation.html) - End-user documentation
-- [Architecture Guide](md__home_sriette_GIT_pyfortool_doc_developer_architecture.html) - Class hierarchy and patterns
-- [Core Concepts](md__home_sriette_GIT_pyfortool_doc_developer_concepts.html) - Scope paths, VarList, decorators
-- [Module Organization](md__home_sriette_GIT_pyfortool_doc_developer_modules.html) - What each module contains
-- [Testing Guide](md__home_sriette_GIT_pyfortool_doc_developer_testing.html) - Unit tests with pytest
+- [User's Guide](../Documentation.md) - End-user documentation
+- [Developer's Guide](../developer/developer.md) - Architecture, concepts, module organisation and testing
 
 ## Main Classes
 

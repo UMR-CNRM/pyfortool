@@ -399,6 +399,10 @@ except PYFTError as e:
 
 ## See Also
 
-- [Architecture Guide](md__home_sriette_GIT_pyfortool_doc_developer_architecture.html) - Class hierarchy and data flow
-- [Module Organization](md__home_sriette_GIT_pyfortool_doc_developer_modules.html) - What each module contains
+- Also in the Developer's Guide
+  - [Architecture Guide](architecture.md) - Class hierarchy and data flow
+  - [Module Organization](modules.md) - What each module contains
+  - [Testing Guide](testing.md) - How to run and add tests
+  - [CONTRIBUTING.md](../../CONTRIBUTING.md) - Contributing guidelines
+- [User's Guide](../Documentation.md) - End-user documentation
 - [API Reference](../html/index.html) - Method documentation

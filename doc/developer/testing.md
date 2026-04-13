@@ -60,24 +60,24 @@ PYTHONPATH=src pytest tests/ --cov=pyfortool --cov-report=term-missing
 
 ```
 tests/
-├── conftest.py              # Shared pytest fixtures
+├── conftest.py                # Shared pytest fixtures
 │   ├── FORTRAN code fixtures (simple_fortran, module_with_subroutine, etc.)
 │   ├── TempFortranFile context manager
 │   └── PYFT fixtures (pft_simple, pft_module, etc.)
-├── test_pyft.py             # PYFT class tests
-│   ├── TestPYFTInit         # Initialization tests
-│   ├── TestPYFTProperties  # Property access tests
+├── test_pyft.py               # PYFT class tests
+│   ├── TestPYFTInit           # Initialization tests
+│   ├── TestPYFTProperties     # Property access tests
 │   ├── TestPYFTFileOperations # I/O tests
 │   └── TestPYFTMultipleScopes # Scope handling tests
-├── test_scope.py             # PYFTscope tests
-│   ├── TestGetScopes        # getScopes() tests
-│   ├── TestGetScopeNode     # getScopeNode() tests
-│   ├── TestScopeProperties  # path, mainScope, parentScope
-│   └── TestGetParent        # Parent navigation tests
-├── test_varList.py           # VarList tests
-│   ├── TestVarListFindVar   # findVar() tests
-│   └── TestVarListRestrict  # restrict() tests
-├── test_variables.py         # Variables mixin tests
+├── test_scope.py              # PYFTscope tests
+│   ├── TestGetScopes          # getScopes() tests
+│   ├── TestGetScopeNode       # getScopeNode() tests
+│   ├── TestScopeProperties    # path, mainScope, parentScope
+│   └── TestGetParent          # Parent navigation tests
+├── test_varList.py            # VarList tests
+│   ├── TestVarListFindVar     # findVar() tests
+│   └── TestVarListRestrict    # restrict() tests
+├── test_variables.py          # Variables mixin tests
 │   ├── TestAttachArraySpecToEntity
 │   ├── TestCheckImplicitNone
 │   └── TestModifyAutomaticArrays
@@ -89,7 +89,7 @@ tests/
 │   ├── TestCosmeticsCase
 │   ├── TestCosmeticsIndent
 │   └── TestCosmeticsComments
-├── test_cpp.py               # Cpp mixin tests
+├── test_cpp.py                # Cpp mixin tests
 │   └── TestCppApplyIfdef
 ├── test_openacc.py            # Openacc mixin tests
 │   ├── TestOpenaccRemoveACC
@@ -98,7 +98,7 @@ tests/
 │   ├── TestApplicationsDrHook
 │   └── TestApplicationsStack
 └── test_helpers/
-    ├── test_util.py          # Utility function tests
+    ├── test_util.py           # Utility function tests
     │   ├── TestTag
     │   ├── TestN2Name
     │   ├── TestIsInt
@@ -198,39 +198,12 @@ Tests run automatically via GitHub Actions (`.github/workflows/test.yml`):
 | `lint` | flake8 | 3.11 |
 | `docs` | Doxygen build | 3.11 |
 
-### GitHub Actions Workflow
-
-```yaml
-jobs:
-  pytest:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - name: Install dependencies
-        run: pip install pytest pytest-cov -e .
-      - name: Run tests
-        run: PYTHONPATH=src pytest tests/ -v
-
-  regression:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - name: Install dependencies
-        run: pip install -e .
-      - name: Run regression tests
-        run: cd examples && ./tests.sh
-```
-
 ## See Also
 
-- [Architecture Guide](md__home_sriette_GIT_pyfortool_doc_developer_architecture.html) - How PyForTool is structured
-- [Module Organization](md__home_sriette_GIT_pyfortool_doc_developer_modules.html) - What each module does
-- [CONTRIBUTING.md](../../CONTRIBUTING.html#testing) - Contributing guidelines
+- Also in the Developer's Guide
+  - [Architecture Guide](architecture.md) - Class hierarchy and data flow
+  - [Core Concepts](concepts.md) - Detailed concept explanations
+  - [Module Organization](modules.md) - What each module does
+  - [CONTRIBUTING.md](../../CONTRIBUTING.md) - Contributing guidelines
+- [User's Guide](../Documentation.md) - End-user documentation
+- [API Reference](../html/index.html) - Auto-generated from docstrings

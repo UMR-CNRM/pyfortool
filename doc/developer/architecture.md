@@ -4,7 +4,7 @@ This document describes the architecture of PyForTool to help developers underst
 
 ## Overview
 
-PyForTool is a Python package for source-to-source transformation of FORTRAN code. It uses [fxtran](https://github.com/fxcoudert/fxtran) to parse FORTRAN into XML, then manipulates the XML tree, and finally converts back to FORTRAN.
+PyForTool is a Python package for source-to-source transformation of FORTRAN code. It uses [pyfxtran](ihttps://github.com/SebastienRietteMTO/pyfxtran) to parse FORTRAN into XML, then manipulates the XML tree, and finally converts back to FORTRAN.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -318,8 +318,6 @@ pylint -d R0912,C0209,R0915,R1702,C0302,R0913,R0914,W1202,R0904,R0902 \
 
 ## Architecture Diagram (Mermaid)
 
-For the rendered image version, see [architecture.svg](architecture.svg):
-
 ```mermaid
 classDiagram
     class PYFT {
@@ -408,7 +406,7 @@ classDiagram
 
 ## Testing
 
-PyForTool uses pytest for unit testing. See [Testing Guide](testing.html) for details.
+PyForTool uses pytest for unit testing. See [Testing Guide](testing.md) for details.
 
 ### Running Tests
 
@@ -454,8 +452,10 @@ tests/
 
 ## See Also
 
-- [Core Concepts](md__home_sriette_GIT_pyfortool_doc_developer_concepts.html) - Detailed explanation of scope paths, VarList, and decorators
-- [Module Organization](md__home_sriette_GIT_pyfortool_doc_developer_modules.html) - What each module contains
-- [Testing Guide](md__home_sriette_GIT_pyfortool_CONTRIBUTING.html#testing) - How to run and add tests
-- [User's Guide](../Documentation.html) - End-user documentation
+- Also in the Developer's Guide
+  - [Core Concepts](concepts.md) - Detailed explanation of scope paths, VarList, and decorators
+  - [Module Organization](modules.md) - What each module contains
+  - [Testing Guide](testing.md) - How to run and add tests
+  - [CONTRIBUTING.md](../../CONTRIBUTING.md) - Contributing guidelines
+- [User's Guide](../Documentation.md) - End-user documentation
 - [API Reference](../html/index.html) - Auto-generated from docstrings
