@@ -42,13 +42,13 @@ PYTHONPATH=src pytest tests/ --cov=pyfortool --cov-report=term-missing
 
 ```bash
 # Run all regression tests
-./examples/tests.sh
+cd examples && ./tests.sh
 
-# Run specific test
-./examples/tests.sh test_name
+# Run specific test (by filename prefix)
+cd examples && ./tests.sh test_name
 
 # Update reference files (after manual verification)
-./examples/tests.sh --update
+cd examples && ./tests.sh --update
 ```
 
 **How it works:**
@@ -60,51 +60,122 @@ PYTHONPATH=src pytest tests/ --cov=pyfortool --cov-report=term-missing
 
 ```
 tests/
-├── conftest.py                # Shared pytest fixtures
-│   ├── FORTRAN code fixtures (simple_fortran, module_with_subroutine, etc.)
-│   ├── TempFortranFile context manager
-│   └── PYFT fixtures (pft_simple, pft_module, etc.)
-├── test_pyft.py               # PYFT class tests
-│   ├── TestPYFTInit           # Initialization tests
-│   ├── TestPYFTProperties     # Property access tests
-│   ├── TestPYFTFileOperations # I/O tests
-│   └── TestPYFTMultipleScopes # Scope handling tests
-├── test_scope.py              # PYFTscope tests
-│   ├── TestGetScopes          # getScopes() tests
-│   ├── TestGetScopeNode       # getScopeNode() tests
-│   ├── TestScopeProperties    # path, mainScope, parentScope
-│   └── TestGetParent          # Parent navigation tests
-├── test_varList.py            # VarList tests
-│   ├── TestVarListFindVar     # findVar() tests
-│   └── TestVarListRestrict    # restrict() tests
-├── test_variables.py          # Variables mixin tests
-│   ├── TestAttachArraySpecToEntity
-│   ├── TestCheckImplicitNone
-│   └── TestModifyAutomaticArrays
-├── test_statements.py         # Statements mixin tests
-│   ├── TestRemoveCall
-│   ├── TestRemovePrints
-│   └── TestSetFalseIfStmt
-├── test_cosmetics.py          # Cosmetics mixin tests
-│   ├── TestCosmeticsCase
-│   ├── TestCosmeticsIndent
-│   └── TestCosmeticsComments
-├── test_cpp.py                # Cpp mixin tests
-│   └── TestCppApplyIfdef
-├── test_openacc.py            # Openacc mixin tests
+├── conftest.py                    # Shared pytest fixtures
+│   ├── fortran_simple             # Simple program
+│   ├── fortran_with_subroutine    # Module with subroutine
+│   ├── fortran_with_calls         # Module with CALL statements
+│   ├── fortran_with_arrays        # Module with array syntax
+│   ├── fortran_with_if            # Module with IF statements
+│   ├── fortran_with_loops         # Module with DO loops
+│   ├── TempFortranFile            # Context manager
+│   └── pft_simple, pft_module, pft_calls, pft_arrays, pft_if, pft_loops  # Fixtures
+│
+├── test_pyft.py                   # PYFT class (17 tests)
+│   ├── TestPYFTInit               # __init__, file loading
+│   ├── TestPYFTProperties         # fortran, xml properties
+│   ├── TestPYFTFileOperations     # write, writeXML, rename
+│   ├── TestPYFTGetFileName        # getFileName method
+│   ├── TestPYFTInheritance        # Conservative PYFT
+│   └── TestPYFTMultipleScopes     # Multiple scopes
+│
+├── test_scope.py                  # PYFTscope class (22 tests)
+│   ├── TestGetScopes              # getScopes() method
+│   ├── TestGetScopeNode           # getScopeNode() method
+│   ├── TestScopeProperties        # path, mainScope, parentScope
+│   ├── TestGetParent              # Parent element navigation
+│   ├── TestGetSiblings            # Sibling navigation
+│   ├── TestNormalizeScope         # Scope path normalization
+│   ├── TestGetScopePath           # getScopePath method
+│   ├── TestGetParentScopeNode
+│   ├── TestIsScopeNode
+│   └── TestShowScopesList
+│
+├── test_varList.py                # VarList class (12 tests)
+│   ├── TestVarListFindVar         # findVar() with array, exactScope
+│   ├── TestVarListRestrict        # restrict() method
+│   ├── TestVarListProperty        # __len__, __getitem__
+│   └── TestVarListShowVarList
+│
+├── test_variables.py              # Variables mixin (23 tests)
+│   ├── TestAttachArraySpecToEntity# DIMENSION to entity
+│   ├── TestCheckImplicitNone      # IMPLICIT NONE check
+│   ├── TestCheckIntent            # INTENT attribute check
+│   ├── TestCheckOnly              # ONLY clause check
+│   ├── TestCheckUnusedLocalVar    # Unused variable check
+│   ├── TestShowUnusedVar          # Display unused vars
+│   ├── TestAddExplicitArrayBounds
+│   ├── TestAddArrayParentheses
+│   ├── TestModifyAutomaticArrays
+│   ├── TestRemoveUnusedLocalVar   # Actually removes variables
+│   ├── TestRemoveVarIfUnused
+│   ├── TestAddVar
+│   ├── TestRemoveVar
+│   └── TestRenameVar
+│
+├── test_statements.py             # Statements mixin (14 tests)
+│   ├── TestRemoveCall             # Remove CALL statements
+│   ├── TestRemovePrints           # Remove PRINT statements
+│   ├── TestRemoveArraySyntax      # Array to DO loops
+│   ├── TestSetFalseIfStmt         # IF flags to .FALSE.
+│   ├── TestChangeIfStatementsInIfConstructs
+│   ├── TestEmpty
+│   ├── TestIsNodeInProcedure
+│   └── TestIsNodeInCall
+│
+├── test_cosmetics.py              # Cosmetics mixin (16 tests)
+│   ├── TestCosmeticsCase          # upperCase, lowerCase
+│   ├── TestCosmeticsIndent        # indent method
+│   ├── TestCosmeticsComments      # removeComments
+│   ├── TestCosmeticsEmptyLines
+│   ├── TestCosmeticsContinuation
+│   ├── TestCosmeticsSpaces
+│   ├── TestCosmeticsIfStatements
+│   └── TestCosmeticsContains
+│
+├── test_cpp.py                    # Cpp mixin (12 tests)
+│   ├── TestCppApplyIfdef          # #ifdef evaluation
+│   ├── TestCppIfndef              # #ifndef handling
+│   ├── TestCppNested              # Nested #ifdef
+│   ├── TestCppElse                # #else handling
+│   └── TestCppMultipleBlocks
+│
+├── test_openacc.py                # Openacc mixin (6 tests)
 │   ├── TestOpenaccRemoveACC
-│   └── TestOpenaccAddACCData
-├── test_applications.py       # Applications mixin tests
+│   ├── TestOpenaccRemoveBypass
+│   ├── TestOpenaccAddACCData
+│   ├── TestOpenaccAddRoutineSeq
+│   ├── TestOpenaccAllocateHIP
+│   └── TestOpenaccCrayBypass
+│
+├── test_applications.py           # Applications mixin (15 tests)
 │   ├── TestApplicationsDrHook
-│   └── TestApplicationsStack
+│   ├── TestApplicationsDeleteCalls
+│   ├── TestApplicationsBudgetDDH
+│   ├── TestApplicationsMPPDB
+│   ├── TestApplicationsPHYEX
+│   ├── TestApplicationsConvertTypes
+│   ├── TestApplicationsMesoNHGPU
+│   ├── TestApplicationsStack
+│   ├── TestApplicationsIJDim
+│   ├── TestApplicationsModi
+│   └── TestApplicationsRemoveExtraDO
+│
 └── test_helpers/
-    ├── test_util.py           # Utility function tests
+    ├── __init__.py
+    ├── test_util.py               # Utility functions (26 tests)
     │   ├── TestTag
     │   ├── TestN2Name
+    │   ├── TestAlltext
     │   ├── TestIsInt
-    │   └── TestNonCode
-    └── test_expressions.py   # Expression helper tests
+    │   ├── TestIsFloat
+    │   ├── TestNonCode
+    │   ├── TestIsStmt
+    │   ├── TestIsConstruct
+    │   └── TestIsExecutable
+    │
+    └── test_expressions.py        # Expression helpers (22 tests)
         ├── TestCreateElem
+        ├── TestCreateExpr
         ├── TestCreateExprPart
         └── TestSimplifyExpr
 ```
@@ -113,11 +184,11 @@ tests/
 
 ### Test Fixtures
 
-Shared test data is defined in `conftest.py`:
+Shared test data is defined in `conftest.py`. Each fixture returns FORTRAN code as a string:
 
 ```python
 @pytest.fixture
-def module_with_subroutine():
+def fortran_with_subroutine():
     """Module with a subroutine."""
     return """
 MODULE MOD_TEST
@@ -135,51 +206,64 @@ END MODULE MOD_TEST
 """
 ```
 
-### PYFT Fixtures
+PYFT fixtures wrap the code and return a PYFT instance:
 
 ```python
 @pytest.fixture
-def pft_module(module_with_subroutine):
-    """PYFT instance from module with subroutine."""
+def pft_module(fortran_with_subroutine):
     with tempfile.TemporaryDirectory() as tmpdir:
         fpath = os.path.join(tmpdir, 'test.F90')
         with open(fpath, 'w') as f:
-            f.write(module_with_subroutine)
+            f.write(fortran_with_subroutine)
         return PYFT(fpath)
 ```
 
 ### Test Example
 
 ```python
-class TestCosmeticsIndent:
-    """Tests for indent method."""
+class TestCosmeticsCase:
+    """Tests for upperCase and lowerCase methods."""
 
-    def test_indent_default(self, pft_module):
-        """Test default indentation."""
-        pft_module.indent()
-        result = pft_module.fortran
-        assert result is not None
+    @pytest.fixture
+    def fortran_lowercase(self):
+        return """
+module mod_test
+    implicit none
+contains
+    subroutine sub_test(x, y)
+        real, intent(in) :: x
+        real, intent(out) :: y
+    end subroutine sub_test
+end module mod_test
+"""
 
-    def test_indent_custom_params(self, pft_module):
-        """Test indentation with custom parameters."""
-        pft_module.indent(indentProgramunit=0, indentBranch=4)
-        result = pft_module.fortran
-        assert result is not None
+    @pytest.fixture
+    def pft_lowercase(self, fortran_lowercase):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fpath = os.path.join(tmpdir, 'test.F90')
+            with open(fpath, 'w') as f:
+                f.write(fortran_lowercase)
+            return PYFT(fpath)
+
+    def test_uppercase_converts_keywords(self, pft_lowercase):
+        """Test that upperCase() converts FORTRAN keywords."""
+        pft_lowercase.upperCase()
+        result = pft_lowercase.fortran
+        assert 'MODULE' in result
+        assert 'SUBROUTINE' in result
 ```
 
 ## Best Practices
 
-1. **Use descriptive test names**: `test_add_drhook_instruments_subroutine`
-2. **One assertion per test**: Easier to diagnose failures
+1. **Use descriptive test names**: `test_remove_unused_removes_variable`
+2. **Verify the result, not just execution**: Use `assert 'UNUSED_VAR' not in after`
 3. **Use fixtures for shared data**: Reduces duplication
-4. **Test the result, not the implementation**: Test `pft.fortran` output
+4. **Test actual transformation**: Check `pft.fortran` contains expected changes
 5. **Skip complex tests gracefully**: Use `pytest.skip()` when appropriate
 
 ```python
 def test_complex_feature(self):
-    """Test that requires specific setup."""
     try:
-        # Try the transformation
         pft.complexMethod()
         result = pft.fortran
         assert 'expected' in result
