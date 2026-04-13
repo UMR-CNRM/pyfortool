@@ -24,8 +24,8 @@ def task(filename):
     :param clsPYFT: PYFT class to use
     :param filename: file name
     """
-    global PYFT
-    global allFileArgs
+    global PYFT  # noqa: F824
+    global allFileArgs  # noqa: F824
     allArgs, orderedOptions = allFileArgs[filename]
     try:
         # Opening and reading of the FORTRAN file
