@@ -1,6 +1,29 @@
 """
-PyForTool is a python package, built on top of the fxtran tool, to manipulate
-FORTRAN files to apply source-to-source transformations.
+PyForTool - Python FORTRAN source-to-source transformation tool.
+
+A Python package built on top of fxtran for manipulating FORTRAN source files.
+Provides capabilities for:
+
+- Parsing FORTRAN source code into XML
+- Analyzing and querying code structure (scopes, variables, statements)
+- Applying transformations (code optimization, GPU preparation, instrumentation)
+- Writing transformed code back to FORTRAN
+
+Basic Usage
+----------
+>>> from pyfortool import PYFT
+>>> pft = PYFT('input.F90')
+>>> pft.upperCase()
+>>> pft.write()
+
+Main Classes
+-----------
+PYFT : Main class for file-level operations
+PYFTscope : Scope-level operations (modules, subroutines, functions)
+
+See Also
+--------
+fxtran : External FORTRAN parser used by PyForTool
 """
 
 __version__ = "0.2.13"

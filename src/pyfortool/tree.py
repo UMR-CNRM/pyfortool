@@ -1,5 +1,28 @@
 """
-This module contains the Tree class to browse the tree
+Code dependency tree analysis and visualization.
+
+Provides the Tree class for building and navigating compilation and execution
+dependency graphs across multiple FORTRAN source files.
+
+Key Features
+------------
+- Compilation dependency tracking (USE statements)
+- Execution dependency tracking (CALL statements)
+- Source directory scanning
+- Tree serialization to/from JSON
+- Dependency graph visualization (DOT format)
+- Scope reachability analysis
+
+Classes
+-------
+Tree : Manages cross-file dependency analysis
+
+Examples
+--------
+>>> tree = Tree(['/path/to/src'], descTreeFile='tree.json')
+>>> deps = tree.needsFile('file.F90')
+>>> tree.plotExecTreeFromScope('module:MOD/sub:SUB', 'deps.png', 2, 2)
+>>> tree.toJson('tree.json')  # Save for later use
 """
 
 import glob
@@ -17,13 +40,15 @@ import pyfortool.pyfortool
 
 def updateTree(method='file'):
     """
-    Decorator factory to update the tree after having executed a PYFTscope method
-    :param method: method to use for updating
-                   - 'file': analyze current file (default)
-                   - 'scan': analyse new files and suppress tree information
-                             for suppressed files
-                   - 'signal': analyse files (if any) signaled using
-                               the signal method of the tree object
+    Decorator factory to update the tree after PYFTscope method execution.
+
+    Parameters
+    ----------
+    method : str, optional
+        Update method:
+        - 'file' (default): Analyze current file.
+        - 'scan': Analyze new files, remove info for deleted files.
+        - 'signal': Analyze files signaled via tree.signal().
     """
     assert method in ('file', 'scan', 'signal')
 
@@ -47,7 +72,16 @@ def updateTree(method='file'):
 
 class Tree():
     """
-    Class to browse the Tree
+    Build and navigate the code dependency tree.
+
+    Analyzes FORTRAN source files to build compilation and execution
+    dependency graphs for cross-file analysis.
+
+    Examples
+    --------
+    >>> tree = Tree(['/path/to/src'], descTreeFile='tree.json')
+    >>> deps = tree.needsFile('file.F90')
+    >>> tree.plotExecTreeFromScope('module:MOD/sub:SUB', 'deps.png', 2, 2)
     """
     def __init__(self, tree=None, descTreeFile=None,
                  parserOptions=None, wrapH=False,

@@ -120,6 +120,26 @@ if [ "${tests}" == "" -o "$(echo ${tests} | grep -w "examples")" != "" ]; then
 
   global_ret=$((${global_ret} + ${ret}))
   [ ${silence} == 0 ] && echo -e "  test examples: ${result}"
+  cd ..
+fi
+
+##### Check unit tests
+if [ "${tests}" == "" -o "$(echo ${tests} | grep -w "pytest")" != "" ]; then
+  set +e
+  output=$(PYTHONPATH=src pytest tests/ -v 2>&1)
+  retval=$?
+  set -e
+  [ ${verbose} == 1 ] && echo "${output}"
+  if [ ${retval} -ne 0 ]; then
+    ret=1
+    result="\e[31mproblem\e[0m"
+  else
+    ret=0
+    result="\e[32mOK\e[0m"
+  fi
+
+  global_ret=$((${global_ret} + ${ret}))
+  [ ${silence} == 0 ] && echo -e "  unit tests: ${result}"
 fi
 
 exit ${global_ret}

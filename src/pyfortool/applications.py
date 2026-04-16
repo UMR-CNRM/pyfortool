@@ -1,6 +1,32 @@
 """
-This module implements the Applications class containing methods
-for high-to-moderate level transformation
+High-level FORTRAN code transformations.
+
+Provides the Applications class for application-specific transformations
+including profiling instrumentation, GPU optimization, and model-specific
+code adaptations.
+
+Key Features
+------------
+- DR_HOOK profiling instrumentation (add/remove)
+- Budget diagnostic removal
+- GPU stack allocation (AROME/MESO-NH models)
+- Structure member inlining for performance
+- PHYEX single-column mode adaptation
+- Array dimension reduction
+- Submodule generation for PHYEX
+
+Classes
+-------
+Applications : Mixin class providing high-level transformations
+
+Examples
+--------
+>>> pft = PYFT('input.F90')
+>>> pft.addDrHook()  # Add timing instrumentation
+>>> pft.deleteDrHook()  # Remove profiling
+>>> pft.addStack('AROME', stopScopes)  # GPU stack allocation
+>>> pft.convertTypesInCompute()  # Inline structure members
+>>> pft.deleteNonColumnCallsPHYEX()  # Remove multi-column dependencies
 """
 
 import copy
@@ -59,14 +85,25 @@ def _loopVarPHYEX(lowerDecl, upperDecl, lowerUsed, upperUsed, name, index):
 
 class Applications():
     """
-    Methods for high-to-moderate level transformation
+    High-level FORTRAN code transformations.
+
+    Provides application-specific transformations for common patterns
+    like DR HOOK instrumentation, stack allocation, and code optimization.
     """
 
     @debugDecor
     def splitModuleRoutineFile(self):
         """
-        Split all module and subroutine contain in a fortran file
-        Return a fortran file for each module and subroutine
+        Split a file into separate files for each module and subroutine.
+
+        Creates individual .F90 files for each program unit found
+        in the input file.
+
+        Examples
+        --------
+        >>> pft = PYFT('combined.F90')
+        >>> pft.splitModuleRoutineFile()
+        # Creates module.F90, subroutine.F90, etc.
         """
         for scope in self.getScopes(level=1, excludeContains=False, includeItself=True):
             with pyfortool.pyfortool.generateEmptyPYFT(
@@ -79,7 +116,16 @@ class Applications():
     @debugDecor
     def buildModi(self):
         """
-        Build the modi_ file corresponding to the given scope
+        Build a modi_ interface file for the module.
+
+        Creates a MODI_ file containing interface declarations for all
+        subroutines and functions in the module.
+
+        Examples
+        --------
+        >>> pft = PYFT('MODE_MODULENAME.F90')
+        >>> pft.buildModi()
+        # Creates modi_MODE_MODULENAME.F90
         """
         filename = self.getFileName()
         fortran = 'MODULE MODI_' + os.path.splitext(os.path.basename(filename))[0].upper() + \
@@ -113,10 +159,24 @@ class Applications():
     @debugDecor
     def deleteNonColumnCallsPHYEX(self, simplify=False):
         """
-        Remove PHYEX routines that compute with different vertical columns not needed for AROME
-        MODE_ROTATE_WIND, UPDATE_ROTATE_WIND
-        If Simplify is True, also remove all variables only needed for these calls
-        :param simplify : if True, remove variables that are now unused
+        Remove PHYEX routines not compatible with AROME single-column mode.
+
+        Removes calls to PHYEX routines that have horizontal dependencies:
+        - ROTATE_WIND
+        - UPDATE_ROTATE_WIND
+        - BL_DEPTH_DIAG_3D
+        - TM06_H
+        - TURB_HOR_SPLT
+
+        Parameters
+        ----------
+        simplify : bool, optional
+            If True, also remove variables that become unused.
+
+        Examples
+        --------
+        >>> pft = PYFT('phys_meteo.F90')
+        >>> pft.deleteNonColumnCallsPHYEX(simplify=True)
         """
         for subroutine in ('ROTATE_WIND', 'UPDATE_ROTATE_WIND', 'BL_DEPTH_DIAG_3D',
                            'TM06_H', 'TURB_HOR_SPLT'):
@@ -154,19 +214,30 @@ class Applications():
     @debugDecor
     def convertTypesInCompute(self):
         """
-        Convert STR%VAR into single local variable contained in compute (a-stmt)
-        and in if-then-stmt, else-if-stmt, where-stmt
-        e.g.
-        ZA = 1 + CST%XG ==> ZA = 1 + XCST_G
-        ZA = 1 + PARAM_ICE%XRTMIN(3)  ==> ZA = 1 + XPARAM_ICE_XRTMIN3
-        ZRSMIN(1:KRR) = ICED%XRTMIN(1:KRR) => ZRSMIN(1:KRR) = ICEDXRTMIN1KRR(1:KRR)
-        IF(TURBN%CSUBG_MF_PDF=='NONE')THEN => IF(CTURBNSUBG_MF_PDF=='NONE')THEN
+        Inline structure member accesses in compute statements.
 
-        RESTRICTION : works only if the r-component variable is contained in 1 parent structure.
-        Allowed for conversion : CST%XG
-        Not converted : TOTO%CST%XG (for now, recursion must be coded)
-        Not converted : TOTO%ARRAY(:) (shape of the array must be determined from E1)
-        Not converted : TOTO%TUTU(:) (type in a type)
+        Converts TYPE%VAR access patterns into single local variables
+        to improve performance by reducing pointer dereferences.
+
+        Transformation Examples
+        ----------------------
+        Simple member access:
+        - ZA = 1 + CST%XG => ZA = 1 + XCST_G
+
+        Array member access:
+        - ZA = 1 + PARAM_ICE%XRTMIN(3) => ZA = 1 + XPARAM_ICE_XRTMIN3
+
+        Full array member:
+        - ZRSMIN(1:KRR) = ICED%XRTMIN(1:KRR) => ZRSMIN(1:KRR) = ICEDXRTMIN1KRR(1:KRR)
+
+        Conditional:
+        - IF(TURBN%CSUBG_MF_PDF=='NONE') => IF(CTURBNSUBG_MF_PDF=='NONE')
+
+        Limitations
+        -----------
+        - Only handles single-level structure access (not TOTO%CST%XG)
+        - Does not handle arrays with deferred shapes
+        - Type components must have known dimensions
         """
         def convertOneType(component, newVarList, scope):
             # 1) Build the name of the new variable
@@ -295,17 +366,39 @@ class Applications():
     @debugDecor
     def deleteDrHook(self, simplify=False):
         """
-        Remove DR_HOOK calls.
-        If Simplify is True, also remove all variables only needed for these calls (ZHOOK_HANDLE,
-        DR_HOOK, LHOOK, YOMHOOK, JPRB, PARKIND1)
-        :param simplify : if True, remove variables that are now unused
+        Remove DR_HOOK instrumentation.
+
+        Removes all DR_HOOK calls and optionally removes related variables:
+        ZHOOK_HANDLE, DR_HOOK, LHOOK, YOMHOOK, JPRB, PARKIND1
+
+        Parameters
+        ----------
+        simplify : bool, optional
+            If True, also remove unused DR_HOOK-related variables.
+
+        Examples
+        --------
+        >>> pft = PYFT('instrumented.F90')
+        >>> pft.deleteDrHook(simplify=True)
         """
         self.removeCall('DR_HOOK', simplify=simplify)
 
     @debugDecor
     def addDrHook(self):
         """
-        Add DR_HOOK calls.
+        Add DR_HOOK profiling calls to all subroutines and functions.
+
+        Adds timing instrumentation using the FHOOK profiling system.
+        For each routine, inserts:
+        - USE statement for YOMHOOK module
+        - ZHOOK_HANDLE variable declaration
+        - CALL DR_HOOK at routine start (if LHOOK)
+        - CALL DR_HOOK at routine end (if LHOOK)
+
+        Examples
+        --------
+        >>> pft = PYFT('mycode.F90')
+        >>> pft.addDrHook()
         """
         for scope in [scope for scope in self.getScopes()
                       if scope.path.split('/')[-1].split(':')[0] in ('func', 'sub') and
@@ -330,9 +423,24 @@ class Applications():
     @debugDecor
     def deleteBudgetDDH(self, simplify=False):
         """
-        Remove Budget calls.
-        If Simplify is True, also remove all variables only needed for these calls
-        :param simplify : if True, remove variables that are now unused
+        Remove budget diagnostic calls and flag checks.
+
+        Removes budget-related profiling calls:
+        - BUDGET_STORE_INIT_PHY
+        - BUDGET_STORE_END_PHY
+        - BUDGET_STORE_ADD_PHY
+        - TBUDGETS
+        - All BUDGET_* flag conditionals set to .FALSE.
+
+        Parameters
+        ----------
+        simplify : bool, optional
+            If True, also remove unused budget-related variables.
+
+        Examples
+        --------
+        >>> pft = PYFT('profiled.F90')
+        >>> pft.deleteBudgetDDH()
         """
         self.removeCall('BUDGET_STORE_INIT_PHY', simplify=simplify)
         self.removeCall('BUDGET_STORE_END_PHY', simplify=simplify)
@@ -705,12 +813,27 @@ class Applications():
     @debugDecor
     def addStack(self, model, stopScopes, parserOptions=None, wrapH=False):
         """
-        Add specific allocations of local arrays on the fly for GPU
-        :param model : 'MESONH' or 'AROME' for specific objects related to the allocator or stack
-        :param stopScopes: scope paths where we stop to add stack
-        :param parserOptions, wrapH: see the PYFT class
+        Transform automatic arrays to stack-allocated arrays for GPU.
 
-        Stacks are added to all routines called by the scopes listed in stopScopes
+        Converts automatic (stack) arrays to explicit dynamic allocation
+        using stack memory management for GPU execution.
+
+        Parameters
+        ----------
+        model : str
+            Target model: 'MESONH' or 'AROME'.
+        stopScopes : list of str
+            Scope paths where to stop recursion when adding stack arguments.
+        parserOptions : list, optional
+            Parser options for fxtran.
+        wrapH : bool, optional
+            Whether to wrap .h files.
+
+        Notes
+        -----
+        - For AROME: Uses CRAY pointers and YLSTACK for memory management.
+        - For MESONH: Uses POINTER and MNH_MEM_GET/MNH_MEM_RELEASE.
+        - Only affects routines called from within stopScopes.
         """
         if model == 'AROME':
             # The AROME transformation needs an additional parameter

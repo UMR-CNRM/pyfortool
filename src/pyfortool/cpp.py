@@ -9,31 +9,50 @@ from pyfortool.variables import updateVarList
 
 class Cpp:
     """
-    Methods to deal with cpp directives
+    C preprocessor directive handling methods.
+
+    Provides utilities for evaluating and manipulating C preprocessor
+    (#ifdef, #ifndef, #else, #endif) directives in FORTRAN code.
     """
+
     @debugDecor
     @noParallel
     @updateVarList
     @updateTree('signal')
     def applyCPPifdef(self, keys):
         """
-        Apply #ifdef / #ifndef only on some keys
-        :param keys: list of defined and undefined keys. The latter are preceded by a
-                     percentage sign '%'.
-                     E.g. if K is in keys, "#ifdef K "will be evaluated to True
-                          if %K is in keys, "#ifdef K" will be evaluated to False
+        Evaluate and reduce #ifdef / #ifndef blocks based on specified keys.
 
-        Warning: only #ifdef and #ifndef are treated and not "#if defined ..."
+        Parameters
+        ----------
+        keys : list of str
+            List of preprocessor keys to evaluate.
+            Keys preceded by '%' are treated as undefined (False).
+            Example: ['KEY1', '%KEY2'] means KEY1=True, KEY2=False.
 
-        If key K is in keys
-          #ifdef K
-          A
-          #else
-          B
-          #endif
-        is reduced to A
-        If %K is in keys, code snippet is reduced to B.
-        If neither K nor %K are present in keys, code is kept untouched.
+        Transformation Examples
+        ----------------------
+        If 'K' is in keys (K=True):
+            #ifdef K
+              A
+            #else
+              B
+            #endif
+        becomes simply: A
+
+        If '%K' is in keys (K=False):
+            #ifdef K
+              A
+            #else
+              B
+            #endif
+        becomes simply: B
+
+        Notes
+        -----
+        - Only handles #ifdef and #ifndef (not "#if defined ...")
+        - Nested if/ifdef/ifndef are supported
+        - Code not matching any conditional is kept unchanged
         """
 
         # We make the hypothesis that #ifdef, #else and #endif have the same parent

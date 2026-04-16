@@ -1,5 +1,28 @@
 """
-This module includes the Statements class containing methods to act on statements
+Statement-level code transformations.
+
+Provides the Statements class for manipulating FORTRAN statements including
+CALL statements, array syntax, conditional blocks, and subroutine inlining.
+
+Key Features
+------------
+- Remove CALL statements (with optional cleanup of unused variables)
+- Transform array syntax to explicit DO loops
+- Inline contained subroutines into their parent
+- Conditional flag manipulation (set flags to .FALSE.)
+- Statement node removal with structural simplification
+
+Classes
+-------
+Statements : Mixin class providing statement manipulation methods
+
+Examples
+--------
+>>> pft = PYFT('input.F90')
+>>> pft.removeCall('FOO')  # Remove all CALL FOO statements
+>>> pft.removeArraySyntax()  # Convert A(:) = B(:) to DO loops
+>>> pft.inlineContainedSubroutines()  # Inline helper subroutines
+>>> pft.setFalseIfStmt('LDEBUG')  # Disable debug blocks
 """
 
 import re
@@ -73,9 +96,24 @@ class Statements():
     # No @debugDecor for this low-level method
     def isNodeInProcedure(self, node, procList):
         """
-        Return True if node (named-E) is an argument of a procedure listed in procList
-        :param node: node to test
-        :param procList: list of procedure names
+        Check if a node is an argument of a specific intrinsic procedure.
+
+        Parameters
+        ----------
+        node : xml element
+            A named-E element to check.
+        procList : list of str
+            List of intrinsic procedure names (e.g., ['ALLOCATED', 'PRESENT']).
+
+        Returns
+        -------
+        bool
+            True if the node is an argument of one of the specified procedures.
+
+        Examples
+        --------
+        >>> node = pft.find('.//{*}named-E')
+        >>> is_arg = pft.isNodeInProcedure(node, ['ALLOCATED', 'PRESENT'])
         """
         # E.g. The xml for "ASSOCIATED(A)" is
         # <f:named-E>
@@ -103,8 +141,23 @@ class Statements():
     # No @debugDecor for this low-level method
     def isNodeInCall(self, node):
         """
-        Return True if node (named-E) is an argument of a called procedure
-        :param node: node to test
+        Check if a node is an argument of a CALL statement.
+
+        Parameters
+        ----------
+        node : xml element
+            A named-E element to check.
+
+        Returns
+        -------
+        bool
+            True if the node is an argument in a CALL statement,
+            False otherwise.
+
+        Examples
+        --------
+        >>> node = pft.find('.//{*}named-E[{*}N/{*}n="X"]')
+        >>> is_arg = pft.isNodeInCall(node)  # True if X is in CALL FOO(X)
         """
         # E.g. The xml for "CALL FOO(A)" is
         # <f:call-stmt>CALL
@@ -125,12 +178,37 @@ class Statements():
     @debugDecor
     def removeCall(self, callName, simplify=False):
         """
-        :param callName: name of the subprogram calls to remove.
-        :param simplify: try to simplify code (if we delete "CALL FOO(X)" and if X not
-                         used else where, we also delete it; or if the call was alone inside
-                         a if-then-endif construct, the construct is also removed, and
-                         variables used in the if condition are also checked...)
-        :return: number of calls suppressed
+        Remove all CALL statements to a specified subprogram.
+
+        Parameters
+        ----------
+        callName : str
+            Name of the subprogram to remove calls to.
+        simplify : bool, optional
+            If True, also remove variables that become unused after the deletion.
+            For example, if "CALL FOO(X)" is removed and X is not used elsewhere,
+            X will also be removed.
+
+        Returns
+        -------
+        int
+            Number of CALL statements removed.
+
+        Examples
+        --------
+        >>> pft = PYFT('input.F90')
+        >>> n = pft.removeCall('FOO')  # Remove all CALL FOO statements
+        >>> print(f"Removed {n} calls")
+
+        Remove calls and simplify (remove unused variables):
+        >>> pft.removeCall('BAR', simplify=True)
+
+        Notes
+        -----
+        - When simplify=True, may cascade to remove:
+          - Empty IF constructs (if call was the only statement)
+          - Variables only used in removed calls
+          - Type declarations that become empty
         """
         # Select all call-stmt and filter by name
         callNodes = [cn for cn in self.findall('.//{*}call-stmt')
@@ -141,11 +219,24 @@ class Statements():
     @debugDecor
     def removePrints(self, simplify=False):
         """
-        Removes all print statements
-        :param simplify: try to simplify code (if we delete "print*, X" and if X is not
-                         used else where, we also delete it; or if the print was alone inside
-                         a if-then-endif construct, the construct is also removed, and
-                         variables used in the if condition are also checked...)
+        Remove all PRINT statements from the code.
+
+        Parameters
+        ----------
+        simplify : bool, optional
+            If True, also remove variables that become unused after the deletion.
+
+        Examples
+        --------
+        >>> pft = PYFT('input.F90')
+        >>> pft.removePrints()  # Remove all PRINT statements
+        >>> pft.removePrints(simplify=True)  # Also remove unused variables
+
+        Notes
+        -----
+        - When simplify=True, may cascade to remove:
+          - Empty IF constructs (if print was the only statement)
+          - Variables only used in removed prints
         """
         self.removeStmtNode(self.findall('.//{*}print-stmt'), simplify, simplify)
 
@@ -154,43 +245,85 @@ class Statements():
                           loopVar=None, reuseLoop=True, funcList=None,
                           updateMemSet=False, updateCopy=False, addAccIndependentCollapse=True):
         """
-        Transform array syntax into DO loops
-        :param concurrent: use 'DO CONCURRENT' instead of simple 'DO' loops
-        :param useMnhExpand: use the mnh directives to transform the entire bloc in a single loop
-        :param everywhere: transform all array syntax in DO loops
-        :param loopVar: None to create new variable for each added DO loop, or
-                        a function that return the name of the variable to use for the loop control.
-                        This function returns a string (name of the variable), or True to create
-                        a new variable, or False to not transform this statement
-                        The functions takes as arguments:
-                          - lower and upper bounds as defined in the declaration statement
-                          - lower and upper bounds as given in the statement
-                          - name of the array
-                          - index of the rank
-        :param reuseLoop: if True, try to reuse loop created whith everywhere=True
-        :param funcList: list of entity names that must be recognized as array functions
-                         (in addition to the intrisic ones) to discard from transformation
-                         statements that make use of them. None is equivalent to an empty list.
-        :param updateMemSet: True to put affectation to constante in DO loops
-        :param updateCopy: True to put array copy in DO loops
-        :param addAccIndependentCollapse: True to add !$acc loop independent collapse(X) before
-                                          the DO construct
+        Transform array syntax assignments into explicit DO loops.
 
-        Notes: * With useMnhExpand, the function checks if the coding is conform to what is needed
-                 for the filepp/mnh_expand tool (to not breack compatibility with this tool)
-               * Arrays are transformed only if ':' are used.
-                 A=A(:) is not transformed at all (or raises an exception if found in a WHERE block)
-                 A(:)=A is wrongly transformed into "DO...; A(J1)=A; ENDDO" and will produce a
-                     compilation error
-                 WHERE(L) X(:)=0. is not transformed at all (unknown behaviour in case
-                     of nested WHERE)
-               * This function is not compatible with functions that return arrays:
-                 X(1:5)=FUNC(1) will be transformed into "DO J1=1,5; X(J1)=FUNC(1); ENDDO"
-                 x(1:5)=FUNC(X(1:5)) will be transformed into "DO J1=1,5; X(J1)=FUNC(X(J1)); ENDDO"
-                 But intrinsic functions (COUNT, ANY...) are recognised and corresponding statements
-                 are not transformed.
-                 The list of intrinsic array functions can be extended by user functions with the
-                 funcList argument.
+        Converts Fortran array syntax (e.g., A(:) = B(:)) into equivalent DO loop form.
+
+        Parameters
+        ----------
+        concurrent : bool, optional
+            If True, use 'DO CONCURRENT' loops instead of simple 'DO' loops.
+            Default is False.
+        useMnhExpand : bool, optional
+            If True, respect mnh_expand directives to transform entire blocks
+            into a single loop. Default is True.
+        everywhere : bool, optional
+            If True, transform all array syntax in the code.
+            If False, only transform sections marked with !$mnh_expand directives.
+            Default is True.
+        loopVar : callable or None, optional
+            Function to determine loop index variable name.
+            Takes arguments: (lowerDecl, upperDecl, lowerUsed, upperUsed, name, index)
+            Returns: str (variable name), True (auto-generate name), or False (skip).
+            None (default) auto-generates variable names (J1, J2, etc.).
+        reuseLoop : bool, optional
+            If True, attempt to reuse loops when consecutive statements
+            have identical bounds. Default is True.
+        funcList : list of str, optional
+            Additional function names to recognize as array functions.
+            These functions will not be expanded. Default is None (empty list).
+        updateMemSet : bool, optional
+            If True, transform constant array initializations (e.g., A(:) = 0)
+            into DO loops. Default is False.
+        updateCopy : bool, optional
+            If True, transform array copy operations (e.g., A(:) = B(:))
+            into DO loops. Default is False.
+        addAccIndependentCollapse : bool, optional
+            If True, add !$acc loop independent collapse(N) directive
+            before DO constructs. Default is True.
+
+        Returns
+        -------
+        None
+
+        Transformation Examples
+        ----------------------
+        Simple assignment:
+
+        Before:
+            A(:) = B(:) + C(:)
+
+        After (standard):
+            DO J1 = LBOUND(A, 1), UBOUND(A, 1)
+                A(J1) = B(J1) + C(J1)
+            END DO
+
+        After (concurrent):
+            DO CONCURRENT (J1=LBOUND(A, 1):UBOUND(A, 1))
+                A(J1) = B(J1) + C(J1)
+            END DO
+
+        WHERE construct:
+
+        Before:
+            WHERE (MASK(:)) X(:) = Y(:)
+
+        After:
+            DO J1 = 1, SIZE(X, 1)
+                IF (MASK(J1)) X(J1) = Y(J1)
+            END DO
+
+        Notes
+        -----
+        - Only transforms array syntax using explicit ':' notation.
+        - Intrinsic array functions (COUNT, ANY, SUM, etc.) are preserved.
+        - Does not transform:
+          - A=A(:) (no-op on left side)
+          - A(:)=A (single array without slice on right side)
+        - When useMnhExpand=True, requires specific directive format:
+          !$mnh_expand_array(INDEX=bounds)
+          ... code to transform ...
+          !$mnh_end_expand_array(INDEX=bounds)
         """
 
         # Developer notes:
@@ -598,23 +731,37 @@ class Statements():
     @updateVarList
     def inlineContainedSubroutines(self, simplify=False, loopVar=None):
         """
-        Inline all contained subroutines in the main subroutine
-        Steps :
-            - Identify contained subroutines
-            - Look for all CALL statements, check if it is a containted routines; if yes, inline
-            - Delete the containted routines
-        :param simplify: try to simplify code (construct or variables becoming useless)
-        :param loopVar: None to create new variable for each added DO loop (around ELEMENTAL
-                            subroutine calls)
-                        or a function that return the name of the variable to use for the
-                        loop control.
-                        This function returns a string (name of the variable), or True to create
-                        a new variable, or False to not transform this statement
-                        The functions takes as arguments:
-                          - lower and upper bounds as defined in the declaration statement
-                          - lower and upper bounds as given in the statement
-                          - name of the array
-                          - index of the rank
+        Inline all contained subroutines into their parent.
+
+        Transforms contained subroutines (defined after CONTAINS) by:
+        1. Identifying contained subroutines
+        2. Finding all CALL statements to contained routines
+        3. Inlining the routine body where called
+        4. Removing the contained routine definitions
+
+        Parameters
+        ----------
+        simplify : bool, optional
+            If True, simplify code by removing empty constructs
+            and unused variables after inlining. Default is False.
+        loopVar : callable or None, optional
+            Function to determine loop index variable name for ELEMENTAL
+            subroutine calls on arrays.
+            Takes: (lowerDecl, upperDecl, lowerUsed, upperUsed, name, index)
+            Returns: str, True (auto-generate), or False (skip).
+
+        Examples
+        --------
+        >>> pft = PYFT('input.F90')
+        >>> pft.inlineContainedSubroutines()
+        >>> pft.write()
+
+        Notes
+        -----
+        - ELEMENTAL subroutines called on arrays get wrapped in DO loops.
+        - Optional arguments are handled (PRESENT checks are added/removed).
+        - Variables in contained routines may be renamed to avoid conflicts.
+        - Empty CONTAINS sections are removed when simplify=True.
         """
 
         scopes = self.getScopes()
@@ -663,30 +810,38 @@ class Statements():
     def inline(self, subContained, callStmt, mainScope,
                simplify=False, loopVar=None):
         """
-        Inline a subContainted subroutine
-        Steps :
-            - update the main code if needed (if statement and/or elemental)
-            - copy the subContained node
-            - remove everything before the declarations variables and the variables declarations
-            - deal with optional argument
-            - from the callStmt, replace all the arguments by their names
-            - inline in the main code
-            - add local variables and use statements to the main code
-        :param subContained: xml fragment corresponding to the sub: to inline
-        :param callStmt: the call-stmt to replace
-        :param mainScope: scope of the main (calling) subroutine
-        :param simplify: try to simplify code (construct or variables becoming useless)
-        :param loopVar: None to create new variable for each added DO loop (around ELEMENTAL
-                            subroutine calls)
-                        or a function that return the name of the variable to use for the
-                        loop control.
-                        This function returns a string (name of the variable), or True to create
-                        a new variable, or False to not transform this statement
-                        The functions takes as arguments:
-                          - lower and upper bounds as defined in the declaration statement
-                          - lower and upper bounds as given in the statement
-                          - name of the array
-                          - index of the rank
+        Inline a single contained subroutine at its call site.
+
+        This method performs the actual inlining of a contained subroutine
+        into the calling scope. It handles:
+        - ELEMENTAL subroutines with array arguments
+        - Optional arguments (PRESENT intrinsic)
+        - Variable name conflicts
+        - USE statement merging
+
+        Parameters
+        ----------
+        subContained : xml element
+            XML fragment corresponding to the contained subroutine scope.
+        callStmt : xml element
+            The call-stmt node to replace with inlined code.
+        mainScope : PYFTscope
+            Scope of the main (calling) subroutine.
+        simplify : bool, optional
+            If True, remove empty constructs and unused variables
+            after inlining. Default is False.
+        loopVar : callable or None, optional
+            Function to determine loop index variable name.
+            Used when inlining ELEMENTAL subroutines called on arrays.
+            Takes: (lowerDecl, upperDecl, lowerUsed, upperUsed, name, index)
+            Returns: str, True (auto-generate), or False (skip).
+
+        Notes
+        -----
+        - For ELEMENTAL subroutines on arrays: DO loops are introduced.
+        - Optional arguments: PRESENT(var) is replaced with .TRUE. or .FALSE.
+        - Missing optional arguments: code paths using them are removed.
+        - Name conflicts: local variables are renamed with _N suffixes.
         """
         def setPRESENTby(node, var, val):
             """
@@ -1116,11 +1271,40 @@ class Statements():
     @debugDecor
     def setFalseIfStmt(self, flags, simplify=False):
         """
-        Set to .FALSE. a given boolean fortran flag before removing the node if simplify is True
-        :param flags: list of strings of flags to set to .FALSE.
-        :param simplify: try to simplify code (if the .FALSE. was alone inside a if-then-endif
-                         construct, the construct is removed, and variables used in the if
-                         condition are also checked)
+        Set conditional flags to .FALSE. in IF conditions.
+
+        Replaces specified flag variables in IF conditions with .FALSE.,
+        effectively disabling code paths controlled by those flags.
+
+        Parameters
+        ----------
+        flags : str or list of str
+            Flag variable name(s) to set to .FALSE.
+            Can be a single string or a list of strings.
+        simplify : bool, optional
+            If True, remove resulting dead code:
+            - IF blocks that always evaluate to .FALSE. are removed
+            - Unused variables are cleaned up. Default is False.
+
+        Examples
+        --------
+        >>> pft = PYFT('input.F90')
+        >>> pft.setFalseIfStmt('LFLAG')  # IF (LFLAG) -> .FALSE.
+        >>> pft.setFalseIfStmt(['LFLAG1', 'LFLAG2'], simplify=True)
+
+        Before:
+            IF (LDEBUG) THEN
+                PRINT*, "Debug info"
+            END IF
+
+        After (LDEBUG set to .FALSE.):
+            ! Block removed when simplify=True
+
+        Notes
+        -----
+        - Multiple flags in a single condition (e.g., LFLAG1 .AND. LFLAG2)
+          result in removal of the entire condition.
+        - Works on both IF statements and IF constructs.
         """
         if isinstance(flags, str):
             flags = [flags]
@@ -1264,18 +1448,35 @@ class Statements():
     @debugDecor
     def removeStmtNode(self, nodes, simplifyVar, simplifyStruct):
         """
-        This function removes a statement node and:
-          - suppress variable that became useless (if simplifyVar is True)
-          - suppress outer loop/if if useless (if simplifyStruct is True)
-        :param nodes: node (or list of nodes) to remove
-        :param simplifyVar: try to simplify code (if we delete "CALL FOO(X)" and if X not used
-                            else where, we also delete it; or if the call was alone inside a
-                            if-then-endif construct, with simplifyStruct=True, the construct is also
-                            removed, and variables used in the if condition are also checked...)
-        :param simplifyStruct: try to simplify code (if we delete "CALL FOO(X)" and if the call was
-                               alone inside a if-then-endif construct, the construct is also
-                               removed and variables used in the if condition
-                               (with simplifyVar=True) are also checked...)
+        Remove statement nodes with optional code simplification.
+
+        Parameters
+        ----------
+        nodes : xml element or list of xml elements
+            Node(s) to remove from the code tree.
+        simplifyVar : bool
+            If True, also remove variables that become unused after
+            the deletion of the nodes.
+        simplifyStruct : bool
+            If True, also remove empty enclosing constructs
+            (IF blocks, loops) that become empty after node removal.
+
+        Examples
+        --------
+        >>> pft = PYFT('input.F90')
+        >>> nodes = pft.findall('.//{*}call-stmt')
+        >>> pft.removeStmtNode(nodes, simplifyVar=True, simplifyStruct=True)
+
+        Notes
+        -----
+        - Handles nested structures (removes inner statements first).
+        - When simplifyStruct=True:
+          - Empty IF blocks are removed
+          - Empty loops are removed
+          - WHERE constructs are handled
+        - When simplifyVar=True:
+          - Unused local variables are removed
+          - Empty type declarations are cleaned up
         """
 
         # In case the suppression of an if-stmt or where-stmt is asked,

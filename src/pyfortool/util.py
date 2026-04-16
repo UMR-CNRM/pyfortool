@@ -1,5 +1,8 @@
 """
-This module implements some tools to manipulate the xml
+Utility functions and classes for XML manipulation and debugging.
+
+Provides helper functions for parsing, converting, and manipulating
+FORTRAN source code represented as XML.
 """
 
 import xml.etree.ElementTree as ET
@@ -21,8 +24,10 @@ debugStats = {}
 
 def debugDecor(func):
     """
-    Defines a decorator to trace all function calling with arguments and results
-    and count number of calls and time spent
+    Decorator to trace function calls with timing and argument logging.
+
+    When logging is enabled at DEBUG level, logs function calls with arguments.
+    When logging is enabled at INFO level, tracks call count and execution time.
     """
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -69,7 +74,10 @@ def debugDecor(func):
 
 def noParallel(func):
     """
-    Defines a decorator that prevent this method to be executed in parallel on several files
+    Decorator to prevent parallel execution of a method.
+
+    Used for methods that modify the XML tree and need to prevent
+    concurrent execution across multiple files.
     """
     @wraps(func)
     def wrapper(self, *args, **kwargs):
@@ -94,8 +102,12 @@ def noParallel(func):
 
 def setVerbosity(level):
     """
-    Set the verbosity level
-    :param level: verbosity level used to set the logging module
+    Set the logging verbosity level.
+
+    Parameters
+    ----------
+    level : str or int
+        Logging level: 'DEBUG', 'INFO', 'WARNING', 'ERROR', or numeric value.
     """
     logger = logging.getLogger()
     if isinstance(level, str):
@@ -106,7 +118,10 @@ def setVerbosity(level):
 
 def printInfos():
     """
-    Print statistics on methods and function usage
+    Print debug statistics on decorated function usage.
+
+    Displays a table with function names, call counts, min/max/total
+    execution times for functions decorated with @debugDecor.
     """
     logger = logging.getLogger()
     if logger.isEnabledFor(logging.INFO):
@@ -130,14 +145,27 @@ class PYFTError(Exception):
 
 def fortran2xml(fortranSource, parserOptions=None, wrapH=False):
     """
-    :param fortranSource: a string containing a fortran source code
-                          or a filename
-    :param parserOptions: dictionnary holding the parser options
-    :param wrapH: if True, content of .h file is put in a .F90 file (to force
-                  fxtran to recognize it as free form) inside a module (to
-                  enable the reading of files containing only a code part)
-    :returns: (includesRemoved, xml) where includesRemoved indicates if an include
-              was replaced by fxtran and xml is an ET xml document
+    Convert FORTRAN source code to XML using fxtran parser.
+
+    Parameters
+    ----------
+    fortranSource : str
+        FORTRAN source code string or path to a file.
+    parserOptions : list, optional
+        Options passed to fxtran parser.
+    wrapH : bool, optional
+        If True, wrap .h file content in a MODULE for free-form parsing.
+
+    Returns
+    -------
+    tuple
+        (includesRemoved, xml) where:
+        - includesRemoved (bool): True if include statements were processed.
+        - xml (Element): XML document tree.
+
+    Examples
+    --------
+    >>> includesRemoved, xml = fortran2xml("REAL :: X\nX = 1.0")
     """
     # Namespace registration
     ET.register_namespace('f', NAMESPACE)
@@ -219,16 +247,42 @@ def fortran2xml(fortranSource, parserOptions=None, wrapH=False):
 
 def tostring(doc):
     """
-    :param doc: an ET object
-    :return: xml as a string
+    Convert XML Element to string.
+
+    Parameters
+    ----------
+    doc : Element
+        XML Element object.
+
+    Returns
+    -------
+    str
+        XML string representation.
+
+    Examples
+    --------
+    >>> xml_str = tostring(xml_element)
     """
     return ET.tostring(doc, method='xml', encoding='UTF-8').decode('UTF-8')
 
 
 def tofortran(doc):
     """
-    :param doc: an ET object
-    :return: a string representing the FORTRAN source code
+    Convert XML Element to FORTRAN source code.
+
+    Parameters
+    ----------
+    doc : Element
+        XML Element representing FORTRAN code.
+
+    Returns
+    -------
+    str
+        FORTRAN source code string.
+
+    Examples
+    --------
+    >>> fortran_code = tofortran(xml_element)
     """
     # When fxtran encounters an UTF-8 character, it replaces it by *2* entities
     # We must first transform each of these entities to its corresponding binary value
@@ -248,8 +302,24 @@ def tofortran(doc):
 
 def isint(string):
     """
-    :param string: string to test for intergerness
-    :return: True if s represent an int
+    Check if string represents an integer.
+
+    Parameters
+    ----------
+    string : str
+        String to test.
+
+    Returns
+    -------
+    bool
+        True if string is a valid integer.
+
+    Examples
+    --------
+    >>> isint('42')
+    True
+    >>> isint('3.14')
+    False
     """
     try:
         int(string)
@@ -261,8 +331,24 @@ def isint(string):
 
 def isfloat(string):
     """
-    :param string: string to test for intergerness
-    :return: True if s represent a real
+    Check if string represents a floating-point number.
+
+    Parameters
+    ----------
+    string : str
+        String to test.
+
+    Returns
+    -------
+    bool
+        True if string is a valid float.
+
+    Examples
+    --------
+    >>> isfloat('3.14')
+    True
+    >>> isfloat('42')
+    True
     """
     try:
         float(string)
@@ -277,39 +363,107 @@ def isfloat(string):
 
 def tag(elem):
     """
-    :param elem: ET Element
-    :return: the tag without the namespace
+    Get XML tag name without namespace.
+
+    Parameters
+    ----------
+    elem : Element
+        XML Element.
+
+    Returns
+    -------
+    str
+        Tag name without namespace prefix.
+
+    Examples
+    --------
+    >>> tag(xml_element)  # '{http://fxtran.net}subroutine-stmt' -> 'subroutine-stmt'
     """
     return elem.tag.split('}')[1]
 
 
 def n2name(nodeN):
     """
-    Helper function which returns the entity name enclosed in a N tag
+    Extract entity name from N-tagged XML element.
+
+    Parameters
+    ----------
+    nodeN : Element
+        XML element with N tag containing 'n' child elements.
+
+    Returns
+    -------
+    str
+        Concatenated name from all 'n' child elements.
+
+    Examples
+    --------
+    >>> n2name(element)  # <N><n>X</n><n>Y</n></N> -> 'XY'
     """
     return ''.join([e.text for e in nodeN.findall('./{*}n')])
 
 
 def alltext(doc):
     """
-    Helper function to iterate on all text fragment and join them
-    :param doc: xml fragment
+    Get all text content from an XML element.
+
+    Parameters
+    ----------
+    doc : Element
+        XML element or fragment.
+
+    Returns
+    -------
+    str
+        Concatenated text from element and all descendants.
+
+    Examples
+    --------
+    >>> alltext(element)  # Gets all text including nested elements
     """
     return ''.join(doc.itertext())
 
 
 def nonCode(elem):
     """
-    :param e: element
-    :return: True if e is non code (comment, text...)
+    Check if element is non-code (comment, text, etc.).
+
+    Parameters
+    ----------
+    elem : Element
+        XML element.
+
+    Returns
+    -------
+    bool
+        True if element is non-code (cnt, C, cpp, filename, S).
+
+    Examples
+    --------
+    >>> nonCode(comment_element)
+    True
     """
     return tag(elem) in {'cnt', 'C', 'cpp', 'filename', 'S'}
 
 
 def isExecutable(elem):
     """
-    :param e: element
-    :return: True if element is executable
+    Check if element is an executable statement.
+
+    Parameters
+    ----------
+    elem : Element
+        XML element.
+
+    Returns
+    -------
+    bool
+        True if element is a statement or construct (excluding declarations).
+
+    Examples
+    --------
+    >>> isExecutable(stmt_element)
+    True
     """
     return ((isStmt(elem) or isConstruct(elem)) and
             tag(elem) not in ('subroutine-stmt', 'end-subroutine-stmt',
@@ -322,15 +476,43 @@ def isExecutable(elem):
 
 def isConstruct(elem):
     """
-    :param elem: element
-    :return: True if element is a construct
+    Check if element is a construct.
+
+    Parameters
+    ----------
+    elem : Element
+        XML element.
+
+    Returns
+    -------
+    bool
+        True if element tag ends with '-construct'.
+
+    Examples
+    --------
+    >>> isConstruct(if_construct_element)
+    True
     """
     return tag(elem).endswith('-construct')
 
 
 def isStmt(elem):
     """
-    :param elem: element
-    :return: True if element is a statement
+    Check if element is a statement.
+
+    Parameters
+    ----------
+    elem : Element
+        XML element.
+
+    Returns
+    -------
+    bool
+        True if element tag ends with '-stmt'.
+
+    Examples
+    --------
+    >>> isStmt(call_element)
+    True
     """
     return tag(elem).endswith('-stmt')

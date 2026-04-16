@@ -1,8 +1,25 @@
 #!/usr/bin/env python3
 
 """
-This module contains the main PYFT class
-PYFT is the file level class (read/write...)
+This module contains the main PYFT class.
+
+PYFT (Python FORTRAN Tool) is the primary class for reading, manipulating,
+and writing FORTRAN source files. It provides file-level operations and
+wraps the scope-level functionality from PYFTscope.
+
+Examples
+--------
+>>> from pyfortool import PYFT
+
+# Read and modify a file
+>>> pft = PYFT('input.F90')
+>>> pft.removePrints()
+>>> pft.write()
+
+# Use context manager
+>>> with PYFT('input.F90') as pft:
+...     pft.removeComments()
+...     pft.write()
 """
 
 import os
@@ -19,13 +36,34 @@ from pyfortool.util import (debugDecor, tostring, tofortran, fortran2xml,
 def conservativePYFT(filename, parserOptions, wrapH,
                      tree=None, verbosity=None, clsPYFT=None):
     """
-    Return a conservative PYFT object usable for tree manipulation
-    :param filename: name of the file to open
-    :param parserOptions, wrapH: see the PYFT class
-    :param tree: Tree instance or None
-    :param verbosity: if not None, sets the verbosity level
-    :param clsPYFT: PYFT class to use
-    :return: PYFT object
+    Create a PYFT object with conservative parsing options.
+
+    Similar to PYFT constructor but forces the '-no-include' option
+    to prevent automatic inclusion of header files.
+
+    Parameters
+    ----------
+    filename : str
+        Path to the FORTRAN source file.
+    parserOptions : list or None
+        Parser options passed to PYFT. If None, uses default options.
+    wrapH : bool
+        Whether to wrap .h file content. See PYFT class.
+    tree : Tree, optional
+        Tree instance for cross-file analysis.
+    verbosity : str or int, optional
+        Logging verbosity level.
+    clsPYFT : type, optional
+        PYFT subclass to use instead of default PYFT.
+
+    Returns
+    -------
+    PYFT
+        A PYFT instance configured for conservative tree manipulation.
+
+    See Also
+    --------
+    PYFT : The main PYFT class.
     """
     options = PYFT.DEFAULT_FXTRAN_OPTIONS if parserOptions is None else parserOptions
     options = options.copy()
@@ -41,10 +79,28 @@ def conservativePYFT(filename, parserOptions, wrapH,
 
 def generateEmptyPYFT(filename, fortran=None, **kwargs):
     """
-    Generates an empty PYFT scope
-    :param filename: file name corresponding to this new PYFT scope
-    :param fortran: fortran text to include
-    :param **kwargs: other arguments for the PYFT class
+    Generate a new PYFT object from a file path, creating the file if needed.
+
+    Parameters
+    ----------
+    filename : str
+        Path for the new file.
+    fortran : str, optional
+        FORTRAN source code to write to the file.
+        If None, creates a stub subroutine "SUBROUTINE FOO\nEND".
+    **kwargs
+        Additional arguments passed to PYFT constructor.
+
+    Returns
+    -------
+    PYFT
+        PYFT instance for the newly created file.
+
+    Examples
+    --------
+    >>> pft = generateEmptyPYFT('new.F90', 'MODULE TEST\nEND MODULE')
+    >>> pft.addVar([('module:TEST', 'X', 'INTEGER :: X', None)])
+    >>> pft.write()
     """
     with open(filename, 'w', encoding='utf-8') as fo:
         fo.write('SUBROUTINE FOO\nEND' if fortran is None else fortran)
@@ -56,7 +112,34 @@ def generateEmptyPYFT(filename, fortran=None, **kwargs):
 
 class PYFT(PYFTscope):
     """
-    This class extends the PYFTscope one by adding file support (read/write)
+    Main class for FORTRAN file manipulation.
+
+    PYFT extends PYFTscope with file-level operations (read/write) and
+    integrates with the fxtran parser for FORTRAN source code analysis.
+
+    Class Attributes
+    ----------------
+    DEFAULT_FXTRAN_OPTIONS : list
+        Default options for fxtran parser: ['-construct-tag', '-no-include',
+        '-no-cpp', '-line-length', '9999']
+    MANDATORY_FXTRAN_OPTIONS : list
+        Required options: ['-construct-tag']
+
+    Examples
+    --------
+    Basic usage:
+    >>> pft = PYFT('myfile.F90')
+    >>> pft.upperCase()
+    >>> pft.write()
+
+    Using context manager:
+    >>> with PYFT('myfile.F90', output='output.F90') as pft:
+    ...     pft.removeComments()
+    ...     pft.indent()
+
+    Parallel processing:
+    >>> tree = Tree(['/path/to/src'])
+    >>> PYFT.setParallel(tree)
     """
     DEFAULT_FXTRAN_OPTIONS = ['-construct-tag', '-no-include', '-no-cpp', '-line-length', '9999']
     MANDATORY_FXTRAN_OPTIONS = ['-construct-tag']
@@ -68,15 +151,36 @@ class PYFT(PYFTscope):
     def __init__(self, filename, output=None, parserOptions=None, verbosity=None,
                  wrapH=False, tree=None, enableCache=False):
         """
-        :param filename: Input file name containing FORTRAN code
-        :param output: Output file name, None to replace input file
-        :param parserOptions: dictionnary holding the parser options
-        :param verbosity: if not None, sets the verbosity level
-        :param wrapH: if True, content of .h file is put in a .F90 file (to force
-                      fxtran to recognize it as free form) inside a module (to
-                      enable the reading of files containing only a code part)
-        :param tree: an optional Tree instance
-        :param enableCache: True to cache node parents
+        Initialize a PYFT instance from a FORTRAN source file.
+
+        Parameters
+        ----------
+        filename : str
+            Path to the input FORTRAN file.
+        output : str, optional
+            Path for output file. If None, overwrites the input file.
+        parserOptions : list, optional
+            Options for the fxtran parser. See DEFAULT_FXTRAN_OPTIONS.
+        verbosity : str or int, optional
+            Logging level (e.g., 'DEBUG', 'INFO', 'WARNING').
+        wrapH : bool, optional
+            If True, wrap .h file content in a MODULE to enable parsing
+            as free-form FORTRAN.
+        tree : Tree, optional
+            Tree instance for cross-file analysis. If None, creates a new Tree.
+        enableCache : bool, optional
+            If True, cache parent nodes for faster traversal.
+
+        Raises
+        ------
+        PYFTError
+            If Python version < 3.8 or file does not exist.
+
+        Examples
+        --------
+        >>> pft = PYFT('myfile.F90')
+        >>> pft = PYFT('myfile.F90', output='newfile.F90')
+        >>> pft = PYFT('code.h', wrapH=True)
         """
         self.__class__.lockFile(filename)
         if not sys.version_info >= (3, 8):
@@ -110,10 +214,25 @@ class PYFT(PYFTscope):
     @classmethod
     def setParallel(cls, tree, clsLock=None, clsRLock=None):
         """
-        Prepare the class to be used to instanciate parallel objects
-        :param tree: Tree object shared among processes
-        :param clsLock: class to use for Lock (defaults to multiprocessing.Lock)
-        :param clsRLock: class to use for RLock (defaults to multiprocessing.RLock)
+        Configure PYFT for parallel processing.
+
+        Must be called before creating PYFT instances for parallel execution.
+        Sets up shared tree and file locking mechanisms.
+
+        Parameters
+        ----------
+        tree : Tree
+            Tree object shared among all processes.
+        clsLock : type, optional
+            Lock class to use. Defaults to multiprocessing.Lock.
+        clsRLock : type, optional
+            Recursive lock class. Defaults to multiprocessing.RLock.
+
+        Examples
+        --------
+        >>> tree = Tree(['/path/to/src'], descTreeFile='tree.json')
+        >>> PYFT.setParallel(tree)
+        >>> # Now create PYFT instances in parallel processes
         """
         if clsLock is None:
             clsLock = Lock
@@ -127,8 +246,12 @@ class PYFT(PYFTscope):
     @classmethod
     def lockFile(cls, filename):
         """
-        Acquire lock for filename
-        :param filename: name of the file whose lock must be acquired
+        Acquire file lock for parallel processing.
+
+        Parameters
+        ----------
+        filename : str
+            Path to the file to lock.
         """
         filename = os.path.normpath(filename)
         # pylint: disable-next=unsupported-membership-test
@@ -139,9 +262,14 @@ class PYFT(PYFTscope):
     @classmethod
     def unlockFile(cls, filename, silence=False):
         """
-        Release lock for filename
-        :param filename: name of the file whose lock must be acquired
-        :param silence: do not raise exception if file is already unlocked
+        Release file lock for parallel processing.
+
+        Parameters
+        ----------
+        filename : str
+            Path to the file to unlock.
+        silence : bool, optional
+            If True, suppress ValueError when file is not locked.
         """
         filename = os.path.normpath(filename)
         # pylint: disable-next=unsupported-membership-test
@@ -155,19 +283,27 @@ class PYFT(PYFTscope):
 
     def __enter__(self):
         """
-        Context manager
+        Enter context manager.
+
+        Returns
+        -------
+        PYFT
+            Self reference for use in with statement.
         """
         return self
 
     def __exit__(self, excType, excVal, excTb):
         """
-        Context manager
+        Exit context manager and close file.
         """
         self.close()
 
     def close(self):
         """
-        Closes the FORTRAN file
+        Close the FORTRAN file and release resources.
+
+        Prints debug statistics and releases file locks.
+        Automatically called when exiting context manager.
         """
         printInfos()
         self.__class__.unlockFile(self.getFileName())
@@ -175,33 +311,57 @@ class PYFT(PYFTscope):
     @property
     def xml(self):
         """
-        Returns the xml as a string
+        Get the XML representation of the parsed code.
+
+        Returns
+        -------
+        str
+            XML string representation of the FORTRAN source.
         """
         return tostring(self)
 
     @property
     def fortran(self):
         """
-        Returns the FORTRAN as a string
+        Get the FORTRAN source code representation.
+
+        Returns
+        -------
+        str
+            FORTRAN source code string.
         """
         return tofortran(self)
 
     def renameUpper(self):
         """
-        The output file will have an upper case extension
+        Set output file extension to uppercase.
+
+        Examples
+        --------
+        >>> pft = PYFT('file.F90')
+        >>> pft.renameUpper()  # Output will be file.F90
         """
         self._rename(str.upper)
 
     def renameLower(self):
         """
-        The output file will have a lower case extension
+        Set output file extension to lowercase.
+
+        Examples
+        --------
+        >>> pft = PYFT('file.F90')
+        >>> pft.renameLower()  # Output will be file.f90
         """
         self._rename(str.lower)
 
     def _rename(self, mod):
         """
-        The output file will have a modified extension.
-        :param mod: function to apply to the file extension
+        Apply a transformation function to the file extension.
+
+        Parameters
+        ----------
+        mod : callable
+            Function to apply to file extension (e.g., str.upper, str.lower).
         """
         def _transExt(path, mod):
             filename, ext = os.path.splitext(path)
@@ -213,7 +373,10 @@ class PYFT(PYFTscope):
 
     def write(self):
         """
-        Writes the output FORTRAN file
+        Write the transformed FORTRAN source to file.
+
+        Writes the current state of the code tree as FORTRAN source
+        to the output file (or overwrites input if no output specified).
         """
         with open(self._filename if self._output is None else self._output, 'w',
                   encoding='utf-8') as fo:
@@ -228,8 +391,17 @@ class PYFT(PYFTscope):
 
     def writeXML(self, filename):
         """
-        Writes the output XML file
-        :param filename: XML output file name
+        Write the internal XML representation to a file.
+
+        Parameters
+        ----------
+        filename : str
+            Path for the output XML file.
+
+        Examples
+        --------
+        >>> pft = PYFT('input.F90')
+        >>> pft.writeXML('output.xml')
         """
         with open(filename, 'w', encoding='utf-8') as fo:
             fo.write(self.xml)
