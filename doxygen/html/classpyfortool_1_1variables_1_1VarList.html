@@ -117,9 +117,36 @@ Protected Attributes</h2></td></tr>
 <tr class="separator:a48000dbc14e699574062ab5eeff80194"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><pre class="fragment">The VarList class stores the characterisitcs of all variables contained in a source code
+<div class="textblock"><pre class="fragment">Store the characteristics of all variables contained in a source code.
+
+This class provides methods to query, search, and manage variables
+declared in a FORTRAN scope (module, subroutine, function, or type).
+
+Attributes
+----------
+_varList : list
+    List of variable descriptors for the current scope.
+_fullVarList : list
+    Complete list of variable descriptors for the whole file.
+_scopePath : str
+    Path of the current scope (e.g., 'module:MODULE/sub:SUB').
+
+Notes
+-----
+- Variables are found in modules only if the 'ONLY' attribute is used.
+- Array specification and type are unknown for module variables.
+- 'ASSOCIATE' statements are not followed.
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('myfile.F90')
+&gt;&gt;&gt; vl = pft.varList
+&gt;&gt;&gt; vl.findVar('X')
+{'n': 'X', 't': 'REAL', 'as': [(None, '10')], 'i': None, ...}
+&gt;&gt;&gt; vl.findVar('Y', array=True)  # Search only arrays
+{'n': 'Y', 't': 'REAL', 'as': [(None, '100'), (None, '100')], ...}
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00044">44</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00084">84</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="ac56ee1e6659d915fe93143683f4f7e53" name="ac56ee1e6659d915fe93143683f4f7e53"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac56ee1e6659d915fe93143683f4f7e53">&#9670;&#160;</a></span>__init__()</h2>
@@ -159,7 +186,7 @@ Notes: - variables are found in modules only if the 'ONLY' attribute is used
        - array specification and type is unknown for module variables
        - 'ASSOCIATE' statements are not followed
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00048">48</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00115">115</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -206,7 +233,7 @@ Here is the call graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00077">77</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00144">144</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 
 </div>
 </div>
@@ -242,7 +269,7 @@ Here is the call graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00071">71</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00138">138</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 
 </div>
 </div>
@@ -278,7 +305,7 @@ Here is the call graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00080">80</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00147">147</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 
 </div>
 </div>
@@ -314,7 +341,7 @@ Here is the call graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00074">74</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00141">141</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 
 </div>
 </div>
@@ -343,7 +370,7 @@ Here is the call graph for this function:</div>
 </div><div class="memdoc">
 <pre class="fragment">:param mainScope: a PYFT object
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00084">84</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00151">151</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -400,23 +427,55 @@ Here is the caller graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Search for a variable in a list of declared variables
-:param varName: variable name
-:param array: True to limit search to arrays,
-              False to limit search to non array,
-              None to return anything
-:param exactScope: True to limit search to variables declared in the scopePath
-:param extraVarList: None or list of variables (such as those contained in a VarList object)
-                     defined but not yet available in the self.varList object.
-:return: None if not found or the description of the variable
+<pre class="fragment">Search for a variable in the list of declared variables.
 
-The function is designed to return the declaration of a given variable.
-If we know that the variable is (is not) an array, the last declaration statement
-must (must not) be an array declaration. If the last declaration statement found doesn't
-correspond to what is expected, we don't return it.
-In case array is None, we return the last declaration statement without checking its kind.
+Parameters
+----------
+varName : str
+    Name of the variable to search for.
+array : bool, optional
+    True to limit search to arrays only,
+    False to limit search to non-array (scalar) variables only,
+    None (default) to return any variable type.
+exactScope : bool, optional
+    If True, only search for variables declared in the current scope path.
+    If False (default), search in current scope and all parent scopes.
+extraVarList : list, optional
+    Additional list of variable descriptors to search in.
+    Useful when variables are defined but not yet in varList.
+
+Returns
+-------
+dict or None
+    Variable descriptor dictionary with keys:
+    - 'n': variable name (uppercase)
+    - 't': type specification (e.g., 'REAL', 'INTEGER')
+    - 'as': array specification as list of (lower, upper) tuples
+    - 'i': intent specification (e.g., 'IN', 'OUT', 'INOUT')
+    - 'arg': True if dummy argument
+    - 'scopePath': path where variable is declared
+    - 'use': module name if imported via USE statement
+    Returns None if variable not found.
+
+Notes
+-----
+The function returns the declaration of the variable found in the
+deepest (most specific) scope. If `array` is specified, only
+returns the variable if its declaration matches the expected kind.
+
+Examples
+--------
+&gt;&gt;&gt; vl = pft.varList
+&gt;&gt;&gt; vl.findVar('X')  # Find any variable named X
+{'n': 'X', 't': 'REAL', 'as': [], 'i': None, ...}
+&gt;&gt;&gt; vl.findVar('Y', array=True)  # Find array Y
+{'n': 'Y', 't': 'REAL', 'as': [(None, '100')], ...}
+&gt;&gt;&gt; vl.findVar('Z', array=False)  # Find scalar Z
+{'n': 'Z', 't': 'INTEGER', 'as': [], ...}
+&gt;&gt;&gt; vl.findVar('P', exactScope=True)  # Only in current scope
+{'n': 'P', 't': 'REAL', ...}
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00188">188</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00275">275</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 
 </div>
 </div>
@@ -451,10 +510,30 @@ In case array is None, we return the last declaration statement without checking
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">:param scopePath: return a varList restricted to this scope path
-:param excludeContains: exclude variables declared in contained parts
+<pre class="fragment">Return a VarList restricted to a specific scope.
+
+Parameters
+----------
+scopePath : str
+    Scope path to restrict to (e.g., 'module:MOD/sub:SUB').
+    Use empty string or '/' for root scope.
+excludeContains : bool
+    If True, exclude variables declared in CONTAINS sections
+    (nested subroutines/functions).
+
+Returns
+-------
+VarList
+    New VarList instance restricted to the specified scope.
+
+Examples
+--------
+&gt;&gt;&gt; vl = pft.varList
+&gt;&gt;&gt; sub_vl = vl.restrict('module:MOD/sub:SUB', excludeContains=True)
+&gt;&gt;&gt; sub_vl.findVar('X')
+{'n': 'X', ...}
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00174">174</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00241">241</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 
 </div>
 </div>
@@ -473,9 +552,27 @@ In case array is None, we return the last declaration statement without checking
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Display on stdout a nice view of all the variables
+<pre class="fragment">Display a formatted list of all variables.
+
+Prints detailed information about each variable including:
+- Name and type
+- Whether it's scalar or array (with dimensions)
+- Whether it's a dummy argument (with intent) or local variable
+- Module origin for imported variables
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('input.F90')
+&gt;&gt;&gt; pft.varList.showVarList()
+List of variables declared in /module:MOD/sub:SUB:
+  Variable X:
+    is scalar
+    is a dummy argument with intent IN
+  Variable Y:
+    is of rank 2, with dimensions (:,1:10)
+    is a local variable
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00225">225</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00344">344</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 
 </div>
 </div>
@@ -500,7 +597,7 @@ In case array is None, we return the last declaration statement without checking
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00066">66</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00133">133</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 
 </div>
 </div>
@@ -524,7 +621,7 @@ In case array is None, we return the last declaration statement without checking
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00065">65</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00132">132</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 
 </div>
 </div>
@@ -548,7 +645,7 @@ In case array is None, we return the last declaration statement without checking
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00064">64</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00131">131</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 
 </div>
 </div>

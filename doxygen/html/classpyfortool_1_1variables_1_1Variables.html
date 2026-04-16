@@ -175,9 +175,12 @@ Protected Attributes</h2></td></tr>
 <tr class="separator:ab0e949d9062c19b2663356af84ffb1f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><pre class="fragment">Methos to deal with variables
+<div class="textblock"><pre class="fragment">Methods to manage and manipulate FORTRAN variables.
+
+Provides functionality for declaring, removing, and checking variables
+in FORTRAN source code.
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00253">253</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00390">390</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a249452645615b802e8ba23a452d32d1f" name="a249452645615b802e8ba23a452d32d1f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a249452645615b802e8ba23a452d32d1f">&#9670;&#160;</a></span>__init__()</h2>
@@ -204,11 +207,16 @@ Protected Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">**kwargs is used to enable the use of super().__init__
+<pre class="fragment">Initialize the Variables handler.
+
+Parameters
+----------
+**kwargs
+    Keyword arguments for compatibility with parent class initialization.
 </pre> 
 <p>Reimplemented in <a class="el" href="classpyfortool_1_1pyfortool_1_1PYFT.html#afec8d7c7186e688bff9a60cbdb12fa63">pyfortool.pyfortool.PYFT</a>, and <a class="el" href="classpyfortool_1_1scope_1_1PYFTscope.html#a2e2479266c628d251c1adb1163499946">pyfortool.scope.PYFTscope</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00257">257</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00398">398</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 
 </div>
 </div>
@@ -249,7 +257,7 @@ Protected Attributes</h2></td></tr>
 <pre class="fragment">Internal method to normalize scopeVarList
 (list of tuples made of scope path, variable name, and optional other values)
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00277">277</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00436">436</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -363,7 +371,7 @@ Here is the caller graph for this function:</div>
 <pre class="fragment">Internal method to suppress duplicates in scopeVarList
 (list of tuples made of scope path, variable name, and optional other values)
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00286">286</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00445">445</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -523,7 +531,7 @@ where the variable exists or a scope in stopScopes
 
 Argument is inserted only on paths leading to one of scopes listed in stopScopes
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01524">1524</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01988">1988</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -605,9 +613,27 @@ Here is the call graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Look for arrays and add parenthesis. A =&gt; A(:)
+<pre class="fragment">Add explicit array parentheses to array variables.
+
+Transforms array variable references to include explicit slice notation.
+For example, A becomes A(:) when A is declared as an array.
+
+Examples
+--------
+Given declaration: REAL, DIMENSION(10) :: A, B, C
+And usage: A = B + C
+
+After transformation:
+A(:) = B(:) + C(:)
+
+Notes
+-----
+- Only modifies known arrays (declared with dimensions).
+- Excludes arrays in ALLOCATED, ASSOCIATED, and PRESENT intrinsic calls.
+- Does not modify pointer/allocatable arrays in call statements
+  (to maintain interface compatibility).
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00802">802</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01167">1167</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -673,10 +699,25 @@ Here is the caller graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Look for arrays and add parenthesis. A =&gt; A(:)
-:param node: xml node in which ':' must be added
+<pre class="fragment">Add explicit array parentheses to arrays within a specific XML node.
+
+Parameters
+----------
+node : xml element
+    XML node in which to add array parentheses.
+    Only processes named-E elements within this node.
+
+See Also
+--------
+addArrayParentheses : Add parentheses in all scopes.
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('input.F90')
+&gt;&gt;&gt; node = pft.find('.//{*}a-stmt')
+&gt;&gt;&gt; pft.addArrayParenthesesInNode(node)
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00846">846</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01229">1229</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -744,10 +785,32 @@ Here is the call graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Replace ':' by explicit arrays bounds.
-:param node: xml node in which ':' must be replaced (None to replace everywhere)
+<pre class="fragment">Replace implicit array bounds with explicit bounds from declarations.
+
+Transforms array slice notation (e.g., A(:)) into explicit bounds
+based on the array's declaration.
+
+Parameters
+----------
+node : xml element, optional
+    Specific XML node to transform. If None (default), transforms
+    all implicit bounds in all scopes.
+
+Examples
+--------
+Given declaration: REAL, DIMENSION(1:10) :: A, B
+And usage: A(:) = B(:)
+
+After transformation:
+A(1:10) = B(1:10)
+
+Notes
+-----
+- Only handles 1D array slices (A(:) notation).
+- Does not modify allocatable arrays (where ':' is part of declaration).
+- Does not modify character type arrays.
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00746">746</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01089">1089</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -803,18 +866,45 @@ Here is the call graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">:param moduleVarList: list of module variable specification to insert in the xml code
-                      a module variable specification is a list of three elements:
-                      - scope path (path to module, subroutine, function or type
-                        declaration)
-                      - module name
-                      - variable name or or list of variable names
-                        or None to add a USE statement without the ONLY attribute
-For example addModuleVar('sub:FOO', 'MODD_XX', 'Y') will add the following line in
-subroutine FOO:
-USE MODD_XX, ONLY: Y
+<pre class="fragment">Add USE statements for module variables.
+
+Parameters
+----------
+moduleVarList : list of list/tuple
+    List of module variable specifications. Each specification is a list
+    of three elements:
+    - Scope path (str): path to the location where USE should be added
+      (e.g., 'module:MOD/sub:SUB').
+    - Module name (str): name of the module to USE.
+    - Variable name(s) (str, list, or None):
+      - str: single variable name to import.
+      - list: list of variable names to import.
+      - None: add USE without ONLY clause (import all).
+
+Examples
+--------
+Import single variable Y from MODD_XX into subroutine FOO:
+&gt;&gt;&gt; pft = PYFT('input.F90')
+&gt;&gt;&gt; pft.addModuleVar([('sub:FOO', 'MODD_XX', 'Y')])
+! Adds: USE MODD_XX, ONLY: Y
+
+Import multiple variables:
+&gt;&gt;&gt; pft.addModuleVar([('sub:FOO', 'MODD_XX', ['X', 'Y', 'Z'])])
+! Adds: USE MODD_XX, ONLY: X, Y, Z
+
+Add USE without ONLY (import all):
+&gt;&gt;&gt; pft.addModuleVar([('sub:FOO', 'MODD_XX', None)])
+! Adds: USE MODD_XX
+
+Import into a module:
+&gt;&gt;&gt; pft.addModuleVar([('module:MOD', 'OTHER_MOD', 'VAR')])
+
+Notes
+-----
+- Existing USE statements for the same module are updated to include new variables.
+- Duplicate imports are avoided (variables already imported are not re-added).
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00615">615</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00878">878</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -895,7 +985,7 @@ Here is the caller graph for this function:</div>
 <pre class="fragment">Adds missing ONLY clause to USE statements
 :param parserOptions, wrapH: see the PYFT class
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01441">1441</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01905">1905</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -988,16 +1078,42 @@ Here is the call graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">:param varList: list of variable specification to insert in the xml code
-                a variable specification is a list of four elements:
-                - variable scope path (path to module, subroutine, function or type
-                  declaration)
-                - variable name
-                - declarative statment
-                - position of the variable in the list of dummy argument,
-                  None for a local variable
+<pre class="fragment">Add variables to declarations and argument lists.
+
+Parameters
+----------
+varList : list of list/tuple
+    List of variable specifications to insert. Each specification is a list
+    of four elements:
+    - Scope path (str): path to the module, subroutine, function, or type
+      where the variable should be declared (e.g., 'module:MOD/sub:SUB').
+    - Variable name (str): name of the variable to add.
+    - Declaration statement (str): FORTRAN declaration (e.g., 'REAL, INTENT(IN) :: X').
+    - Position (int or None): position in dummy argument list for arguments,
+      None for local variables.
+
+Examples
+--------
+Add a local variable:
+&gt;&gt;&gt; pft = PYFT('input.F90')
+&gt;&gt;&gt; pft.addVar([('module:MOD/sub:SUB', 'LOCAL_VAR', 'INTEGER :: LOCAL_VAR', None)])
+
+Add a dummy argument at position 0:
+&gt;&gt;&gt; pft.addVar([('module:MOD/sub:SUB', 'ARG', 'REAL, INTENT(IN) :: ARG', 0)])
+
+Add multiple variables:
+&gt;&gt;&gt; pft.addVar([
+...     ('module:MOD/sub:SUB', 'X', 'REAL :: X', None),
+...     ('module:MOD/sub:SUB', 'Y', 'INTEGER :: Y', None)
+... ])
+
+Notes
+-----
+- If adding to an argument list, the declaration is automatically updated
+  with the INTENT attribute if specified.
+- Declaration statements are inserted before the first executable statement.
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00525">525</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00762">762</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1092,7 +1208,7 @@ Both the array-R and the parens-R nodes are inside a R-LT node
 :param table: dictionnary returned by the decode function
 :param varList: None or a VarList object in which varaibles are searched for
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01125">1125</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01589">1589</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1125,17 +1241,34 @@ Here is the call graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Find all T-decl-stmt elements that have a child element 'attribute' with
-attribute-N="DIMENSION" and move the attribute into EN-N elements
-E.g., before :
-REAL, DIMENSION(D%NIJT,D%NKT) :: ZTLK, ZRT
-INTEGER, PARAMETER, DIMENSION(1,1) :: IBUEXTRAIND=(/18, 30/)
-after :
-REAL :: ZTLK(D%NIJT,D%NKT), ZRT(D%NIJT,D%NKT)
-INTEGER, PARAMETER  :: IBUEXTRAIND(1,1)=(/18, 30/)
-Limitations : "DIMENSION" must be in upper case in attribute.text
+<pre class="fragment">Move DIMENSION attribute from declaration statement to individual entities.
+
+Finds all type declaration statements (T-decl-stmt) that have a DIMENSION
+attribute and moves the array specification to each declared variable.
+
+Transformation
+-------------
+Before:
+    REAL, DIMENSION(D%NIJT,D%NKT) :: ZTLK, ZRT
+    INTEGER, PARAMETER, DIMENSION(2) :: IBUEXTRAIND=(/18, 30/)
+
+After:
+    REAL :: ZTLK(D%NIJT,D%NKT), ZRT(D%NIJT,D%NKT)
+    INTEGER, PARAMETER  :: IBUEXTRAIND(2)=(/18, 30/)
+
+Limitations
+-----------
+- DIMENSION attribute must be in uppercase in the source code.
+- Allocatable arrays (with ':') are not modified.
+- Variables with existing array specifications are not modified.
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('input.F90')
+&gt;&gt;&gt; pft.attachArraySpecToEntity()
+&gt;&gt;&gt; pft.write()  # Writes transformed code
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00300">300</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00459">459</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1206,11 +1339,24 @@ Here is the caller graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">:param mustRaise: True to raise
-Issue a logging.warning if the "IMPLICIT NONE" statment is missing
-If mustRaise is True, issue a logging.error instead and raise an error
+<pre class="fragment">Check for missing IMPLICIT NONE statements in scopes.
+
+Issues a logging warning if IMPLICIT NONE is not declared in a scope.
+When mustRaise is True, logs an error and raises PYFTError instead.
+
+Parameters
+----------
+mustRaise : bool, optional
+    If False (default), issue a warning and continue.
+    If True, issue an error and raise PYFTError.
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('input.F90')
+&gt;&gt;&gt; pft.checkImplicitNone()  # Issues warning if missing
+&gt;&gt;&gt; pft.checkImplicitNone(mustRaise=True)  # Raises error if missing
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00330">330</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00506">506</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1266,11 +1412,24 @@ Here is the call graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">:param mustRaise: True to raise
-Issue a logging.warning if some "INTENT" attributes are missing
-If mustRaise is True, issue a logging.error instead and raise an error
+<pre class="fragment">Check for missing INTENT attributes on dummy arguments.
+
+Issues a logging warning for each dummy argument without an INTENT attribute.
+When mustRaise is True, logs an error and raises PYFTError.
+
+Parameters
+----------
+mustRaise : bool, optional
+    If False (default), issue warnings and continue.
+    If True, issue errors and raise PYFTError.
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('input.F90')
+&gt;&gt;&gt; pft.checkIntent()  # Issues warning for missing INTENT
+&gt;&gt;&gt; pft.checkIntent(mustRaise=True)  # Raises error
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00352">352</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00541">541</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1322,11 +1481,25 @@ Here is the call graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">:param mustRaise: True to raise
-Issue a logging.warning if some "ONLY" clauses are missing
-If mustRaise is True, issue a logging.error instead and raise an error
+<pre class="fragment">Check for missing ONLY clauses in USE statements.
+
+Issues a logging warning for each USE statement not followed by an ONLY clause.
+When mustRaise is True, logs an error and raises PYFTError.
+
+Parameters
+----------
+mustRaise : bool, optional
+    If False (default), issue warnings and continue.
+    If True, issue errors and raise PYFTError.
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('input.F90')
+&gt;&gt;&gt; pft.checkONLY()  # Issues warning for missing ONLY
+WARNING: USE MODULE is not followed by an ONLY clause...
+&gt;&gt;&gt; pft.checkONLY(mustRaise=True)  # Raises error
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00370">370</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00572">572</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1378,12 +1551,29 @@ Here is the call graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">:param mustRaise: True to raise
-:param excludeList: list of variable names to exclude from the check
-Issue a logging.warning if there are unused local variables
-If mustRaise is True, issue a logging.error instead and raise an error
+<pre class="fragment">Check for unused local variables in scopes.
+
+Issues a logging warning for each local variable that is declared but never used.
+When mustRaise is True, logs an error and raises PYFTError.
+
+Parameters
+----------
+mustRaise : bool, optional
+    If False (default), issue warnings and continue.
+    If True, issue errors and raise PYFTError.
+excludeList : list of str, optional
+    List of variable names to exclude from the check.
+    These variables will not trigger warnings even if unused.
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('input.F90')
+&gt;&gt;&gt; pft.checkUnusedLocalVar()  # Issues warnings
+WARNING: The LOCAL_VAR variable is not used...
+&gt;&gt;&gt; pft.checkUnusedLocalVar(excludeList=['TEMP'])  # Exclude TEMP
+&gt;&gt;&gt; pft.checkUnusedLocalVar(mustRaise=True)  # Raises error
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00694">694</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00995">995</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1497,7 +1687,7 @@ Here is the caller graph for this function:</div>
 
 In case the loop variable cannot be defined, the function returns (None, [])
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01219">1219</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01683">1683</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1577,7 +1767,7 @@ loopName can be:
     - False to discard this index
     - True to create a new variable to loop with
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01071">1071</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01535">1535</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1666,7 +1856,7 @@ If exactScope is False:
 
 To know if a variable can be removed, you must use exactScope=False
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01343">1343</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01807">1807</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1768,22 +1958,70 @@ Here is the caller graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">:param declTemplate: declaration template
-:param startTemplate: template for the first executable statement
-:param: endTemplate: template for the last executable statement
-:return: number of arrays modified
-Modifies all automatic arrays declaration in subroutine and functions. The declaration is
-replaced by the declaration template, the start template is inserted as first executable
-statement and the end template as last executable statement. Each template can use the
-following place holders:
-"{doubledotshape}", "{shape}", "{lowUpList}", "{name}" and "{type}" wich are, respectively
-modified into ":, :, :", "I, I:J, 0:I", "1, I, I, J, 0, I", "A", "REAL" if the original
-declaration statement was "A(I, I:J, 0:I)". The template
-"{type}, DIMENSION({doubledotshape}), ALLOCATABLE :: {name}#
- ALLOCATE({name}({shape}))#DEALLOCATE({name})"
-replaces automatic arrays by allocatables
+<pre class="fragment">Transform automatic arrays using customizable templates.
+
+Modifies automatic array declarations in subroutines and functions by
+applying templates for declaration, initialization, and cleanup.
+
+Parameters
+----------
+declTemplate : str, optional
+    Template for the array declaration. If None, declaration is unchanged.
+startTemplate : str, optional
+    Template for code to insert as the first executable statement
+    (e.g., allocation).
+endTemplate : str, optional
+    Template for code to insert as the last executable statement
+    (e.g., deallocation).
+
+Returns
+-------
+int
+    Number of arrays modified.
+
+Placeholders
+------------
+Each template can use the following placeholders (case-sensitive):
+
+============  ==================================================
+Placeholder   Description (for declaration "A(I, I:J, 0:I)")
+============  ==================================================
+{name}        Variable name (e.g., "A")
+{type}        Type specification (e.g., "REAL")
+{doubledotshape} Colon-separated dimensions (e.g., ":, :, :")
+{shape}       Bounds with indices (e.g., "I, I:J, 0:I")
+{lowUpList}   Flattened bounds (e.g., "1, I, I, J, 0, I")
+============  ==================================================
+
+Examples
+--------
+Transform automatic arrays to allocatables:
+
+&gt;&gt;&gt; pft = PYFT('input.F90')
+&gt;&gt;&gt; pft.modifyAutomaticArrays(
+...     declTemplate="{type}, DIMENSION({doubledotshape}), ALLOCATABLE :: {name}",
+...     startTemplate="ALLOCATE({name}({shape}))",
+...     endTemplate="DEALLOCATE({name})"
+... )
+
+Given input:
+    REAL, DIMENSION(I, I:J, 0:I) :: A
+    A = 1.0
+
+Produces:
+    REAL, DIMENSION(:,:,:), ALLOCATABLE :: A
+    ALLOCATE(A(I, I:J, 0:I))
+    A = 1.0
+    DEALLOCATE(A)
+
+Notes
+-----
+- Only processes automatic arrays (stack-allocated based on parameters).
+- Excludes dummy arguments, allocatable, pointer, and function result arrays.
+- Arrays with initial values are not processed.
+- Variables are processed in dependency order to handle interdependencies.
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00906">906</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01322">1322</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1839,10 +2077,28 @@ Here is the call graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Look for arrays and remove parenthesis if no index selection A(:,:) =&gt; A
-:param node: xml node in which ':' must be removed
+<pre class="fragment">Remove array parentheses if no index selection is needed.
+
+When an array has full slice notation (e.g., A(:,:)) that matches
+the entire array, removes the parentheses.
+
+Parameters
+----------
+node : xml element
+    XML node in which to remove unnecessary parentheses.
+
+Transformation
+-------------
+Before: A(:,:)  (when A is declared as 2D with full bounds)
+After:  A
+
+Notes
+-----
+- Only removes parentheses when all dimensions use full slice (:) notation.
+- Preserves parentheses if any dimension has explicit index selection.
+- Excludes arrays in ALLOCATED, ASSOCIATED, and PRESENT intrinsic calls.
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00878">878</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01276">1276</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1917,13 +2173,38 @@ Here is the call graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Remove unused local variables (dummy and module variables are not suppressed)
-:param excludeList: list of variable names to exclude from removal (even if unused)
-:param simplify: try to simplify code (if we delete a declaration statement that used a
-                 variable as kind selector, and if this variable is not used else where,
-                 we also delete it)
+<pre class="fragment">Remove unused local variables from declarations.
+
+Removes variables that are declared but never used in the code.
+Dummy arguments and module variables are not removed.
+
+Parameters
+----------
+excludeList : list of str, optional
+    List of variable names to exclude from removal.
+    These variables will be kept even if unused.
+simplify : bool, optional
+    If True, also remove variables that become unused after removal
+    (e.g., kind selectors).
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('input.F90')
+&gt;&gt;&gt; pft.removeUnusedLocalVar()  # Remove all unused locals
+
+Remove unused locals except TEMP and COUNTER:
+&gt;&gt;&gt; pft.removeUnusedLocalVar(excludeList=['TEMP', 'COUNTER'])
+
+With simplification (remove cascading unused vars):
+&gt;&gt;&gt; pft.removeUnusedLocalVar(simplify=True)
+
+Notes
+-----
+- Only local variables (declared in SUBROUTINE/FUNCTION scope) are removed.
+- Dummy arguments (subroutine parameters) are preserved.
+- Variables imported via USE statements are preserved.
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00726">726</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01044">1044</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -2015,18 +2296,39 @@ Here is the caller graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">:param varList: list of variables to remove. Each item is a list or tuple of two elements.
-                The first one describes where the variable is used, the second one is
-                the name of the variable. The first element is a '/'-separated path with
-                each element having the form 'module:&lt;name of the module&gt;',
-                'sub:&lt;name of the subroutine&gt;', 'func:&lt;name of the function&gt;' or
-                'type:&lt;name of the type&gt;'
-:param simplify: try to simplify code (if we delete a declaration statement that used a
-                 variable as kind selector, and if this variable is not used else where,
-                 we also delete it)
-Remove the variable from declaration, and from the argument list if needed
+<pre class="fragment">Remove variables from declarations and argument lists.
+
+Parameters
+----------
+varList : list of tuple
+    List of variables to remove. Each item is a list or tuple of two elements:
+    - First element: scope path where the variable is used (or declared).
+      This is a '/' separated path where each element has the form:
+      'module:&lt;name&gt;', 'sub:&lt;name&gt;', 'func:&lt;name&gt;', or 'type:&lt;name&gt;'.
+    - Second element: variable name (string).
+
+    Example: [('module:MOD/sub:SUB', 'X'), ('module:MOD/sub:SUB', 'Y')]
+simplify : bool, optional
+    If True, also remove variables that become unused after the deletion
+    (e.g., kind selectors used only by the removed variable).
+
+Examples
+--------
+Remove variable X from subroutine SUB in module MOD:
+&gt;&gt;&gt; pft = PYFT('input.F90')
+&gt;&gt;&gt; pft.removeVar([('module:MOD/sub:SUB', 'X')])
+
+Remove multiple variables with simplification:
+&gt;&gt;&gt; pft.removeVar([('module:MOD/sub:SUB', 'KIND_VAR')], simplify=True)
+
+Notes
+-----
+- Dummy arguments are removed from both declarations and argument lists.
+- USE statement variables are removed from ONLY clauses.
+- If all variables in a declaration statement are removed, the statement
+  itself is deleted (unless simplify=True, which may delete additional unused variables).
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00391">391</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00607">607</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -2148,7 +2450,7 @@ Here is the caller graph for this function:</div>
 :return: the varList without the unremovable variables
 If possible, remove the variable from declaration, and from the argument list if needed
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01312">1312</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01776">1776</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -2247,7 +2549,7 @@ Here is the caller graph for this function:</div>
 <pre class="fragment">:param oldName: old name of the variable
 :param newName: new name of the variable
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01298">1298</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01762">1762</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -2283,9 +2585,20 @@ Here is the call graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Displays on stdout a list of unused variables
+<pre class="fragment">Display unused variables on stdout.
+
+Searches through all scopes and displays variables that are declared
+but never used in the code.
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('input.F90')
+&gt;&gt;&gt; pft.showUnusedVar()
+Some variables declared in /module:MOD/sub:SUB are unused:
+  - LOCAL_VAR
+  - UNUSED_ARRAY
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00678">678</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00968">968</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -2345,9 +2658,22 @@ Here is the call graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Returns the varList object corresponding to the node
+<pre class="fragment">Get the VarList for this scope.
+
+Returns
+-------
+VarList
+    VarList instance containing all variables in the current scope.
+    The list is lazily computed on first access.
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('input.F90')
+&gt;&gt;&gt; vl = pft.varList
+&gt;&gt;&gt; vl.findVar('X')
+{'n': 'X', 't': 'REAL', ...}
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00264">264</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00410">410</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -2438,7 +2764,7 @@ Here is the caller graph for this function:</div>
 (e.g. outside of PHYEX)
 :return: the associated declarative statement
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01030">1030</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l01494">1494</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -2475,7 +2801,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00274">274</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00433">433</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 
 </div>
 </div>
@@ -2499,7 +2825,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00261">261</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00407">407</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 
 </div>
 </div>
@@ -2517,7 +2843,7 @@ Here is the caller graph for this function:</div>
 
 <p>Reimplemented in <a class="el" href="classpyfortool_1_1scope_1_1PYFTscope.html#a0fe49a63a383a5bfbf0925e2ad34f4f4">pyfortool.scope.PYFTscope</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00274">274</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00433">433</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 
 </div>
 </div>

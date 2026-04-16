@@ -94,8 +94,25 @@ Functions</h2></td></tr>
 <tr class="separator:a4fb6b407e85fee49ec8a65db4aded68e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><pre class="fragment">This module contains the main PYFT class
-PYFT is the file level class (read/write...)
+<div class="textblock"><pre class="fragment">This module contains the main PYFT class.
+
+PYFT (Python FORTRAN Tool) is the primary class for reading, manipulating,
+and writing FORTRAN source files. It provides file-level operations and
+wraps the scope-level functionality from PYFTscope.
+
+Examples
+--------
+&gt;&gt;&gt; from pyfortool import PYFT
+
+# Read and modify a file
+&gt;&gt;&gt; pft = PYFT('input.F90')
+&gt;&gt;&gt; pft.removePrints()
+&gt;&gt;&gt; pft.write()
+
+# Use context manager
+&gt;&gt;&gt; with PYFT('input.F90') as pft:
+...     pft.removeComments()
+...     pft.write()
 </pre> </div><h2 class="groupheader">Function Documentation</h2>
 <a id="acbe5a929c8a87ec2c2de7ccfa9e54b4e" name="acbe5a929c8a87ec2c2de7ccfa9e54b4e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#acbe5a929c8a87ec2c2de7ccfa9e54b4e">&#9670;&#160;</a></span>conservativePYFT()</h2>
@@ -146,15 +163,36 @@ PYFT is the file level class (read/write...)
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Return a conservative PYFT object usable for tree manipulation
-:param filename: name of the file to open
-:param parserOptions, wrapH: see the PYFT class
-:param tree: Tree instance or None
-:param verbosity: if not None, sets the verbosity level
-:param clsPYFT: PYFT class to use
-:return: PYFT object
+<pre class="fragment">Create a PYFT object with conservative parsing options.
+
+Similar to PYFT constructor but forces the '-no-include' option
+to prevent automatic inclusion of header files.
+
+Parameters
+----------
+filename : str
+    Path to the FORTRAN source file.
+parserOptions : list or None
+    Parser options passed to PYFT. If None, uses default options.
+wrapH : bool
+    Whether to wrap .h file content. See PYFT class.
+tree : Tree, optional
+    Tree instance for cross-file analysis.
+verbosity : str or int, optional
+    Logging verbosity level.
+clsPYFT : type, optional
+    PYFT subclass to use instead of default PYFT.
+
+Returns
+-------
+PYFT
+    A PYFT instance configured for conservative tree manipulation.
+
+See Also
+--------
+PYFT : The main PYFT class.
 </pre> 
-<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00019">19</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00036">36</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -209,12 +247,30 @@ Here is the caller graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Generates an empty PYFT scope
-:param filename: file name corresponding to this new PYFT scope
-:param fortran: fortran text to include
-:param **kwargs: other arguments for the PYFT class
+<pre class="fragment">Generate a new PYFT object from a file path, creating the file if needed.
+
+Parameters
+----------
+filename : str
+    Path for the new file.
+fortran : str, optional
+    FORTRAN source code to write to the file.
+    If None, creates a stub subroutine "SUBROUTINE FOO\nEND".
+**kwargs
+    Additional arguments passed to PYFT constructor.
+
+Returns
+-------
+PYFT
+    PYFT instance for the newly created file.
+
+Examples
+--------
+&gt;&gt;&gt; pft = generateEmptyPYFT('new.F90', 'MODULE TEST\nEND MODULE')
+&gt;&gt;&gt; pft.addVar([('module:TEST', 'X', 'INTEGER :: X', None)])
+&gt;&gt;&gt; pft.write()
 </pre> 
-<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00042">42</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00080">80</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">

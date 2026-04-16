@@ -86,7 +86,31 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><pre class="fragment">This module implements the Cosmetics class containg methods to deal with cosmetics
+<div class="textblock"><pre class="fragment">Code formatting and style transformations.
+
+Provides the Cosmetics class for modifying FORTRAN code appearance including
+case, indentation, spacing, comments, and line continuation.
+
+Key Features
+------------
+- Case conversion (upper/lower FORTRAN keywords)
+- Indentation fixing with directive exclusion
+- Comment removal with directive preservation
+- Whitespace normalization
+- Line continuation alignment
+
+Classes
+-------
+Cosmetics : Mixin class providing code formatting methods
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('input.F90')
+&gt;&gt;&gt; pft.upperCase()  # Convert keywords to UPPER CASE
+&gt;&gt;&gt; pft.lowerCase()  # Convert keywords to lower case
+&gt;&gt;&gt; pft.indent()  # Fix indentation
+&gt;&gt;&gt; pft.removeComments()  # Remove comments (keep directives)
+&gt;&gt;&gt; pft.prettify()  # Full formatting (indent + case + spaces)
 </pre> </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

@@ -92,7 +92,30 @@ Functions</h2></td></tr>
 <tr class="separator:a6feba922da4fb3f3da41c8f58f02c50e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><pre class="fragment">This module contains the Tree class to browse the tree
+<div class="textblock"><pre class="fragment">Code dependency tree analysis and visualization.
+
+Provides the Tree class for building and navigating compilation and execution
+dependency graphs across multiple FORTRAN source files.
+
+Key Features
+------------
+- Compilation dependency tracking (USE statements)
+- Execution dependency tracking (CALL statements)
+- Source directory scanning
+- Tree serialization to/from JSON
+- Dependency graph visualization (DOT format)
+- Scope reachability analysis
+
+Classes
+-------
+Tree : Manages cross-file dependency analysis
+
+Examples
+--------
+&gt;&gt;&gt; tree = Tree(['/path/to/src'], descTreeFile='tree.json')
+&gt;&gt;&gt; deps = tree.needsFile('file.F90')
+&gt;&gt;&gt; tree.plotExecTreeFromScope('module:MOD/sub:SUB', 'deps.png', 2, 2)
+&gt;&gt;&gt; tree.toJson('tree.json')  # Save for later use
 </pre> </div><h2 class="groupheader">Function Documentation</h2>
 <a id="a6feba922da4fb3f3da41c8f58f02c50e" name="a6feba922da4fb3f3da41c8f58f02c50e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a6feba922da4fb3f3da41c8f58f02c50e">&#9670;&#160;</a></span>updateTree()</h2>
@@ -109,15 +132,17 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Decorator factory to update the tree after having executed a PYFTscope method
-:param method: method to use for updating
-               - 'file': analyze current file (default)
-               - 'scan': analyse new files and suppress tree information
-                         for suppressed files
-               - 'signal': analyse files (if any) signaled using
-                           the signal method of the tree object
+<pre class="fragment">Decorator factory to update the tree after PYFTscope method execution.
+
+Parameters
+----------
+method : str, optional
+    Update method:
+    - 'file' (default): Analyze current file.
+    - 'scan': Analyze new files, remove info for deleted files.
+    - 'signal': Analyze files signaled via tree.signal().
 </pre> 
-<p class="definition">Definition at line <a class="el" href="tree_8py_source.html#l00018">18</a> of file <a class="el" href="tree_8py_source.html">tree.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="tree_8py_source.html#l00041">41</a> of file <a class="el" href="tree_8py_source.html">tree.py</a>.</p>
 
 </div>
 </div>

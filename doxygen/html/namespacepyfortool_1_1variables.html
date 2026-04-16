@@ -96,7 +96,34 @@ Functions</h2></td></tr>
 <tr class="separator:a32373d6c5e30803d10112a63c8218067"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><pre class="fragment">This module implements the VarList and Variables classes to deal with variables
+<div class="textblock"><pre class="fragment">Variable management and declaration manipulation.
+
+Provides the VarList and Variables classes for managing FORTRAN variable
+declarations and characteristics.
+
+Key Features
+------------
+- Variable declaration parsing and analysis
+- Array specification management (attach/detach dimensions)
+- Automatic array transformation (stack to heap allocation)
+- Unused variable detection and removal
+- Module and dummy argument handling
+
+Classes
+-------
+VarList : Manages a list of variables for a scope
+Variables : Mixin class providing variable manipulation methods
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('input.F90')
+&gt;&gt;&gt; pft.varList.findVar('X')
+{'n': 'X', 't': 'REAL', 'as': [], 'i': None, ...}
+&gt;&gt;&gt; pft.attachArraySpecToEntity()
+&gt;&gt;&gt; pft.modifyAutomaticArrays(
+        declTemplate="{type}, DIMENSION({doubledotshape}), ALLOCATABLE :: {name}",
+        startTemplate="ALLOCATE({name}({shape}))",
+        endTemplate="DEALLOCATE({name})")
 </pre> </div><h2 class="groupheader">Function Documentation</h2>
 <a id="aae903ac3ca02310752a111161ead0c28" name="aae903ac3ca02310752a111161ead0c28"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aae903ac3ca02310752a111161ead0c28">&#9670;&#160;</a></span>_getDeclStmtTag()</h2>
@@ -121,11 +148,21 @@ Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<pre class="fragment">Internal function
-:param scopePath: a scope path
-:return: the declaration statement we can find in this scope path
+<pre class="fragment">Get the declaration statement tag for a given scope path.
+
+Parameters
+----------
+scopePath : str
+    A scope path (e.g., 'module:MOD/sub:SUB' or 'type:MYTYPE').
+
+Returns
+-------
+str
+    The XML tag for declaration statements:
+    - 'component-decl-stmt' for type declarations
+    - 'T-decl-stmt' for other scopes (module, subroutine, function)
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00019">19</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00046">46</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -191,9 +228,12 @@ Here is the caller graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Decorator to signal that a varList update is needed
+<pre class="fragment">Decorator to invalidate the variable list cache.
+
+Signals that the variable list needs to be recomputed after
+a modification to the code tree.
 </pre> 
-<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00032">32</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="variables_8py_source.html#l00069">69</a> of file <a class="el" href="variables_8py_source.html">variables.py</a>.</p>
 
 </div>
 </div>

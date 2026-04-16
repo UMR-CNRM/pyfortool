@@ -499,9 +499,36 @@ Additional Inherited Members</h2></td></tr>
 <tr class="separator:a1bd9f5a2cbe350bcc35b2a154000ed2d inherit pro_static_methods_classpyfortool_1_1scope_1_1PYFTscope"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><pre class="fragment">This class extends the PYFTscope one by adding file support (read/write)
+<div class="textblock"><pre class="fragment">Main class for FORTRAN file manipulation.
+
+PYFT extends PYFTscope with file-level operations (read/write) and
+integrates with the fxtran parser for FORTRAN source code analysis.
+
+Class Attributes
+----------------
+DEFAULT_FXTRAN_OPTIONS : list
+    Default options for fxtran parser: ['-construct-tag', '-no-include',
+    '-no-cpp', '-line-length', '9999']
+MANDATORY_FXTRAN_OPTIONS : list
+    Required options: ['-construct-tag']
+
+Examples
+--------
+Basic usage:
+&gt;&gt;&gt; pft = PYFT('myfile.F90')
+&gt;&gt;&gt; pft.upperCase()
+&gt;&gt;&gt; pft.write()
+
+Using context manager:
+&gt;&gt;&gt; with PYFT('myfile.F90', output='output.F90') as pft:
+...     pft.removeComments()
+...     pft.indent()
+
+Parallel processing:
+&gt;&gt;&gt; tree = Tree(['/path/to/src'])
+&gt;&gt;&gt; PYFT.setParallel(tree)
 </pre> 
-<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00057">57</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00113">113</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="afec8d7c7186e688bff9a60cbdb12fa63" name="afec8d7c7186e688bff9a60cbdb12fa63"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#afec8d7c7186e688bff9a60cbdb12fa63">&#9670;&#160;</a></span>__init__()</h2>
@@ -564,19 +591,40 @@ Additional Inherited Members</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">:param filename: Input file name containing FORTRAN code
-:param output: Output file name, None to replace input file
-:param parserOptions: dictionnary holding the parser options
-:param verbosity: if not None, sets the verbosity level
-:param wrapH: if True, content of .h file is put in a .F90 file (to force
-              fxtran to recognize it as free form) inside a module (to
-              enable the reading of files containing only a code part)
-:param tree: an optional Tree instance
-:param enableCache: True to cache node parents
+<pre class="fragment">Initialize a PYFT instance from a FORTRAN source file.
+
+Parameters
+----------
+filename : str
+    Path to the input FORTRAN file.
+output : str, optional
+    Path for output file. If None, overwrites the input file.
+parserOptions : list, optional
+    Options for the fxtran parser. See DEFAULT_FXTRAN_OPTIONS.
+verbosity : str or int, optional
+    Logging level (e.g., 'DEBUG', 'INFO', 'WARNING').
+wrapH : bool, optional
+    If True, wrap .h file content in a MODULE to enable parsing
+    as free-form FORTRAN.
+tree : Tree, optional
+    Tree instance for cross-file analysis. If None, creates a new Tree.
+enableCache : bool, optional
+    If True, cache parent nodes for faster traversal.
+
+Raises
+------
+PYFTError
+    If Python version &lt; 3.8 or file does not exist.
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('myfile.F90')
+&gt;&gt;&gt; pft = PYFT('myfile.F90', output='newfile.F90')
+&gt;&gt;&gt; pft = PYFT('code.h', wrapH=True)
 </pre> 
 <p>Reimplemented from <a class="el" href="classpyfortool_1_1scope_1_1PYFTscope.html#a2e2479266c628d251c1adb1163499946">pyfortool.scope.PYFTscope</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00068">68</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00151">151</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -624,9 +672,14 @@ Here is the caller graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Context manager
+<pre class="fragment">Enter context manager.
+
+Returns
+-------
+PYFT
+    Self reference for use in with statement.
 </pre> 
-<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00156">156</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00284">284</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
 
 </div>
 </div>
@@ -667,9 +720,9 @@ Here is the caller graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Context manager
+<pre class="fragment">Exit context manager and close file.
 </pre> 
-<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00162">162</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00295">295</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -728,10 +781,14 @@ Here is the call graph for this function:</div>
   </tr>
 </table>
 </div><div class="memdoc">
-<pre class="fragment">The output file will have a modified extension.
-:param mod: function to apply to the file extension
+<pre class="fragment">Apply a transformation function to the file extension.
+
+Parameters
+----------
+mod : callable
+    Function to apply to file extension (e.g., str.upper, str.lower).
 </pre> 
-<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00201">201</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00357">357</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -762,9 +819,12 @@ Here is the caller graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Closes the FORTRAN file
+<pre class="fragment">Close the FORTRAN file and release resources.
+
+Prints debug statistics and releases file locks.
+Automatically called when exiting context manager.
 </pre> 
-<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00168">168</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00301">301</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -813,9 +873,14 @@ Here is the caller graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Returns the FORTRAN as a string
+<pre class="fragment">Get the FORTRAN source code representation.
+
+Returns
+-------
+str
+    FORTRAN source code string.
 </pre> 
-<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00183">183</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00324">324</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -854,10 +919,14 @@ Here is the caller graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Acquire lock for filename
-:param filename: name of the file whose lock must be acquired
+<pre class="fragment">Acquire file lock for parallel processing.
+
+Parameters
+----------
+filename : str
+    Path to the file to lock.
 </pre> 
-<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00128">128</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00247">247</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -887,9 +956,14 @@ Here is the caller graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">The output file will have a lower case extension
+<pre class="fragment">Set output file extension to lowercase.
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('file.F90')
+&gt;&gt;&gt; pft.renameLower()  # Output will be file.f90
 </pre> 
-<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00195">195</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00346">346</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -918,9 +992,14 @@ Here is the call graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">The output file will have an upper case extension
+<pre class="fragment">Set output file extension to uppercase.
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('file.F90')
+&gt;&gt;&gt; pft.renameUpper()  # Output will be file.F90
 </pre> 
-<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00189">189</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00335">335</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -971,12 +1050,27 @@ Here is the call graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Prepare the class to be used to instanciate parallel objects
-:param tree: Tree object shared among processes
-:param clsLock: class to use for Lock (defaults to multiprocessing.Lock)
-:param clsRLock: class to use for RLock (defaults to multiprocessing.RLock)
+<pre class="fragment">Configure PYFT for parallel processing.
+
+Must be called before creating PYFT instances for parallel execution.
+Sets up shared tree and file locking mechanisms.
+
+Parameters
+----------
+tree : Tree
+    Tree object shared among all processes.
+clsLock : type, optional
+    Lock class to use. Defaults to multiprocessing.Lock.
+clsRLock : type, optional
+    Recursive lock class. Defaults to multiprocessing.RLock.
+
+Examples
+--------
+&gt;&gt;&gt; tree = Tree(['/path/to/src'], descTreeFile='tree.json')
+&gt;&gt;&gt; PYFT.setParallel(tree)
+&gt;&gt;&gt; # Now create PYFT instances in parallel processes
 </pre> 
-<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00111">111</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00215">215</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
 
 </div>
 </div>
@@ -1011,11 +1105,16 @@ Here is the call graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Release lock for filename
-:param filename: name of the file whose lock must be acquired
-:param silence: do not raise exception if file is already unlocked
+<pre class="fragment">Release file lock for parallel processing.
+
+Parameters
+----------
+filename : str
+    Path to the file to unlock.
+silence : bool, optional
+    If True, suppress ValueError when file is not locked.
 </pre> 
-<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00140">140</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00263">263</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -1046,9 +1145,12 @@ Here is the caller graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Writes the output FORTRAN file
+<pre class="fragment">Write the transformed FORTRAN source to file.
+
+Writes the current state of the code tree as FORTRAN source
+to the output file (or overwrites input if no output specified).
 </pre> 
-<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00214">214</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00374">374</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1087,10 +1189,19 @@ Here is the call graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Writes the output XML file
-:param filename: XML output file name
+<pre class="fragment">Write the internal XML representation to a file.
+
+Parameters
+----------
+filename : str
+    Path for the output XML file.
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('input.F90')
+&gt;&gt;&gt; pft.writeXML('output.xml')
 </pre> 
-<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00229">229</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00392">392</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1119,9 +1230,14 @@ Here is the call graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Returns the xml as a string
+<pre class="fragment">Get the XML representation of the parsed code.
+
+Returns
+-------
+str
+    XML string representation of the FORTRAN source.
 </pre> 
-<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00176">176</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00312">312</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -1156,7 +1272,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00086">86</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00190">190</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
 
 </div>
 </div>
@@ -1180,7 +1296,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00087">87</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00191">191</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
 
 </div>
 </div>
@@ -1204,7 +1320,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00089">89</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00193">193</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
 
 </div>
 </div>
@@ -1228,7 +1344,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00095">95</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00199">199</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
 
 </div>
 </div>
@@ -1252,7 +1368,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00061">61</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00144">144</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
 
 </div>
 </div>
@@ -1268,7 +1384,7 @@ Here is the caller graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00220">220</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00383">383</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
 
 </div>
 </div>
@@ -1292,7 +1408,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00062">62</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00145">145</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
 
 </div>
 </div>
@@ -1316,7 +1432,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00064">64</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00147">147</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
 
 </div>
 </div>
@@ -1340,7 +1456,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00065">65</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00148">148</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
 
 </div>
 </div>
@@ -1364,7 +1480,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00063">63</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00146">146</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
 
 </div>
 </div>
@@ -1380,7 +1496,7 @@ Here is the caller graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00235">235</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00407">407</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>
 
 </div>
 </div>

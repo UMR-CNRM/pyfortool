@@ -143,9 +143,12 @@ Protected Member Functions</h2></td></tr>
 <tr class="separator:afd21fd68864bcfad99cba32f6cdc6dff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><pre class="fragment">Methods for high-to-moderate level transformation
+<div class="textblock"><pre class="fragment">High-level FORTRAN code transformations.
+
+Provides application-specific transformations for common patterns
+like DR HOOK instrumentation, stack allocation, and code optimization.
 </pre> 
-<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l00060">60</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l00086">86</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
 <a id="afd21fd68864bcfad99cba32f6cdc6dff" name="afd21fd68864bcfad99cba32f6cdc6dff"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#afd21fd68864bcfad99cba32f6cdc6dff">&#9670;&#160;</a></span>_mnh_expand_var()</h2>
@@ -172,7 +175,7 @@ Protected Member Functions</h2></td></tr>
 </div><div class="memdoc">
 <pre class="fragment">:return: the list the variables needed by the mnh_expand directives
 </pre> 
-<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l01063">1063</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l01186">1186</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -220,9 +223,21 @@ Here is the caller graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Add DR_HOOK calls.
+<pre class="fragment">Add DR_HOOK profiling calls to all subroutines and functions.
+
+Adds timing instrumentation using the FHOOK profiling system.
+For each routine, inserts:
+- USE statement for YOMHOOK module
+- ZHOOK_HANDLE variable declaration
+- CALL DR_HOOK at routine start (if LHOOK)
+- CALL DR_HOOK at routine end (if LHOOK)
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('mycode.F90')
+&gt;&gt;&gt; pft.addDrHook()
 </pre> 
-<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l00306">306</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l00387">387</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -300,7 +315,7 @@ IF (MPPDB_INITIALIZED) THEN
 END IF
 param printsMode: if True, instead of CALL MPPDB_CHECK, add fortran prints for debugging
 </pre> 
-<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l00509">509</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l00617">617</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -374,14 +389,29 @@ Here is the call graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Add specific allocations of local arrays on the fly for GPU
-:param model : 'MESONH' or 'AROME' for specific objects related to the allocator or stack
-:param stopScopes: scope paths where we stop to add stack
-:param parserOptions, wrapH: see the PYFT class
+<pre class="fragment">Transform automatic arrays to stack-allocated arrays for GPU.
 
-Stacks are added to all routines called by the scopes listed in stopScopes
+Converts automatic (stack) arrays to explicit dynamic allocation
+using stack memory management for GPU execution.
+
+Parameters
+----------
+model : str
+    Target model: 'MESONH' or 'AROME'.
+stopScopes : list of str
+    Scope paths where to stop recursion when adding stack arguments.
+parserOptions : list, optional
+    Parser options for fxtran.
+wrapH : bool, optional
+    Whether to wrap .h files.
+
+Notes
+-----
+- For AROME: Uses CRAY pointers and YLSTACK for memory management.
+- For MESONH: Uses POINTER and MNH_MEM_GET/MNH_MEM_RELEASE.
+- Only affects routines called from within stopScopes.
 </pre> 
-<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l00706">706</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l00814">814</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -438,7 +468,7 @@ Here is the call graph for this function:</div>
 2) Add subroutines declaration (with MODULE statement)
 3) Add SUBMODULE statements and convert SUBROUTINE to MODULE SUBROUTINE statements
 </pre> 
-<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l00360">360</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l00468">468</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -512,7 +542,7 @@ Here is the call graph for this function:</div>
 </div><div class="memdoc">
 <pre class="fragment">build module files containing helpers to copy user type structures
 </pre> 
-<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l01661">1661</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l01784">1784</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -558,9 +588,18 @@ Here is the call graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Build the modi_ file corresponding to the given scope
+<pre class="fragment">Build a modi_ interface file for the module.
+
+Creates a MODI_ file containing interface declarations for all
+subroutines and functions in the module.
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('MODE_MODULENAME.F90')
+&gt;&gt;&gt; pft.buildModi()
+# Creates modi_MODE_MODULENAME.F90
 </pre> 
-<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l00080">80</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l00117">117</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -636,7 +675,7 @@ Here is the call graph for this function:</div>
 Issue a logging.warning if there are unused local variables
 If mustRaise is True, issue a logging.error instead and raise an error
 </pre> 
-<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l01095">1095</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l01218">1218</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -704,21 +743,32 @@ Here is the call graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Convert STR%VAR into single local variable contained in compute (a-stmt)
-and in if-then-stmt, else-if-stmt, where-stmt
-e.g.
-ZA = 1 + CST%XG ==&gt; ZA = 1 + XCST_G
-ZA = 1 + PARAM_ICE%XRTMIN(3)  ==&gt; ZA = 1 + XPARAM_ICE_XRTMIN3
-ZRSMIN(1:KRR) = ICED%XRTMIN(1:KRR) =&gt; ZRSMIN(1:KRR) = ICEDXRTMIN1KRR(1:KRR)
-IF(TURBN%CSUBG_MF_PDF=='NONE')THEN =&gt; IF(CTURBNSUBG_MF_PDF=='NONE')THEN
+<pre class="fragment">Inline structure member accesses in compute statements.
 
-RESTRICTION : works only if the r-component variable is contained in 1 parent structure.
-Allowed for conversion : CST%XG
-Not converted : TOTO%CST%XG (for now, recursion must be coded)
-Not converted : TOTO%ARRAY(:) (shape of the array must be determined from E1)
-Not converted : TOTO%TUTU(:) (type in a type)
+Converts TYPE%VAR access patterns into single local variables
+to improve performance by reducing pointer dereferences.
+
+Transformation Examples
+----------------------
+Simple member access:
+- ZA = 1 + CST%XG =&gt; ZA = 1 + XCST_G
+
+Array member access:
+- ZA = 1 + PARAM_ICE%XRTMIN(3) =&gt; ZA = 1 + XPARAM_ICE_XRTMIN3
+
+Full array member:
+- ZRSMIN(1:KRR) = ICED%XRTMIN(1:KRR) =&gt; ZRSMIN(1:KRR) = ICEDXRTMIN1KRR(1:KRR)
+
+Conditional:
+- IF(TURBN%CSUBG_MF_PDF=='NONE') =&gt; IF(CTURBNSUBG_MF_PDF=='NONE')
+
+Limitations
+-----------
+- Only handles single-level structure access (not TOTO%CST%XG)
+- Does not handle arrays with deferred shapes
+- Type components must have known dimensions
 </pre> 
-<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l00155">155</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l00215">215</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -774,11 +824,26 @@ Here is the call graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Remove Budget calls.
-If Simplify is True, also remove all variables only needed for these calls
-:param simplify : if True, remove variables that are now unused
+<pre class="fragment">Remove budget diagnostic calls and flag checks.
+
+Removes budget-related profiling calls:
+- BUDGET_STORE_INIT_PHY
+- BUDGET_STORE_END_PHY
+- BUDGET_STORE_ADD_PHY
+- TBUDGETS
+- All BUDGET_* flag conditionals set to .FALSE.
+
+Parameters
+----------
+simplify : bool, optional
+    If True, also remove unused budget-related variables.
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('profiled.F90')
+&gt;&gt;&gt; pft.deleteBudgetDDH()
 </pre> 
-<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l00331">331</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l00424">424</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -898,12 +963,22 @@ Here is the call graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Remove DR_HOOK calls.
-If Simplify is True, also remove all variables only needed for these calls (ZHOOK_HANDLE,
-DR_HOOK, LHOOK, YOMHOOK, JPRB, PARKIND1)
-:param simplify : if True, remove variables that are now unused
+<pre class="fragment">Remove DR_HOOK instrumentation.
+
+Removes all DR_HOOK calls and optionally removes related variables:
+ZHOOK_HANDLE, DR_HOOK, LHOOK, YOMHOOK, JPRB, PARKIND1
+
+Parameters
+----------
+simplify : bool, optional
+    If True, also remove unused DR_HOOK-related variables.
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('instrumented.F90')
+&gt;&gt;&gt; pft.deleteDrHook(simplify=True)
 </pre> 
-<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l00296">296</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l00367">367</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1014,12 +1089,26 @@ Here is the call graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Remove PHYEX routines that compute with different vertical columns not needed for AROME
-MODE_ROTATE_WIND, UPDATE_ROTATE_WIND
-If Simplify is True, also remove all variables only needed for these calls
-:param simplify : if True, remove variables that are now unused
+<pre class="fragment">Remove PHYEX routines not compatible with AROME single-column mode.
+
+Removes calls to PHYEX routines that have horizontal dependencies:
+- ROTATE_WIND
+- UPDATE_ROTATE_WIND
+- BL_DEPTH_DIAG_3D
+- TM06_H
+- TURB_HOR_SPLT
+
+Parameters
+----------
+simplify : bool, optional
+    If True, also remove variables that become unused.
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('phys_meteo.F90')
+&gt;&gt;&gt; pft.deleteNonColumnCallsPHYEX(simplify=True)
 </pre> 
-<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l00114">114</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l00160">160</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1142,7 +1231,7 @@ e.g. OCND2 in condensation uses a CALL ICECLOUD and fonctions within computation
 If Simplify is True, also remove all variables only needed for these calls
 :param simplify : if True, remove variables that are now unused
 </pre> 
-<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l00349">349</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l00457">457</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1203,7 +1292,7 @@ Here is the call graph for this function:</div>
 <pre class="fragment">Transform array syntax into DO loops
 :param concurrent: use 'DO CONCURRENT' instead of simple 'DO' loops
 </pre> 
-<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l01109">1109</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l01232">1232</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1301,7 +1390,7 @@ Steps :
                   - name of the array
                   - index of the rank
 </pre> 
-<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l00788">788</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l00911">911</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1380,7 +1469,7 @@ Here is the call graph for this function:</div>
 <pre class="fragment">Convert intrinsic math functions **, LOG, ATAN, **2, **3, **4, EXP, COS, SIN, ATAN2
 into a self defined function BR_ for MesoNH CPU/GPU bit-reproductibility
 </pre> 
-<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l01141">1141</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l01264">1264</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1432,7 +1521,7 @@ to be able to be run in offline and IAL models without MNH_EXPAND scripts.
 This function removes these DO and END DO.
 It is used only when shipping the PHYEX version integrated into MesoNH.
 </pre> 
-<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l00131">131</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l00191">191</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1520,7 +1609,7 @@ ComputeInSingleColumn :
     e.g. CALL FOO(D, A(:,JK,1), B(:,:))
           ==&gt; CALL FOO(D, A(JIJ,JK,1), B(:,:)) only if the target argument is not an array
 </pre> 
-<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l00811">811</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l00934">934</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1633,7 +1722,7 @@ is specific to the PHYEX code and take into account the mnh_expand directives.
                  variable as kind selector, and if this variable is not used else where,
                  we also delete it)
 </pre> 
-<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l01078">1078</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l01201">1201</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1711,7 +1800,7 @@ Here is the call graph for this function:</div>
 table into the use of subroutines
 and use mnh_expand_directives to handle intermediate computations
 </pre> 
-<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l01255">1255</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l01378">1378</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1757,10 +1846,18 @@ Here is the call graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Split all module and subroutine contain in a fortran file
-Return a fortran file for each module and subroutine
+<pre class="fragment">Split a file into separate files for each module and subroutine.
+
+Creates individual .F90 files for each program unit found
+in the input file.
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('combined.F90')
+&gt;&gt;&gt; pft.splitModuleRoutineFile()
+# Creates module.F90, subroutine.F90, etc.
 </pre> 
-<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l00066">66</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l00095">95</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">

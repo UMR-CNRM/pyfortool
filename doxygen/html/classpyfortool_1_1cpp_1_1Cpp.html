@@ -99,7 +99,10 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a165547b22a4a99253a3e5db21dd415ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><pre class="fragment">Methods to deal with cpp directives
+<div class="textblock"><pre class="fragment">C preprocessor directive handling methods.
+
+Provides utilities for evaluating and manipulating C preprocessor
+(#ifdef, #ifndef, #else, #endif) directives in FORTRAN code.
 </pre> 
 <p class="definition">Definition at line <a class="el" href="cpp_8py_source.html#l00010">10</a> of file <a class="el" href="cpp_8py_source.html">cpp.py</a>.</p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
@@ -128,25 +131,40 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Apply #ifdef / #ifndef only on some keys
-:param keys: list of defined and undefined keys. The latter are preceded by a
-             percentage sign '%'.
-             E.g. if K is in keys, "#ifdef K "will be evaluated to True
-                  if %K is in keys, "#ifdef K" will be evaluated to False
+<pre class="fragment">Evaluate and reduce #ifdef / #ifndef blocks based on specified keys.
 
-Warning: only #ifdef and #ifndef are treated and not "#if defined ..."
+Parameters
+----------
+keys : list of str
+    List of preprocessor keys to evaluate.
+    Keys preceded by '%' are treated as undefined (False).
+    Example: ['KEY1', '%KEY2'] means KEY1=True, KEY2=False.
 
-If key K is in keys
-  #ifdef K
-  A
-  #else
-  B
-  #endif
-is reduced to A
-If %K is in keys, code snippet is reduced to B.
-If neither K nor %K are present in keys, code is kept untouched.
+Transformation Examples
+----------------------
+If 'K' is in keys (K=True):
+    #ifdef K
+      A
+    #else
+      B
+    #endif
+becomes simply: A
+
+If '%K' is in keys (K=False):
+    #ifdef K
+      A
+    #else
+      B
+    #endif
+becomes simply: B
+
+Notes
+-----
+- Only handles #ifdef and #ifndef (not "#if defined ...")
+- Nested if/ifdef/ifndef are supported
+- Code not matching any conditional is kept unchanged
 </pre> 
-<p class="definition">Definition at line <a class="el" href="cpp_8py_source.html#l00018">18</a> of file <a class="el" href="cpp_8py_source.html">cpp.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="cpp_8py_source.html#l00022">22</a> of file <a class="el" href="cpp_8py_source.html">cpp.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">

@@ -109,7 +109,10 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a1b41f1f929824774ddba577764ea5a09"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><pre class="fragment">Methods relative to openacc
+<div class="textblock"><pre class="fragment">OpenACC directives transformation methods.
+
+Provides utilities for adding, removing, and transforming OpenACC
+directives for GPU acceleration.
 </pre> 
 <p class="definition">Definition at line <a class="el" href="openacc_8py_source.html#l00011">11</a> of file <a class="el" href="openacc_8py_source.html">openacc.py</a>.</p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
@@ -128,12 +131,20 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">1) Add after declaration:
-!$acc data present ( list of intent arrays)
-2) Add at the end of the routine
-!$acc end data
+<pre class="fragment">Add !$acc data directives for GPU data transfer.
+
+For each subroutine, inserts:
+- !$acc data present (array1, array2, ...) after declarations
+- !$acc end data at the end of the routine
+
+Only affects INTENT arrays (IN, OUT, INOUT).
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('gpu_code.F90')
+&gt;&gt;&gt; pft.addACCData()
 </pre> 
-<p class="definition">Definition at line <a class="el" href="openacc_8py_source.html#l00221">221</a> of file <a class="el" href="openacc_8py_source.html">openacc.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="openacc_8py_source.html#l00244">244</a> of file <a class="el" href="openacc_8py_source.html">openacc.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -189,10 +200,20 @@ Here is the call graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Adds the '!$acc routine (&lt;name&gt;) seq' directive
-:param stopScopes: scope paths where we stop to add the directive
+<pre class="fragment">Add !$acc routine seq directive to subroutines.
+
+Parameters
+----------
+stopScopes : list of str
+    Scope paths where to stop adding directives.
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('gpu_code.F90')
+&gt;&gt;&gt; pft.addACCRoutineSeq(['module:MOD/sub:SUB'])
+# Adds !$acc routine (SUB) seq to SUB subroutine
 </pre> 
-<p class="definition">Definition at line <a class="el" href="openacc_8py_source.html#l00270">270</a> of file <a class="el" href="openacc_8py_source.html">openacc.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="openacc_8py_source.html#l00301">301</a> of file <a class="el" href="openacc_8py_source.html">openacc.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -239,13 +260,21 @@ Here is the call graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Convert (DE)ALLOCATE to (DE)ALLOCATE_HIP on variables only sent to the GPU via
-!$acc enter data copyin
-or
-!$acc enter data create
-This is necessary for using the managed memory with GPU AMD MI250X (on Adastra)
+<pre class="fragment">Convert ALLOCATE/DEALLOCATE to HIP versions for AMD GPUs.
+
+Transforms memory allocation calls for variables that are:
+- Sent to GPU via !$acc enter data copyin
+- Created on GPU via !$acc enter data create
+
+Required for AMD MI250X GPU managed memory usage (e.g., Adastra cluster).
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('gpu_code.F90')
+&gt;&gt;&gt; pft.allocatetoHIP()
+# ALLOCATE(X) becomes CALL MNH_HIPALLOCATE(X)
 </pre> 
-<p class="definition">Definition at line <a class="el" href="openacc_8py_source.html#l00133">133</a> of file <a class="el" href="openacc_8py_source.html">openacc.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="openacc_8py_source.html#l00148">148</a> of file <a class="el" href="openacc_8py_source.html">openacc.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -291,17 +320,19 @@ Here is the call graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">By pass a bug of the CRAY compiler in which the vectorisation is not done with
-BR_ fonctions use or locally.
-On all expanded compute kernels with !$acc loop independent collapse(X) placed:
-    - if BR_ fonction is used : !$acc loop independent collapse(X) is removed and
-      the nested DO loops are factorised into DO CONCURRENT
-    - if a mnh_undef(OPENACC) macro is in place, !$acc loop collapse independant(X)
-      is removed
-    - if a mnh_undef(LOOP) macro is in place the nested DO loops are factorised into
-      DO CONCURRENT
+<pre class="fragment">Handle CRAY compiler vectorization issues with GPU directives.
+
+On compute kernels with !$acc loop independent collapse(X) directives:
+- If BR_ functions are used: removes !$acc loop collapse and uses DO CONCURRENT
+- If !$mnh_undef(OPENACC) is present: removes !$acc loop collapse
+- If !$mnh_undef(LOOP) is present: converts nested loops to DO CONCURRENT
+
+Notes
+-----
+Works around CRAY compiler vectorization bugs with BR_ (bit-reproducibility)
+functions and OpenACC directives.
 </pre> 
-<p class="definition">Definition at line <a class="el" href="openacc_8py_source.html#l00040">40</a> of file <a class="el" href="openacc_8py_source.html">openacc.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="openacc_8py_source.html#l00053">53</a> of file <a class="el" href="openacc_8py_source.html">openacc.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -348,9 +379,14 @@ Here is the call graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Remove openACC directives
+<pre class="fragment">Remove all OpenACC directives.
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('gpu_code.F90')
+&gt;&gt;&gt; pft.removeACC()
 </pre> 
-<p class="definition">Definition at line <a class="el" href="openacc_8py_source.html#l00016">16</a> of file <a class="el" href="openacc_8py_source.html">openacc.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="openacc_8py_source.html#l00020">20</a> of file <a class="el" href="openacc_8py_source.html">openacc.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -379,10 +415,15 @@ Here is the call graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Remove macro !$mnh_(un)def(OPENACC) and !$mnh_(un)def(LOOP) directives
-for other compiler than Cray
+<pre class="fragment">Remove MNH OpenACC bypass macros for non-Cray compilers.
+
+Removes the following directives:
+- !$mnh_undef(LOOP)
+- !$mnh_undef(OPENACC)
+- !$mnh_define(LOOP)
+- !$mnh_define(OPENACC)
 </pre> 
-<p class="definition">Definition at line <a class="el" href="openacc_8py_source.html#l00024">24</a> of file <a class="el" href="openacc_8py_source.html">openacc.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="openacc_8py_source.html#l00033">33</a> of file <a class="el" href="openacc_8py_source.html">openacc.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">

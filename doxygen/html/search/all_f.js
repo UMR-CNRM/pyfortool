@@ -1,26 +1,10 @@
 var searchData=
 [
-  ['remove_0',['remove',['../classpyfortool_1_1scope_1_1ElementView.html#a2f4c700ef1c8793250f74f2525d27816',1,'pyfortool::scope::ElementView']]],
-  ['removeacc_1',['removeACC',['../classpyfortool_1_1openacc_1_1Openacc.html#a1cdf72af398eeed47f86998c2b0d325f',1,'pyfortool::openacc::Openacc']]],
-  ['removearrayparenthesesinnode_2',['removeArrayParenthesesInNode',['../classpyfortool_1_1variables_1_1Variables.html#aaf11ba3948b5f5a40fbb9fa7a47466ed',1,'pyfortool::variables::Variables']]],
-  ['removearraysyntax_3',['removeArraySyntax',['../classpyfortool_1_1statements_1_1Statements.html#a630737d9c1515e366dd8921453a3fb96',1,'pyfortool::statements::Statements']]],
-  ['removebypassdoconcurrent_4',['removebyPassDOCONCURRENT',['../classpyfortool_1_1openacc_1_1Openacc.html#a0f779e9080068c31e2b5d643520ba6db',1,'pyfortool::openacc::Openacc']]],
-  ['removecall_5',['removeCall',['../classpyfortool_1_1statements_1_1Statements.html#adcd96515fc5fd7c4133648f1b60947ad',1,'pyfortool::statements::Statements']]],
-  ['removecomments_6',['removeComments',['../classpyfortool_1_1cosmetics_1_1Cosmetics.html#a60ecfc03aba2836f0f79e0f52b3b44b5',1,'pyfortool::cosmetics::Cosmetics']]],
-  ['removeconstructnode_7',['removeConstructNode',['../classpyfortool_1_1statements_1_1Statements.html#a28647ad85abb3c3a1265cca131c95505',1,'pyfortool::statements::Statements']]],
-  ['removeemptycontains_8',['removeEmptyCONTAINS',['../classpyfortool_1_1cosmetics_1_1Cosmetics.html#aea01c23ff6452dfdf28201858cf4d998',1,'pyfortool::cosmetics::Cosmetics']]],
-  ['removeemptylines_9',['removeEmptyLines',['../classpyfortool_1_1cosmetics_1_1Cosmetics.html#ab398e95b9d5af6db0d9543cc2398ddce',1,'pyfortool::cosmetics::Cosmetics']]],
-  ['removeextradoinmnhdoconcurrent_10',['removeExtraDOinMnhDoConcurrent',['../classpyfortool_1_1applications_1_1Applications.html#afa6dd9af95be55f6859ee7a36f0f7e49',1,'pyfortool::applications::Applications']]],
-  ['removefromlist_11',['removeFromList',['../classpyfortool_1_1statements_1_1Statements.html#aef78f44dcc9a59c1b5f0016f50678031',1,'pyfortool::statements::Statements']]],
-  ['removeijdim_12',['removeIJDim',['../classpyfortool_1_1applications_1_1Applications.html#a8dac033a14bfd2c66be258919222fea0',1,'pyfortool::applications::Applications']]],
-  ['removephyexunusedlocalvar_13',['removePHYEXUnusedLocalVar',['../classpyfortool_1_1applications_1_1Applications.html#a880004ba6f5cc1e9e7a020ca2f595320',1,'pyfortool::applications::Applications']]],
-  ['removeprints_14',['removePrints',['../classpyfortool_1_1statements_1_1Statements.html#a2334e692ac3f2696cd63bbee2d1347a2',1,'pyfortool::statements::Statements']]],
-  ['removestmtnode_15',['removeStmtNode',['../classpyfortool_1_1statements_1_1Statements.html#aca8c108f96b084947a9e094e41cd31ad',1,'pyfortool::statements::Statements']]],
-  ['removeunusedlocalvar_16',['removeUnusedLocalVar',['../classpyfortool_1_1variables_1_1Variables.html#a17b342fec005354738fa4eecf927f1f7',1,'pyfortool::variables::Variables']]],
-  ['removevar_17',['removeVar',['../classpyfortool_1_1variables_1_1Variables.html#af7129fff6519319b344d0ef47f75e4b6',1,'pyfortool::variables::Variables']]],
-  ['removevarifunused_18',['removeVarIfUnused',['../classpyfortool_1_1variables_1_1Variables.html#ae46114b89dc670483d638236efeaedeb',1,'pyfortool::variables::Variables']]],
-  ['renamelower_19',['renameLower',['../classpyfortool_1_1pyfortool_1_1PYFT.html#a2088997f490ae0b5c1e58e65de1fa6b3',1,'pyfortool::pyfortool::PYFT']]],
-  ['renameupper_20',['renameUpper',['../classpyfortool_1_1pyfortool_1_1PYFT.html#a8732d4d8eb31ff40e184bb6bc8f474d7',1,'pyfortool::pyfortool::PYFT']]],
-  ['renamevar_21',['renameVar',['../classpyfortool_1_1variables_1_1Variables.html#a04a6e808932339c575a2294183badc26',1,'pyfortool::variables::Variables']]],
-  ['restrict_22',['restrict',['../classpyfortool_1_1variables_1_1VarList.html#a163a4edd97fb5af4c0bbd7b27462b7e4',1,'pyfortool::variables::VarList']]]
+  ['level_20transforms_0',['applications.py - High-Level Transforms',['../md__2home_2runner_2work_2pyfortool_2pyfortool_2doc_2developer_2modules.html#autotoc_md115',1,'']]],
+  ['library_1',['As a Python Library',['../md__2home_2runner_2work_2pyfortool_2pyfortool_2doc_2Documentation.html#autotoc_md10',1,'']]],
+  ['license_2',['License',['../md__2home_2runner_2work_2pyfortool_2pyfortool_2CONTRIBUTING.html#autotoc_md176',1,'']]],
+  ['limitations_3',['Limitations',['../md__2home_2runner_2work_2pyfortool_2pyfortool_2doc_2Documentation.html#autotoc_md12',1,'']]],
+  ['linting_4',['Linting',['../md__2home_2runner_2work_2pyfortool_2pyfortool_2CONTRIBUTING.html#autotoc_md158',1,'']]],
+  ['lockfile_5',['lockFile',['../classpyfortool_1_1pyfortool_1_1PYFT.html#a43beca194bfd5f566f811e8638b09da1',1,'pyfortool::pyfortool::PYFT']]],
+  ['lowercase_6',['lowerCase',['../classpyfortool_1_1cosmetics_1_1Cosmetics.html#aab075584ecd0549d886bbe6d1dded990',1,'pyfortool::cosmetics::Cosmetics']]]
 ];

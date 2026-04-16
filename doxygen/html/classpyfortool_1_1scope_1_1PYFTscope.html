@@ -447,9 +447,29 @@ Protected Attributes</h2></td></tr>
 <tr class="separator:ab0e949d9062c19b2663356af84ffb1f1 inherit pro_attribs_classpyfortool_1_1variables_1_1Variables"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><pre class="fragment">This class wrapps the xml node representing a FORTRAN scope
+<div class="textblock"><pre class="fragment">Wrap an XML node representing a FORTRAN scope.
+
+PYFTscope provides methods to navigate, query, and modify FORTRAN
+source code at the scope level (modules, subroutines, functions, types).
+
+Scope Path Format
+-----------------
+Scope paths are '/' separated strings identifying the location in the
+source tree. Examples:
+- 'module:MODULE' - a module
+- 'module:MOD/sub:SUB' - subroutine SUB in module MODULE
+- 'module:MOD/type:TYPE' - type TYPE in module MODULE
+- 'module:MOD/sub:SUB/func:FUNC' - function FUNC in subroutine SUB
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('myfile.F90')
+&gt;&gt;&gt; scopes = pft.getScopes()  # Get all scopes
+&gt;&gt;&gt; sub = pft.getScopeNode('module:MOD/sub:SUB')  # Get specific scope
+&gt;&gt;&gt; for scope in pft.getScopes(excludeKinds=['type']):
+...     print(scope.path)
 </pre> 
-<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00199">199</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00232">232</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a2e2479266c628d251c1adb1163499946" name="a2e2479266c628d251c1adb1163499946"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a2e2479266c628d251c1adb1163499946">&#9670;&#160;</a></span>__init__()</h2>
@@ -506,18 +526,28 @@ Protected Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">:param xml: xml corresponding to this PYFTscope
-:param scopePath: scope path ('/' separated string) of this node
-:param parentScope: parent PYFTscope instance
-:param enableCache: True to cache node parents
-:param tree: an optional Tree instance
-:param excludeContains: do not take into account the CONTAINS part
+<pre class="fragment">Initialize a PYFTscope instance.
+
+Parameters
+----------
+xml : xml element
+    XML element representing the scope.
+scopePath : str, optional
+    Path string identifying this scope (e.g., 'module:MOD/sub:SUB').
+parentScope : PYFTscope, optional
+    Parent scope instance.
+enableCache : bool, optional
+    If True, cache parent nodes for faster traversal.
+tree : Tree, optional
+    Tree instance for cross-file analysis.
+excludeContains : bool, optional
+    If True, ignore CONTAINS sections in scope traversal.
 </pre> 
 <p>Reimplemented from <a class="el" href="classpyfortool_1_1scope_1_1ElementView.html#a6a713796e90cb0b6f4de53d7a9e1722d">pyfortool.scope.ElementView</a>.</p>
 
 <p>Reimplemented in <a class="el" href="classpyfortool_1_1pyfortool_1_1PYFT.html#afec8d7c7186e688bff9a60cbdb12fa63">pyfortool.pyfortool.PYFT</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00218">218</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00271">271</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -571,7 +601,7 @@ Here is the caller graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00241">241</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00304">304</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
 
 </div>
 </div>
@@ -601,7 +631,7 @@ Here is the caller graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00247">247</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00310">310</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
 
 </div>
 </div>
@@ -632,7 +662,7 @@ Here is the caller graph for this function:</div>
 </div><div class="memdoc">
 <pre class="fragment">Get some attributes defined in the PYFT class
 </pre> 
-<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00255">255</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00318">318</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
 
 </div>
 </div>
@@ -663,7 +693,7 @@ Here is the caller graph for this function:</div>
 :param node: program-unit node
 :return: name
 </pre> 
-<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00330">330</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00434">434</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -816,7 +846,7 @@ Here is the caller graph for this function:</div>
 :param node: program-unit node
 :return: path part (e.g. module:MODU)
 </pre> 
-<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00353">353</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00457">457</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -980,12 +1010,29 @@ Here is the caller graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Empties the scope by removing all statements except dummy arguments declaration
-and USE statements (because they can be useful for the dummy argument declarations).
-:param addStmt: add this statement in the body of the emptied scopes
-:param simplify: try to simplify code
+<pre class="fragment">Remove all statements from scopes.
+
+Removes all executable statements from scopes while preserving:
+- Dummy argument declarations
+- USE statements
+- Scope declarations and endings
+
+Parameters
+----------
+addStmt : str or list, optional
+    Statement(s) to insert into the body of emptied scopes.
+simplify : bool, optional
+    If True, also remove unused local variables.
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('myfile.F90')
+&gt;&gt;&gt; pft.empty()  # Remove all statements
+
+Empty and add a comment:
+&gt;&gt;&gt; pft.empty(addStmt='! TODO: Implement')
 </pre> 
-<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00496">496</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00725">725</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1040,10 +1087,20 @@ Here is the call graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">:return: the name of the input file name or 'unknown' if not available
-         in the xml fragment provided
+<pre class="fragment">Get the source filename.
+
+Returns
+-------
+str
+    Normalized path to the source file.
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('/path/to/file.F90')
+&gt;&gt;&gt; pft.getFileName()
+'/path/to/file.F90'
 </pre> 
-<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00487">487</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00706">706</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1120,11 +1177,21 @@ Here is the caller graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">:param item: item whose parent is to be searched
-:param level: number of degrees (1 to get the parent, 2 to get
-              the parent of the parent...)
+<pre class="fragment">Get the parent element of an XML node.
+
+Parameters
+----------
+item : xml element
+    Element whose parent to find.
+level : int, optional
+    Number of levels to traverse (1 = direct parent, 2 = grandparent, etc.).
+
+Returns
+-------
+xml element or None
+    Parent element at the specified level.
 </pre> 
-<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00285">285</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00363">363</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1264,13 +1331,26 @@ Here is the caller graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">:param item: item whose scope parent is to be searched
-:param mustRaise: True to raise an exception if parent is not found
-:return: the scope parent node of item
-Example: if item is a call statement, result is the program-unit node
-         in which the call statement is
+<pre class="fragment">Get the scope containing an element.
+
+Parameters
+----------
+item : xml element
+    Element whose containing scope to find.
+mustRaise : bool, optional
+    If True (default), raise PYFTError if scope not found.
+
+Returns
+-------
+xml element or None
+    The scope node containing the item.
+
+Examples
+--------
+&gt;&gt;&gt; call = pft.find('.//{*}call-stmt')
+&gt;&gt;&gt; scope = pft.getParentScopeNode(call)
 </pre> 
-<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00455">455</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00645">645</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1366,12 +1446,34 @@ Here is the caller graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">:param scopePath: scope path to search for
-:param excludeContains: see getScopes
-:param includeItself: include itself if self represent a "valid" scope (not a file)
-:return: PYFTscope whose path is the path asked for
+<pre class="fragment">Get a specific scope by path.
+
+Parameters
+----------
+scopePath : str
+    Scope path to search for (e.g., 'module:MOD/sub:SUB').
+excludeContains : bool, optional
+    See getScopes. Default is True.
+includeItself : bool, optional
+    See getScopes. Default is True.
+
+Returns
+-------
+PYFTscope
+    Scope instance matching the path.
+
+Raises
+------
+PYFTError
+    If scope not found or found multiple times.
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('myfile.F90')
+&gt;&gt;&gt; sub = pft.getScopeNode('module:MOD/sub:SUB')
+&gt;&gt;&gt; func = pft.getScopeNode('/module:MOD/func:FUNC')
 </pre> 
-<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00429">429</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00582">582</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1454,11 +1556,27 @@ Here is the caller graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">:param item: item whose path must be determined
-:param includeItself: include the item if it is a scope node
-:return: the full path of the structure containing item
+<pre class="fragment">Get the scope path for an element.
+
+Parameters
+----------
+item : xml element
+    Element whose scope path to determine.
+includeItself : bool, optional
+    If True (default) and item is a scope node, include it.
+
+Returns
+-------
+str
+    Full scope path of the element's containing scope.
+
+Examples
+--------
+&gt;&gt;&gt; node = pft.find('.//{*}a-stmt')
+&gt;&gt;&gt; pft.getScopePath(node)
+'/module:MOD/sub:SUB'
 </pre> 
-<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00471">471</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00674">674</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1569,19 +1687,37 @@ Here is the caller graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">:param level: -1 to get all child scopes
-              1 to get only direct child scopes
-              2 to get direct and direct of direct ...
-:param excludeContains: if True, each PYFTscope which is a module, function or subroutine
-                        that contain (after a 'CONTAINS' statement) other subroutines or
-                        functions, those contained subroutines or functions are excluded
-                        from the result; but the PYFTscope contains the 'END' statement
-                        of the module/subroutine or function.
-:param excludeKinds: if not None, is a list of scope kinds to exclude
-:param includeItself: include itself if self represent a "valid" scope (not a file)
-:return: list of PYFTscope found in the current scope
+<pre class="fragment">Get child scopes from the current scope.
+
+Parameters
+----------
+level : int, optional
+    Depth of scope traversal:
+    - -1 (default): All child scopes recursively.
+    - 1: Direct children only.
+    - 2: Children and grandchildren, etc.
+excludeContains : bool, optional
+    If True (default), exclude scopes from CONTAINS sections
+    (nested subroutines/functions).
+excludeKinds : list of str, optional
+    Scope kinds to exclude. Options: 'module', 'sub', 'func',
+    'type', 'prog', 'interface', 'submodule'.
+includeItself : bool, optional
+    If True (default), include the current scope in results.
+
+Returns
+-------
+list of PYFTscope
+    List of scope instances matching the criteria.
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('myfile.F90')
+&gt;&gt;&gt; all_scopes = pft.getScopes()  # All scopes
+&gt;&gt;&gt; subs = pft.getScopes(excludeKinds=['module', 'func', 'type'])
+&gt;&gt;&gt; direct = pft.getScopes(level=1)
 </pre> 
-<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00384">384</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00519">519</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1733,12 +1869,28 @@ Here is the caller graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">:param item: item whose siblings are to be searched
-:param before: returns siblings before
-:param after: returns siblings after
-By default before and after are True so that all siblings are returned
+<pre class="fragment">Get sibling elements.
+
+Parameters
+----------
+item : xml element
+    Element whose siblings to find.
+before : bool, optional
+    If True, include siblings before the item. Default is True.
+after : bool, optional
+    If True, include siblings after the item. Default is True.
+
+Returns
+-------
+list
+    List of sibling elements.
+
+Examples
+--------
+&gt;&gt;&gt; siblings = scope.getSiblings(node)  # All siblings
+&gt;&gt;&gt; before = scope.getSiblings(node, after=False)  # Only before
 </pre> 
-<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00313">313</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00401">401</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1836,11 +1988,26 @@ Here is the caller graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">:param node: node to test
-:return: True if node is a scope node (construct node around a
-         module, subroutine, function or type declaration)
+<pre class="fragment">Check if a node is a scope-level construct.
+
+Parameters
+----------
+node : xml element
+    Node to check.
+
+Returns
+-------
+bool
+    True if node is a scope construct (program-unit, interface-construct,
+    or T-construct).
+
+Examples
+--------
+&gt;&gt;&gt; node = pft.find('.//{*}subroutine-stmt/..')
+&gt;&gt;&gt; pft.isScopeNode(node)
+True
 </pre> 
-<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00446">446</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00621">621</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -1893,9 +2060,14 @@ Here is the caller graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Return the main scope (the upper scope in the file)
+<pre class="fragment">Get the main (root) scope.
+
+Returns
+-------
+PYFTscope
+    The top-level scope in the file.
 </pre> 
-<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00271">271</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00339">339</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -2064,9 +2236,26 @@ Here is the caller graph for this function:</div>
   </tr>
 </table>
 </div><div class="memdoc">
-<pre class="fragment">Method to normalize a scope path
+<pre class="fragment">Normalize a scope path to standard format.
+
+Converts scope path to lowercase prefix and uppercase names.
+
+Parameters
+----------
+scopePath : str
+    Scope path to normalize.
+
+Returns
+-------
+str
+    Normalized scope path.
+
+Examples
+--------
+&gt;&gt;&gt; PYFTscope.normalizeScope('module:Test/sub:Sub')
+'module:TEST/sub:SUB'
 </pre> 
-<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00365">365</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00469">469</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -2151,9 +2340,14 @@ Here is the caller graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Return the parent of the current scope
+<pre class="fragment">Get the parent scope.
+
+Returns
+-------
+PYFTscope or None
+    Parent scope, or None if this is the root scope.
 </pre> 
-<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00278">278</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00351">351</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
 
 </div>
 </div>
@@ -2172,11 +2366,16 @@ Here is the caller graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Return the current path
+<pre class="fragment">Get the scope path.
+
+Returns
+-------
+str
+    Scope path string (e.g., 'module:MOD/sub:SUB').
 </pre> 
 <p>Reimplemented from <a class="el" href="classpyfortool_1_1variables_1_1Variables.html">pyfortool.variables.Variables</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00264">264</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00327">327</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -2318,10 +2517,24 @@ Here is the caller graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">Shows the list of scopes found in the source code
-:param includeItself: include itself if self represent a "valid" scope (not a file)
+<pre class="fragment">Display all scopes found in the source code.
+
+Parameters
+----------
+includeItself : bool, optional
+    If True, include the current scope in the output.
+    Default is False.
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('myfile.F90')
+&gt;&gt;&gt; pft.showScopesList()
+These scopes have been found in the source code:
+  - /module:MOD
+  - /module:MOD/sub:SUB
+  - /module:MOD/func:FUNC
 </pre> 
-<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00374">374</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00495">495</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -2373,7 +2586,7 @@ Here is the call graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00233">233</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00296">296</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
 
 </div>
 </div>
@@ -2397,7 +2610,7 @@ Here is the call graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00229">229</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00292">292</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
 
 </div>
 </div>
@@ -2421,7 +2634,7 @@ Here is the call graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00231">231</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00294">294</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
 
 </div>
 </div>
@@ -2445,7 +2658,7 @@ Here is the call graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00230">230</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00293">293</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
 
 </div>
 </div>
@@ -2461,7 +2674,7 @@ Here is the call graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00426">426</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00579">579</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
 
 </div>
 </div>
@@ -2492,7 +2705,7 @@ Here is the call graph for this function:</div>
 <div class="line">                       <span class="stringliteral">&#39;interface&#39;</span>: <span class="stringliteral">&#39;interface-construct&#39;</span>,</div>
 <div class="line">                       <span class="stringliteral">&#39;submodule&#39;</span>: <span class="stringliteral">&#39;program-unit&#39;</span>}</div>
 </div><!-- fragment -->
-<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00210">210</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00263">263</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
 
 </div>
 </div>
@@ -2523,7 +2736,7 @@ Here is the call graph for this function:</div>
 <div class="line">                  <span class="stringliteral">&#39;interface&#39;</span>: <span class="stringliteral">&#39;interface-stmt&#39;</span>,</div>
 <div class="line">                  <span class="stringliteral">&#39;submodule&#39;</span>: <span class="stringliteral">&#39;submodule-stmt&#39;</span>}</div>
 </div><!-- fragment -->
-<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00203">203</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00256">256</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
 
 </div>
 </div>
@@ -2539,7 +2752,7 @@ Here is the call graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00232">232</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="scope_8py_source.html#l00295">295</a> of file <a class="el" href="scope_8py_source.html">scope.py</a>.</p>
 
 </div>
 </div>

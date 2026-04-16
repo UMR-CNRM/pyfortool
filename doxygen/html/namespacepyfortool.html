@@ -110,8 +110,31 @@ Variables</h2></td></tr>
 <tr class="separator:ac9ef8488252ac55338cd7342069f8005"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><pre class="fragment">PyForTool is a python package, built on top of the fxtran tool, to manipulate
-FORTRAN files to apply source-to-source transformations.
+<div class="textblock"><pre class="fragment">PyForTool - Python FORTRAN source-to-source transformation tool.
+
+A Python package built on top of fxtran for manipulating FORTRAN source files.
+Provides capabilities for:
+
+- Parsing FORTRAN source code into XML
+- Analyzing and querying code structure (scopes, variables, statements)
+- Applying transformations (code optimization, GPU preparation, instrumentation)
+- Writing transformed code back to FORTRAN
+
+Basic Usage
+----------
+&gt;&gt;&gt; from pyfortool import PYFT
+&gt;&gt;&gt; pft = PYFT('input.F90')
+&gt;&gt;&gt; pft.upperCase()
+&gt;&gt;&gt; pft.write()
+
+Main Classes
+-----------
+PYFT : Main class for file-level operations
+PYFTscope : Scope-level operations (modules, subroutines, functions)
+
+See Also
+--------
+fxtran : External FORTRAN parser used by PyForTool
 </pre> </div><h2 class="groupheader">Variable Documentation</h2>
 <a id="ac9ef8488252ac55338cd7342069f8005" name="ac9ef8488252ac55338cd7342069f8005"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac9ef8488252ac55338cd7342069f8005">&#9670;&#160;</a></span>NAMESPACE</h2>
@@ -125,7 +148,7 @@ FORTRAN files to apply source-to-source transformations.
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="____init_____8py_source.html#l00009">9</a> of file <a class="el" href="____init_____8py_source.html">__init__.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="____init_____8py_source.html#l00032">32</a> of file <a class="el" href="____init_____8py_source.html">__init__.py</a>.</p>
 
 </div>
 </div>

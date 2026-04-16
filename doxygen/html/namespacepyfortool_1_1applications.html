@@ -92,8 +92,34 @@ Functions</h2></td></tr>
 <tr class="separator:ae0e1ed0c92e16717633ce1e220ff825a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><pre class="fragment">This module implements the Applications class containing methods
-for high-to-moderate level transformation
+<div class="textblock"><pre class="fragment">High-level FORTRAN code transformations.
+
+Provides the Applications class for application-specific transformations
+including profiling instrumentation, GPU optimization, and model-specific
+code adaptations.
+
+Key Features
+------------
+- DR_HOOK profiling instrumentation (add/remove)
+- Budget diagnostic removal
+- GPU stack allocation (AROME/MESO-NH models)
+- Structure member inlining for performance
+- PHYEX single-column mode adaptation
+- Array dimension reduction
+- Submodule generation for PHYEX
+
+Classes
+-------
+Applications : Mixin class providing high-level transformations
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('input.F90')
+&gt;&gt;&gt; pft.addDrHook()  # Add timing instrumentation
+&gt;&gt;&gt; pft.deleteDrHook()  # Remove profiling
+&gt;&gt;&gt; pft.addStack('AROME', stopScopes)  # GPU stack allocation
+&gt;&gt;&gt; pft.convertTypesInCompute()  # Inline structure members
+&gt;&gt;&gt; pft.deleteNonColumnCallsPHYEX()  # Remove multi-column dependencies
 </pre> </div><h2 class="groupheader">Function Documentation</h2>
 <a id="ae0e1ed0c92e16717633ce1e220ff825a" name="ae0e1ed0c92e16717633ce1e220ff825a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae0e1ed0c92e16717633ce1e220ff825a">&#9670;&#160;</a></span>_loopVarPHYEX()</h2>
@@ -159,7 +185,7 @@ for high-to-moderate level transformation
 :param index: index of the rank
 :return: the variable name of False to discard this statement
 </pre> 
-<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l00019">19</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="applications_8py_source.html#l00045">45</a> of file <a class="el" href="applications_8py_source.html">applications.py</a>.</p>
 
 </div>
 </div>

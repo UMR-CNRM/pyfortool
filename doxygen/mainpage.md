@@ -1,6 +1,67 @@
-Doxygen is used to document the source code, general documentation is available
-[here](../Documentation.md).
+# PyForTool API Reference
 
-The main entry points of the package is the [PYFT](@ref pyfortool.pyfortool.PYFT) class.
+This section contains the auto-generated API reference from source code docstrings.
 
-In addition, two offline tools are available: pyfortool and pyfortool\_parallel.
+For general documentation, see:
+
+- [User's Guide](../Documentation.md) - End-user documentation
+- [Developer's Guide](../developer/developer.md) - Architecture, concepts, module organisation and testing
+
+## Main Classes
+
+| Class | Description |
+|-------|-------------|
+| [PYFT](@ref pyfortool.pyfortool.PYFT) | Main class for file operations |
+| [PYFTscope](@ref pyfortool.scope.PYFTscope) | Scope-level operations |
+| [VarList](@ref pyfortool.variables.VarList) | Variable management |
+| [Tree](@ref pyfortool.tree.Tree) | Cross-file dependency tracking |
+
+## Module Reference
+
+| Module | Description |
+|--------|-------------|
+| [pyfortool.variables](@ref pyfortool.variables) | Variable declaration management |
+| [pyfortool.statements](@ref pyfortool.statements) | Statement manipulation |
+| [pyfortool.cosmetics](@ref pyfortool.cosmetics) | Code formatting |
+| [pyfortool.applications](@ref pyfortool.applications) | High-level transformations |
+| [pyfortool.cpp](@ref pyfortool.cpp) | Preprocessor directives |
+| [pyfortool.openacc](@ref pyfortool.openacc) | OpenACC directives |
+| [pyfortool.tree](@ref pyfortool.tree) | Dependency analysis |
+| [pyfortool.expressions](@ref pyfortool.expressions) | Expression helpers |
+| [pyfortool.util](@ref pyfortool.util) | Utilities and decorators |
+
+## Quick Examples
+
+### Basic File Operations
+
+```python
+from pyfortool import PYFT
+
+# Read, transform, write
+pft = PYFT('input.F90')
+pft.upperCase()
+pft.write()
+```
+
+### Scope Navigation
+
+```python
+# Get specific scope
+sub = pft.getScopeNode('module:MOD/sub:SUB')
+
+# Find variables
+var = sub.varList.findVar('X')
+```
+
+### Code Transformations
+
+```python
+# Remove calls and simplify
+pft.removeCall('FOO', simplify=True)
+
+# Expand array syntax
+pft.removeArraySyntax(concurrent=True)
+
+# Add profiling
+pft.addDrHook()
+```

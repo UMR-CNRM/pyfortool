@@ -98,8 +98,10 @@ Functions</h2></td></tr>
 <tr class="separator:a4563c6614b2eaec07fdd44f264369942"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><pre class="fragment">This module includes functions to deal with expressions
-These functions are independent of the PYFT and PYFTscope objects
+<div class="textblock"><pre class="fragment">Expression manipulation functions.
+
+These functions are independent of PYFT and PYFTscope objects and provide
+low-level utilities for creating and manipulating FORTRAN expression XML nodes.
 </pre> </div><h2 class="groupheader">Function Documentation</h2>
 <a id="a9755b62329c7c90fc969b1ac8eb42738" name="a9755b62329c7c90fc969b1ac8eb42738"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a9755b62329c7c90fc969b1ac8eb42738">&#9670;&#160;</a></span>_cachedCreateExpr()</h2>
@@ -124,10 +126,19 @@ These functions are independent of the PYFT and PYFTscope objects
   </tr>
 </table>
 </div><div class="memdoc">
-<pre class="fragment">:param value: statements to convert into xml
-:return: the xml fragment corresponding to value (list of nodes)
+<pre class="fragment">Internal cached function for createExpr.
+
+Parameters
+----------
+value : str
+    FORTRAN statement(s) to convert.
+
+Returns
+-------
+list
+    List of XML nodes from the statement.
 </pre> 
-<p class="definition">Definition at line <a class="el" href="expressions_8py_source.html#l00105">105</a> of file <a class="el" href="expressions_8py_source.html">expressions.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="expressions_8py_source.html#l00137">137</a> of file <a class="el" href="expressions_8py_source.html">expressions.py</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -177,7 +188,7 @@ If value is:
     the X affectation statement of the code:
     "SUBROUTINE T; X=" + value + "; END". The xml is obtained by calling fxtran.
 </pre> 
-<p class="definition">Definition at line <a class="el" href="expressions_8py_source.html#l00036">36</a> of file <a class="el" href="expressions_8py_source.html">expressions.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="expressions_8py_source.html#l00057">57</a> of file <a class="el" href="expressions_8py_source.html">expressions.py</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -229,7 +240,7 @@ Here is the caller graph for this function:</div>
                 'DOCONCURRENT' for DO CONCURRENT loops
                 'ARRAY' for arrays
 </pre> 
-<p class="definition">Definition at line <a class="el" href="expressions_8py_source.html#l00190">190</a> of file <a class="el" href="expressions_8py_source.html">expressions.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="expressions_8py_source.html#l00266">266</a> of file <a class="el" href="expressions_8py_source.html">expressions.py</a>.</p>
 
 </div>
 </div>
@@ -270,12 +281,31 @@ Here is the caller graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">:param tagName: tag of the element to create
-:param text: None or text of the element
-:param tail: None or tail of the element
-:param childs: None or element or list of elements to insert
+<pre class="fragment">Create an XML element with the given tag and attributes.
+
+Parameters
+----------
+tagName : str
+    XML tag name (without namespace).
+text : str, optional
+    Text content for the element.
+tail : str, optional
+    Tail text (text after element).
+childs : Element or list, optional
+    Child element(s) to append.
+
+Returns
+-------
+Element
+    Created XML element.
+
+Examples
+--------
+&gt;&gt;&gt; elem = createElem('named-E')
+&gt;&gt;&gt; elem = createElem('literal-E', text='42')
+&gt;&gt;&gt; elem = createElem('n', text='X', tail='\\n')
 </pre> 
-<p class="definition">Definition at line <a class="el" href="expressions_8py_source.html#l00015">15</a> of file <a class="el" href="expressions_8py_source.html">expressions.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="expressions_8py_source.html#l00017">17</a> of file <a class="el" href="expressions_8py_source.html">expressions.py</a>.</p>
 
 </div>
 </div>
@@ -294,10 +324,25 @@ Here is the caller graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">:param value: statements to convert into xml
-:return: the xml fragment corresponding to value (list of nodes)
+<pre class="fragment">Convert FORTRAN statements to XML nodes.
+
+Parameters
+----------
+value : str
+    One or more FORTRAN statements to convert.
+
+Returns
+-------
+list
+    List of XML nodes representing the statements.
+
+Examples
+--------
+&gt;&gt;&gt; nodes = createExpr('X = 42')
+&gt;&gt;&gt; nodes = createExpr('CALL SUB(X, Y)')
+&gt;&gt;&gt; nodes = createExpr('IF (A &gt; B) THEN\\n  X = 1\\nEND IF')
 </pre> 
-<p class="definition">Definition at line <a class="el" href="expressions_8py_source.html#l00114">114</a> of file <a class="el" href="expressions_8py_source.html">expressions.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="expressions_8py_source.html#l00155">155</a> of file <a class="el" href="expressions_8py_source.html">expressions.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -326,20 +371,31 @@ Here is the call graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">:param value: expression part to put in a *-E node
+<pre class="fragment">Create an XML node from a FORTRAN expression part.
 
-If value is:
-  - a FORTRAN string (python sting containing a ' or a "), returns
-    &lt;f:string-E&gt;&lt;f:S&gt;...
-  - a FORTRAN value (python string convertible in real or int, or .FALSE./.TRUE.), returns
-    &lt;f:literal-E&gt;&lt;f:l&gt;...
-  - a FORTRAN variable name (pyhon string with only alphanumerical characters and _), returns
-    &lt;named-E/&gt;&lt;N&gt;&lt;n&gt;...
-  - a FORTRAN operation (other python string), returns the right part of
-    the X affectation statement of the code:
-    "SUBROUTINE T; X=" + value + "; END". The xml is obtained by calling fxtran.
+Parameters
+----------
+value : str
+    Expression part value to convert.
+
+Returns
+-------
+Element
+    XML element representing the expression:
+    - Integer/float: &lt;literal-E&gt;&lt;l&gt;value&lt;/l&gt;&lt;/literal-E&gt;
+    - String: &lt;string-E&gt;&lt;S&gt;value&lt;/S&gt;&lt;/string-E&gt;
+    - Variable: &lt;named-E&gt;&lt;N&gt;&lt;n&gt;value&lt;/n&gt;&lt;/N&gt;&lt;/named-E&gt;
+    - Structure member:
+      &lt;named-E&gt;&lt;N&gt;&lt;n&gt;A&lt;/n&gt;&lt;/N&gt;&lt;R-LT&gt;&lt;component-R&gt;%B&lt;/component-R&gt;&lt;/R-LT&gt;&lt;/named-E&gt;
+    - Expression: parsed via fxtran
+
+Examples
+--------
+&gt;&gt;&gt; createExprPart('42')  # Literal
+&gt;&gt;&gt; createExprPart('X')   # Variable
+&gt;&gt;&gt; createExprPart('A%B') # Structure member
 </pre> 
-<p class="definition">Definition at line <a class="el" href="expressions_8py_source.html#l00086">86</a> of file <a class="el" href="expressions_8py_source.html">expressions.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="expressions_8py_source.html#l00107">107</a> of file <a class="el" href="expressions_8py_source.html">expressions.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -384,15 +440,35 @@ Here is the call graph for this function:</div>
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">:param expr: string containing an expression to simplify
-:param add: string containing an expression to add
-:param sub: string containing an expression to substract
-:return: simplified expression
-E.g. simplifyExpr('1+1+I+JI-I') =&gt; '2+JI'
-Note: only additions and substractions are considered
-      addition and subtraction within parentheses are forbidden
+<pre class="fragment">Simplify a numeric expression by combining constants.
+
+Parameters
+----------
+expr : str
+    Expression to simplify (e.g., '1+I+2+JI-I').
+add : str, optional
+    Expression to add to the result.
+sub : str, optional
+    Expression to subtract from the result.
+
+Returns
+-------
+str
+    Simplified expression string.
+
+Examples
+--------
+&gt;&gt;&gt; simplifyExpr('1+1+I+JI-I')
+'2+JI'
+&gt;&gt;&gt; simplifyExpr('X+1', add='Y')
+'X+Y+1'
+
+Notes
+-----
+- Only handles addition and subtraction.
+- Does not simplify expressions within parentheses.
 </pre> 
-<p class="definition">Definition at line <a class="el" href="expressions_8py_source.html#l00123">123</a> of file <a class="el" href="expressions_8py_source.html">expressions.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="expressions_8py_source.html#l00179">179</a> of file <a class="el" href="expressions_8py_source.html">expressions.py</a>.</p>
 
 </div>
 </div>

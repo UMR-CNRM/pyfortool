@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>PyForTool: User&#39;s guide</title>
+<title>PyForTool: User&#39;s Guide</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,55 +70,100 @@ $(function() {
 
 </div><!-- top -->
 <div><div class="header">
-  <div class="headertitle"><div class="title">User's guide</div></div>
+  <div class="headertitle"><div class="title">User's Guide</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md0"></a> </p>
-<h1><a class="anchor" id="autotoc_md1"></a>
+<div class="textblock"><p><a class="anchor" id="autotoc_md7"></a> </p>
+<h1><a class="anchor" id="autotoc_md8"></a>
 Introduction</h1>
-<p>This package contains two python script, pyfortool and pyfortool_parallel, that read FORTRAN codes, parse them in xml, perform some manipulation, revert them in FORTRAN and write them back on disk. pyfortoo performs these tasks on a per file basis whereas pyfortool_parallel perform the transformations in parallel on all files found in a tree. In addition, the package can be used for scripting applicative transformations.</p>
-<p>This package supposes that the original source code is written using UTF-8 encoding. If not, some special characters could be altered by the double conversion. Apart from this, the resulting FORTRAN source code is exactly the same as the INPUT source code if no manipulation is performed.</p>
-<p>DEPENDENCIES:</p>
+<p>PyForTool is a Python package for source-to-source transformation of FORTRAN code. It reads FORTRAN files, parses them to XML using <a href="https://github.com/SebastienRietteMTO/pyfxtran">pyfxtran</a>, applies transformations, and writes the result back.</p>
+<p><b>Two command-line tools are provided:</b></p>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadNone">Tool   </th><th class="markdownTableHeadNone">Description    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><code>pyfortool</code>   </td><td class="markdownTableBodyNone">Transform files sequentially    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><code>pyfortool_parallel</code>   </td><td class="markdownTableBodyNone">Transform files in parallel   </td></tr>
+</table>
+<p>The package can also be used as a Python library for scripting transformations.</p>
+<h1><a class="anchor" id="autotoc_md9"></a>
+Quick Start</h1>
+<div class="fragment"><div class="line"># Install</div>
+<div class="line">pip install pyfortool</div>
+<div class="line"> </div>
+<div class="line"># Transform a file</div>
+<div class="line">pyfortool input.F90 --upperCase --indent --output output.F90</div>
+<div class="line"> </div>
+<div class="line"># Transform in parallel</div>
+<div class="line">pyfortool_parallel --tree /path/to/src --descTree desctree.json --upperCase</div>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md10"></a>
+As a Python Library</h2>
+<div class="fragment"><div class="line"><span class="keyword">from</span> pyfortool <span class="keyword">import</span> PYFT</div>
+<div class="line"> </div>
+<div class="line">pft = PYFT(<span class="stringliteral">&#39;input.F90&#39;</span>)</div>
+<div class="line">pft.upperCase()</div>
+<div class="line">pft.write()</div>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md11"></a>
+Dependencies</h1>
 <ul>
-<li><a href="https://github.com/SebastienRietteMTO/pyfxtran">pyfxtran</a> must be installed (<code>pip install pyfxtran</code>).</li>
-<li>PyForTool needs, at least, version 3.8 of python</li>
+<li><a href="https://github.com/SebastienRietteMTO/pyfxtran">pyfxtran</a> must be installed (with pip)</li>
+<li>Python 3.8 or higher</li>
 </ul>
-<p>LIMITATIONS:</p>
+<h1><a class="anchor" id="autotoc_md12"></a>
+Limitations</h1>
 <ul>
-<li>Depending on where there are put, pre-processor directives can break the parsing by (py)fxtran</li>
-<li>Other encoding than UTF-8 is not supported</li>
+<li>Pre-processor directives may break parsing depending on placement</li>
+<li>Only UTF-8 encoding is supported</li>
 </ul>
-<p>Content of this documentation:</p>
-<ul>
-<li>presentation of the scope path concept</li>
-<li>tool options</li>
-<li>python module short description</li>
-<li>examples and tests</li>
-</ul>
-<h1><a class="anchor" id="autotoc_md2"></a>
+<h1><a class="anchor" id="autotoc_md13"></a>
+Documentation Structure</h1>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadNone">Document   </th><th class="markdownTableHeadNone">Description    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">This guide   </td><td class="markdownTableBodyNone">Tool options and Python module reference    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><a class="el" href="md__2home_2runner_2work_2pyfortool_2pyfortool_2doc_2developer_2developer.html">Developer documentation</a>   </td><td class="markdownTableBodyNone">Architecture and internals    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><a href="index.html">API Reference</a>   </td><td class="markdownTableBodyNone">Auto-generated from source   </td></tr>
+</table>
+<h1><a class="anchor" id="autotoc_md14"></a>
 Concepts</h1>
-<p>Especially when a FORTRAN source file contains several subroutine, functions or type declaration, it is necessary to specify on which part of the source code a modification must be done. This is achieved through the scope concept. The scope path is a string representing a kind of path to access the source code fragment on which the action must be performed. A scope path is a succession of path elements separated by '/'; each path elements has one of the following forms:</p>
-<ul>
-<li><b>module:<em>NAME</em></b> to refer to the module named <em>NAME</em></li>
-<li><b>sub:<em>NAME</em></b> to refer to the subroutine named <em>NAME</em></li>
-<li><b>func:<em>NAME</em></b> to refer to the function named <em>NAME</em></li>
-<li><b>type:<em>NAME</em></b> to refer to the definition of the type named <em>NAME</em></li>
+<p>When a FORTRAN file contains multiple subroutines, functions, or types, you need to specify which part to transform. This is done using <b>scope paths</b>.</p>
+<p>A scope path is a <code>/</code>-separated string:</p>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadNone">Prefix   </th><th class="markdownTableHeadNone">Meaning    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><code>module:NAME</code>   </td><td class="markdownTableBodyNone">Module named NAME    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><code>sub:NAME</code>   </td><td class="markdownTableBodyNone">Subroutine named NAME    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><code>func:NAME</code>   </td><td class="markdownTableBodyNone">Function named NAME    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><code>type:NAME</code>   </td><td class="markdownTableBodyNone">Type named NAME   </td></tr>
+</table>
+<p><b>Examples:</b></p><ul>
+<li><code>module:MOD</code> - Module MOD</li>
+<li><code>module:MOD/sub:SUB</code> - Subroutine SUB in module MOD</li>
+<li><code>module:MOD/sub:SUB/func:INNER</code> - Function INNER in subroutine SUB</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md3"></a>
+<h1><a class="anchor" id="autotoc_md15"></a>
 Tool options</h1>
 <p>If only one file name is given, the output file will replace the input file.</p>
 <p>The order of the arguments matters: transformation are done in that specific order.</p>
-<h2><a class="anchor" id="autotoc_md4"></a>
+<h2><a class="anchor" id="autotoc_md16"></a>
 Parser options</h2>
 <p><b>&ndash;parserOption=OPTIONS</b> the list of available options can be found in the fxtran documentation. If no option is provided, the defaults one will be used (the list of default options can be seen with "pyfortool -h"). In case this option is used, the default options will be replaced by the ones specified.</p>
 <p><b>&ndash;wrapH</b> Wrap .h file content into a MODULE to enable the parsing by (py)fxtran.</p>
-<h2><a class="anchor" id="autotoc_md5"></a>
+<h2><a class="anchor" id="autotoc_md17"></a>
 Input and output</h2>
 <p><b>&ndash;renamefF</b> transforms in upper case the file extension.</p>
 <p><b>&ndash;renameFf</b> transforms in lower case the file extension.</p>
 <p><b>&ndash;xml=filename</b> writes the xml file (after transformation) in filename.</p>
 <p><b>&ndash;dryRun</b> prevents the FORTRAN writting.</p>
-<h2><a class="anchor" id="autotoc_md6"></a>
+<h2><a class="anchor" id="autotoc_md18"></a>
 General options</h2>
 <p><b>&ndash;simplify</b> some transformations may render other parts of the code useless. If this option is set, these parts are automatically removed.</p>
 <p><b>&ndash;logLevel=LEVEL</b> specifies the log level to use (e.g. debug). With the info level, execution time and number of calls are printed for each called functions. In addition, with the debug level, input and output of all the called functions are printed.</p>
@@ -130,7 +175,7 @@ General options</h2>
 <li>"OPTIONS": if the line doesn\'t contain the FILE_DESCRIPTOR part, it applies to all source code.</li>
 </ul>
 <p><b>&ndash;restrictScope SCOPEPATH</b> Limit the action to this scope path (as described in Concepts).</p>
-<h2><a class="anchor" id="autotoc_md7"></a>
+<h2><a class="anchor" id="autotoc_md19"></a>
 Dealing with variables</h2>
 <p><b>&ndash;showVariables</b> displays a list of all the declared variables with some characteristics.</p>
 <p><b>&ndash;removeVariable SCOPEPATH VARNAME</b> removes the declaration of a local variable, a module variable or of a dummy argument. In the case of a dummy argument, it is also suppresssed from the argument of the subroutine. In case of a module variable, if the module becomes unused, the use statement is also removed. This options takes two argument, the first one describes where the variable is declared (to distinguish between several variables holding the same name but in different subroutines) and the second one is the variable name. The first argument is a scope path as described in Concepts.</p>
@@ -146,7 +191,7 @@ Dealing with variables</h2>
 <p><b>&ndash;replaceAutomaticWithAllocatable</b> replace all automatic arrays with allocatables</p>
 <p><b>&ndash;addArgInTree</b> Add an argument variable recursively begining at the scope path defined with the &ndash;restrictScope option. The first argument is the variable name, the second one is the declarative statement to insert, the third one is the position (python indexing) the new variable will have in the calling statment of the routine. The recursive inclusion of the argument variable stops at the scopes defined by the &ndash;stopScopes option.</p>
 <p><b>&ndash;addONLY</b> Add ONLY clause to use statments (if missing)</p>
-<h2><a class="anchor" id="autotoc_md8"></a>
+<h2><a class="anchor" id="autotoc_md20"></a>
 Cosmetics</h2>
 <p><b>&ndash;upperCase</b> puts the FORTRAN code into upper case letters.</p>
 <p><b>&ndash;lowerCase</b> puts the FORTRAN code into lower case letters.</p>
@@ -163,7 +208,7 @@ Cosmetics</h2>
 <p><b>&ndash;pretify</b> equivalent to &ndash;indent &ndash;upperCase &ndash;removeEmptyLines &ndash;updateSpaces &ndash;addBeginContinuation &ndash;alignContinuation</p>
 <p><b>&ndash;minify</b> equivalent to &ndash;removeIndent &ndash;upperCase &ndash;removeEmptyLines &ndash;removeComments &ndash;updateSpaces &ndash;removeALLContinuation</p>
 <p><b>&ndash;removeEmptyCONTAINS</b> removes CONTAINS statement when the section is empty</p>
-<h2><a class="anchor" id="autotoc_md9"></a>
+<h2><a class="anchor" id="autotoc_md21"></a>
 Checks</h2>
 <p><b>&ndash;checkIMPLICIT=Warn|Err</b> if the 'IMPLICIT NONE' statment is missing, issue a warning if option is 'Warn'; otherwise issue an error message and raise an exception.</p>
 <p><b>&ndash;checkINTENT=Warn|Err</b> if an INTENT attribute is missing for a dummy argument, issue a warning if option is 'Warn'; otherwise issue an error message and raise an exception.</p>
@@ -172,17 +217,17 @@ Checks</h2>
 <p><b>&ndash;checkUnusedLocalVar=Warn|Err</b> if a local variable is unused, issue a warning if option is 'Warn'; otherwise issue an error message and raise an exception.</p>
 <p><b>&ndash;checkPHYEXUnusedLocalVar=Warn|Err</b> if a local variable is unused (excluding variables needed for mnh_expand directives, issue a warning if option is 'Warn'; otherwise issue an error message and raise an exception.</p>
 <p>**&ndash;checkONLY=Warn|Err* if a USE statement is not followed by an ONLY clause, issue a warning if option is 'Warn'; otherwise issue an error message and raise an exception.</p>
-<h2><a class="anchor" id="autotoc_md10"></a>
+<h2><a class="anchor" id="autotoc_md22"></a>
 Dealing with statements</h2>
 <p><b>&ndash;removeCall CALLNAME</b> removes call statements. The argument is the subprogram name.</p>
 <p><b>&ndash;removePrints</b> removes print statements. The argument describes from where the call statements must be suppressed (it is a scope path as described in Concepts).</p>
 <p><b>&ndash;inlineContainedSubroutines</b> inline containted subroutines in main routine.</p>
 <p><b>&ndash;setFalseIfStmt VAR</b> replace VAR by .FALSE. in if statements.</p>
-<h2><a class="anchor" id="autotoc_md11"></a>
+<h2><a class="anchor" id="autotoc_md23"></a>
 Miscellaneous</h2>
 <p><b>&ndash;showScopes</b> print the different scopes found in the source code.</p>
 <p><b>&ndash;empty</b> empty the different scopes found in the source code.</p>
-<h2><a class="anchor" id="autotoc_md12"></a>
+<h2><a class="anchor" id="autotoc_md24"></a>
 Applications</h2>
 <p><b>&ndash;deleteDrHook</b> removes DrHook statements.</p>
 <p><b>&ndash;addDrHook</b> adds DrHook statements.</p>
@@ -205,7 +250,7 @@ Applications</h2>
 <p><b>&ndash;convertTypesInCompute</b> Use single variable instead of variable contained in structure in compute statement for optimization issue.</p>
 <p><b>&ndash;buildModi</b> Builds the corresponding modi_ file</p>
 <p><b>&ndash;splitModuleRoutineFile</b> Splits a file into several ones (one file per scope)</p>
-<h2><a class="anchor" id="autotoc_md13"></a>
+<h2><a class="anchor" id="autotoc_md25"></a>
 OpenACC</h2>
 <p><b>&ndash;addACCData</b> add !$acc data present and !$acc end data directives</p>
 <p><b>&ndash;addACCRoutineSeq</b> add "!$acc routine seq" to routines called directly or indirectly by scopes defined by the &ndash;stopScopes option.</p>
@@ -213,10 +258,10 @@ OpenACC</h2>
 <p><b>&ndash;craybyPassDOCONCURRENT</b> remove acc loop independant collapse for BR_ fonctions and mnh_undef(OPENACC) macro use DO CONCURRENT with mnh_undef(LOOP)</p>
 <p><b>&ndash;removeACC</b> remove ACC directives</p>
 <p><b>&ndash;removebyPassDOCONCURRENT</b> remove macro !$mnh_(un)def(OPENACC) and !$mnh_(un)def(LOOP) directives</p>
-<h2><a class="anchor" id="autotoc_md14"></a>
+<h2><a class="anchor" id="autotoc_md26"></a>
 Preprocessor</h2>
 <p><b>&ndash;applyCPPifdef</b> This option is followed by the list of defined or undefined CPP keys. All #ifdef and #ifndef concerning these keys are evaluated. Undefined keys are preceded by a percentage sign '' (e.g. if we use '&ndash;applyCPPifdef K', '#ifdef K' is evaluated to True; whereas if we use '&ndash;applyCPPifdef K', '#ifdef K' is evaluated to False. But the method does not evaluate more complicated cpp directives such as '#if defined'.</p>
-<h2><a class="anchor" id="autotoc_md15"></a>
+<h2><a class="anchor" id="autotoc_md27"></a>
 Tree</h2>
 <p><b>&ndash;tree</b> Directories where source code must be searched for.</p>
 <p><b>&ndash;descTree</b> File name where the description of the tree is stored. If the file doesn't exist, it will be created using the &ndash;tree option.</p>
@@ -225,9 +270,9 @@ Tree</h2>
 <p><b>&ndash;plotMaxUpper</b> Maximum number of elements to plot, upper than the central element.</p>
 <p><b>&ndash;plotMaxLower</b> Maximum number of elements to plot, lower than the central element.</p>
 <p><b>&ndash;stopScopes</b> #-separated list of scopes where the recursive inclusion of an argument variable must stop (needed for some transformations)</p>
-<h1><a class="anchor" id="autotoc_md16"></a>
+<h1><a class="anchor" id="autotoc_md28"></a>
 Python module</h1>
-<h2><a class="anchor" id="autotoc_md17"></a>
+<h2><a class="anchor" id="autotoc_md29"></a>
 Module overview</h2>
 <p>The main objet is the PYFTscope one; this class represents a FORTRAN scope (module, subroutine, function, program or type). To ease the development, the different methods of this class have been distributed to several files. In each of these files the defined methods are attached to an abstract class (Variables in <a class="el" href="variables_8py_source.html">variables.py</a>, Statements in <a class="el" href="statements_8py_source.html">statements.py</a> and so on for <a class="el" href="applications_8py_source.html">applications.py</a>, <a class="el" href="cosmetics_8py_source.html">cosmetics.py</a>, <a class="el" href="cpp_8py_source.html">cpp.py</a> and <a class="el" href="openacc_8py_source.html">openacc.py</a>). The main class PYFTscope is built by inhereting from all of these classes but none of them is directly usable (cross-dependencies).</p>
 <p>The PYFTscope is not directly instantiable because it doesn't contain read/write feature. The PYFT class extends the PYFTscope class with those features. And so, PYFT is the class publicly exposed.</p>
@@ -235,9 +280,9 @@ Module overview</h2>
 <p>In order to deal with complex operations involving several source code files, a Tree object can be created. This object analizes all the source code files present in the specified directories to build a compilation tree and an execution tree. These trees can be explored and/or plotted through methods of this object.</p>
 <p>Another class, VarList, represents the list of variables defined in a scope.</p>
 <p>In addition to these four classes, the module contains some functions in <a class="el" href="namespacepyfortool_1_1util.html">pyfortool.util</a> and <a class="el" href="namespacepyfortool_1_1expressions.html">pyfortool.expressions</a>.</p>
-<h2><a class="anchor" id="autotoc_md18"></a>
+<h2><a class="anchor" id="autotoc_md30"></a>
 The developer's point of view</h2>
-<h3><a class="anchor" id="autotoc_md19"></a>
+<h3><a class="anchor" id="autotoc_md31"></a>
 Separation into modules</h3>
 <p>New methods must be added in one of the abstract classes defined in <a class="el" href="variables_8py_source.html">variables.py</a>, <a class="el" href="statements_8py_source.html">statements.py</a>... according to its main topic. The application.py file deals with methods specific to PHYEX that are not universal. The <a class="el" href="scripting_8py_source.html">scripting.py</a> modules contains functions used to build the two main tools.</p>
 <p>Several decorators are available:</p><ul>
@@ -252,7 +297,7 @@ Separation into modules</h3>
 <p>updateVarList (defined in variables): this decorator should be used for methods that can modify the variables (existence, name, characteristics). It suppresses the cached version of the variable list (VarList instance) attached to the PYFT instance.</p><ul>
 <li>noParallel (defined in util): methods decorated with it cannot be executed in parallel with other methods decorated the same way. This is used to decorate methods that introduce modifications into the tree. For this reason, the noParallel decorator <em>must appear</em> before the updateTree one.</li>
 </ul>
-<h3><a class="anchor" id="autotoc_md20"></a>
+<h3><a class="anchor" id="autotoc_md32"></a>
 Coding standards</h3>
 <p>Coding standards are checked using the pylint and flake8 tools. The aim is to have no messages from flake8 and to keep pylint's score above 9.8.</p>
 <p>The project is written in “lower camel case” with lines of up to 100 characters. As the main class is split into several sub-classes that are not independent, it is normal for pylint to detect accesses to attributes that are not members of the classes. The pyproject.toml and .flake8 files have been adapted to take account of these specificities.</p>
@@ -261,10 +306,41 @@ Coding standards</h3>
 <li>flake8 src/pyfortool/ bin/pyfortool_*</li>
 <li>pylint -d R0912,C0209,R0915,R1702,C0302,R0913,R0914,W1202,R0904,R0902 src/pyfortool/ bin/pyfortool_*</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md21"></a>
+<h1><a class="anchor" id="autotoc_md33"></a>
 Examples and tests</h1>
-<p>The examples directory contains a script (tests.sh) that performs a non-regression test. But, this directory can also be used as a registry of transformation examples. The files *_after.F90 are obtained by transforming the *_before.F90 files using the command line options in comment at the very begining of these files. </p>
-</div></div><!-- contents -->
+<h2><a class="anchor" id="autotoc_md34"></a>
+Regression Tests</h2>
+<p>The examples directory contains a script (tests.sh) that performs a non-regression test. But, this directory can also be used as a registry of transformation examples. The files *_after.F90 are obtained by transforming the *_before.F90 files using the command line options in comment at the very begining of these files.</p>
+<h2><a class="anchor" id="autotoc_md35"></a>
+Unit Tests</h2>
+<p>The <code>tests/</code> directory contains pytest unit tests covering:</p>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadNone">Test File   </th><th class="markdownTableHeadNone">Coverage    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><code>test_pyft.py</code>   </td><td class="markdownTableBodyNone">PYFT class, file I/O, properties    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><code>test_scope.py</code>   </td><td class="markdownTableBodyNone">Scope navigation, getScopes, getScopeNode    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><code>test_varList.py</code>   </td><td class="markdownTableBodyNone">Variable list management    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><code>test_variables.py</code>   </td><td class="markdownTableBodyNone">Variable manipulation methods    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><code>test_statements.py</code>   </td><td class="markdownTableBodyNone">Statement operations    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><code>test_cosmetics.py</code>   </td><td class="markdownTableBodyNone">Code formatting transformations    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><code>test_cpp.py</code>   </td><td class="markdownTableBodyNone">Preprocessor directive handling    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><code>test_openacc.py</code>   </td><td class="markdownTableBodyNone">OpenACC transformations    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><code>test_applications.py</code>   </td><td class="markdownTableBodyNone">High-level transformations    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><code>test_helpers/</code>   </td><td class="markdownTableBodyNone">Utility and expression helper functions   </td></tr>
+</table>
+<p>Run tests with:</p>
+<div class="fragment"><div class="line">PYTHONPATH=src pytest tests/ -v</div>
+</div><!-- fragment --> </div></div><!-- contents -->
 </div><!-- PageDoc -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

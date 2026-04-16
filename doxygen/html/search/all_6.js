@@ -1,14 +1,8 @@
 var searchData=
 [
-  ['filetoscopes_0',['fileToScopes',['../classpyfortool_1_1tree_1_1Tree.html#a0defab7b2a18e4e78038ede7be9b742a',1,'pyfortool::tree::Tree']]],
-  ['find_1',['find',['../classpyfortool_1_1scope_1_1ElementView.html#a1dbaf54daab3dba3a8d608ab623ca736',1,'pyfortool::scope::ElementView']]],
-  ['findall_2',['findall',['../classpyfortool_1_1scope_1_1ElementView.html#a16495974c6c803a6a3582bce4c738133',1,'pyfortool::scope::ElementView']]],
-  ['findarraybounds_3',['findArrayBounds',['../classpyfortool_1_1variables_1_1Variables.html#a355e3761de1279184142dfca6cdb9a08',1,'pyfortool::variables::Variables']]],
-  ['findindexarraybounds_4',['findIndexArrayBounds',['../classpyfortool_1_1variables_1_1Variables.html#af2c853c2fe554952c5fb91905b2021d7',1,'pyfortool::variables::Variables']]],
-  ['findscopeinterface_5',['findScopeInterface',['../classpyfortool_1_1tree_1_1Tree.html#ab4dac199eb52acda943346a453156ee7',1,'pyfortool::tree::Tree']]],
-  ['findtext_6',['findtext',['../classpyfortool_1_1scope_1_1ElementView.html#ad828fd416586cfce531b2f78b72bdb0c',1,'pyfortool::scope::ElementView']]],
-  ['findvar_7',['findVar',['../classpyfortool_1_1variables_1_1VarList.html#a6139fa4c40f430a9bdbbd8fd51a88d7b',1,'pyfortool::variables::VarList']]],
-  ['fortran_8',['fortran',['../classpyfortool_1_1pyfortool_1_1PYFT.html#a3d9ef8ae55a381845e6b1098baf5d9be',1,'pyfortool::pyfortool::PYFT']]],
-  ['fortran2xml_9',['fortran2xml',['../namespacepyfortool_1_1util.html#a38cababd3c55d251f604d82e2d342eca',1,'pyfortool::util']]],
-  ['fromjson_10',['fromJson',['../classpyfortool_1_1tree_1_1Tree.html#a937d659e6df8530a10fc0e973b66ac1d',1,'pyfortool::tree::Tree']]]
+  ['basic_20file_20operations_0',['Basic File Operations',['../index.html#autotoc_md4',1,'']]],
+  ['best_20practices_1',['Best Practices',['../md__2home_2runner_2work_2pyfortool_2pyfortool_2doc_2developer_2testing.html#autotoc_md146',1,'']]],
+  ['branch_20naming_2',['Branch Naming',['../md__2home_2runner_2work_2pyfortool_2pyfortool_2CONTRIBUTING.html#autotoc_md166',1,'']]],
+  ['buildacctypehelpers_3',['buildACCTypeHelpers',['../classpyfortool_1_1applications_1_1Applications.html#a8b2540c9902916d4c5c66160500e8e3e',1,'pyfortool::applications::Applications']]],
+  ['buildmodi_4',['buildModi',['../classpyfortool_1_1applications_1_1Applications.html#adcc27c7b7ceedd2106f5221998b43b4f',1,'pyfortool::applications::Applications']]]
 ];

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>PyForTool: PyForTool</title>
+<title>PyForTool: PyForTool API Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,13 +70,81 @@ $(function() {
 </div>
 
 <div><div class="header">
-  <div class="headertitle"><div class="title">PyForTool </div></div>
+  <div class="headertitle"><div class="title">PyForTool API Reference </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="md_mainpage"></a> Doxygen is used to document the source code, general documentation is available <a class="el" href="md__2home_2runner_2work_2pyfortool_2pyfortool_2doc_2Documentation.html">here</a>.</p>
-<p>The main entry points of the package is the <a class="el" href="classpyfortool_1_1pyfortool_1_1PYFT.html">PYFT</a> class.</p>
-<p>In addition, two offline tools are available: pyfortool and pyfortool_parallel. </p>
-</div></div><!-- PageDoc -->
+<div class="textblock"><p><a class="anchor" id="md_mainpage"></a> This section contains the auto-generated API reference from source code docstrings.</p>
+<p>For general documentation, see:</p>
+<ul>
+<li><a class="el" href="md__2home_2runner_2work_2pyfortool_2pyfortool_2doc_2Documentation.html">User's Guide</a> - End-user documentation</li>
+<li><a class="el" href="md__2home_2runner_2work_2pyfortool_2pyfortool_2doc_2developer_2developer.html">Developer's Guide</a> - Architecture, concepts, module organisation and testing</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md1"></a>
+Main Classes</h1>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadNone">Class   </th><th class="markdownTableHeadNone">Description    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><a class="el" href="classpyfortool_1_1pyfortool_1_1PYFT.html">PYFT</a>   </td><td class="markdownTableBodyNone">Main class for file operations    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><a class="el" href="classpyfortool_1_1scope_1_1PYFTscope.html">PYFTscope</a>   </td><td class="markdownTableBodyNone">Scope-level operations    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><a class="el" href="classpyfortool_1_1variables_1_1VarList.html">VarList</a>   </td><td class="markdownTableBodyNone">Variable management    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><a class="el" href="classpyfortool_1_1tree_1_1Tree.html">Tree</a>   </td><td class="markdownTableBodyNone">Cross-file dependency tracking   </td></tr>
+</table>
+<h1><a class="anchor" id="autotoc_md2"></a>
+Module Reference</h1>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadNone">Module   </th><th class="markdownTableHeadNone">Description    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><a class="el" href="namespacepyfortool_1_1variables.html">pyfortool.variables</a>   </td><td class="markdownTableBodyNone">Variable declaration management    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><a class="el" href="namespacepyfortool_1_1statements.html">pyfortool.statements</a>   </td><td class="markdownTableBodyNone">Statement manipulation    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><a class="el" href="namespacepyfortool_1_1cosmetics.html">pyfortool.cosmetics</a>   </td><td class="markdownTableBodyNone">Code formatting    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><a class="el" href="namespacepyfortool_1_1applications.html">pyfortool.applications</a>   </td><td class="markdownTableBodyNone">High-level transformations    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><a class="el" href="namespacepyfortool_1_1cpp.html">pyfortool.cpp</a>   </td><td class="markdownTableBodyNone">Preprocessor directives    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><a class="el" href="namespacepyfortool_1_1openacc.html">pyfortool.openacc</a>   </td><td class="markdownTableBodyNone">OpenACC directives    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><a class="el" href="namespacepyfortool_1_1tree.html">pyfortool.tree</a>   </td><td class="markdownTableBodyNone">Dependency analysis    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><a class="el" href="namespacepyfortool_1_1expressions.html">pyfortool.expressions</a>   </td><td class="markdownTableBodyNone">Expression helpers    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><a class="el" href="namespacepyfortool_1_1util.html">pyfortool.util</a>   </td><td class="markdownTableBodyNone">Utilities and decorators   </td></tr>
+</table>
+<h1><a class="anchor" id="autotoc_md3"></a>
+Quick Examples</h1>
+<h2><a class="anchor" id="autotoc_md4"></a>
+Basic File Operations</h2>
+<div class="fragment"><div class="line"><span class="keyword">from</span> pyfortool <span class="keyword">import</span> PYFT</div>
+<div class="line"> </div>
+<div class="line"><span class="comment"># Read, transform, write</span></div>
+<div class="line">pft = PYFT(<span class="stringliteral">&#39;input.F90&#39;</span>)</div>
+<div class="line">pft.upperCase()</div>
+<div class="line">pft.write()</div>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md5"></a>
+Scope Navigation</h2>
+<div class="fragment"><div class="line"><span class="comment"># Get specific scope</span></div>
+<div class="line">sub = pft.getScopeNode(<span class="stringliteral">&#39;module:MOD/sub:SUB&#39;</span>)</div>
+<div class="line"> </div>
+<div class="line"><span class="comment"># Find variables</span></div>
+<div class="line">var = sub.varList.findVar(<span class="stringliteral">&#39;X&#39;</span>)</div>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md6"></a>
+Code Transformations</h2>
+<div class="fragment"><div class="line"><span class="comment"># Remove calls and simplify</span></div>
+<div class="line">pft.removeCall(<span class="stringliteral">&#39;FOO&#39;</span>, simplify=<span class="keyword">True</span>)</div>
+<div class="line"> </div>
+<div class="line"><span class="comment"># Expand array syntax</span></div>
+<div class="line">pft.removeArraySyntax(concurrent=<span class="keyword">True</span>)</div>
+<div class="line"> </div>
+<div class="line"><span class="comment"># Add profiling</span></div>
+<div class="line">pft.addDrHook()</div>
+</div><!-- fragment --> </div></div><!-- PageDoc -->
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

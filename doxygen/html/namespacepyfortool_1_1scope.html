@@ -88,7 +88,31 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><pre class="fragment">This module implements the scope stuff
+<div class="textblock"><pre class="fragment">Scope-level operations for FORTRAN code.
+
+Provides PYFTscope class for navigating and manipulating FORTRAN scopes
+(modules, subroutines, functions, types) with integrated support for
+variables, statements, cosmetics, applications, C++ directives, and OpenACC.
+
+Key Features
+------------
+- Scope path navigation (e.g., 'module:MOD/sub:SUB')
+- XML tree traversal with CONTAINS section filtering
+- Parent/sibling element lookup with caching
+- Integration of Variables, Statements, Cosmetics, Applications, Cpp, Openacc
+
+Classes
+-------
+PYFTscope : Core scope wrapper extending ElementView
+ElementView : XML tree view with optional CONTAINS exclusion
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('input.F90')
+&gt;&gt;&gt; scopes = pft.getScopes()  # Get all scopes
+&gt;&gt;&gt; sub = pft.getScopeNode('module:MOD/sub:SUB')  # Get specific scope
+&gt;&gt;&gt; for scope in pft.getScopes(excludeKinds=['type']):
+...     print(scope.path)
 </pre> </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
