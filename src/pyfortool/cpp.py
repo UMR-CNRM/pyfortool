@@ -51,7 +51,7 @@ class Cpp:
         Notes
         -----
         - Only handles #ifdef and #ifndef (not "#if defined ...")
-        - Nested conditionals are supported
+        - Nested if/ifdef/ifndef are supported
         - Code not matching any conditional is kept unchanged
         """
 

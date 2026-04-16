@@ -79,7 +79,7 @@ class Cosmetics():
         Parameters
         ----------
         nodeToUpdate : Element, optional
-            Specific node to indent. If None, indents entire file.
+            Specific node to indent. If None, indents entire scope.
         indentProgramunit : int, optional
             Number of spaces for program unit contents. Default is 0.
         indentBranch : int, optional

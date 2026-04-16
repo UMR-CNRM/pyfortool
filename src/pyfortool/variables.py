@@ -467,11 +467,11 @@ class Variables():
         -------------
         Before:
             REAL, DIMENSION(D%NIJT,D%NKT) :: ZTLK, ZRT
-            INTEGER, PARAMETER, DIMENSION(1,1) :: IBUEXTRAIND=(/18, 30/)
+            INTEGER, PARAMETER, DIMENSION(2) :: IBUEXTRAIND=(/18, 30/)
 
         After:
             REAL :: ZTLK(D%NIJT,D%NKT), ZRT(D%NIJT,D%NKT)
-            INTEGER, PARAMETER  :: IBUEXTRAIND(1,1)=(/18, 30/)
+            INTEGER, PARAMETER  :: IBUEXTRAIND(2)=(/18, 30/)
 
         Limitations
         -----------
@@ -1101,11 +1101,11 @@ class Variables():
 
         Examples
         --------
-        Given declaration: REAL, DIMENSION(1:10) :: A
-        And usage: B(:) = A(:)
+        Given declaration: REAL, DIMENSION(1:10) :: A, B
+        And usage: A(:) = B(:)
 
         After transformation:
-        B(1:10) = A(1:10)
+        A(1:10) = B(1:10)
 
         Notes
         -----
@@ -1173,11 +1173,11 @@ class Variables():
 
         Examples
         --------
-        Given declaration: REAL, DIMENSION(10) :: A
-        And usage: B = A + C
+        Given declaration: REAL, DIMENSION(10) :: A, B, C
+        And usage: A = B + C
 
         After transformation:
-        B = A(:) + C(:)
+        A(:) = B(:) + C(:)
 
         Notes
         -----
