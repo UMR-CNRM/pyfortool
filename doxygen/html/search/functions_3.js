@@ -14,12 +14,13 @@ var searchData=
   ['close_11',['close',['../classpyfortool_1_1pyfortool_1_1PYFT.html#a9c7a896039ce417f52e7700530421033',1,'pyfortool::pyfortool::PYFT']]],
   ['conservativepyft_12',['conservativePYFT',['../namespacepyfortool_1_1pyfortool.html#acbe5a929c8a87ec2c2de7ccfa9e54b4e',1,'pyfortool::pyfortool']]],
   ['converttypesincompute_13',['convertTypesInCompute',['../classpyfortool_1_1applications_1_1Applications.html#ab12a0bac88f912a1a551c10885c5ab4c',1,'pyfortool::applications::Applications']]],
-  ['copyfromothertree_14',['copyFromOtherTree',['../classpyfortool_1_1tree_1_1Tree.html#a394615fc958da7f5d51ea50814661a4f',1,'pyfortool::tree::Tree']]],
-  ['copytoothertree_15',['copyToOtherTree',['../classpyfortool_1_1tree_1_1Tree.html#acacf04d58bc96402124429e636a72f79',1,'pyfortool::tree::Tree']]],
-  ['craybypassdoconcurrent_16',['craybyPassDOCONCURRENT',['../classpyfortool_1_1openacc_1_1Openacc.html#a5a4b1dd4c5122286ac8f51e86634d7aa',1,'pyfortool::openacc::Openacc']]],
-  ['createarraybounds_17',['createArrayBounds',['../namespacepyfortool_1_1expressions.html#a4563c6614b2eaec07fdd44f264369942',1,'pyfortool::expressions']]],
-  ['createdoconstruct_18',['createDoConstruct',['../classpyfortool_1_1statements_1_1Statements.html#a849400da9ccdd1bc555c36667eca41db',1,'pyfortool::statements::Statements']]],
-  ['createelem_19',['createElem',['../namespacepyfortool_1_1expressions.html#ad0b764a0fa30b050391a6a5967700c4a',1,'pyfortool::expressions']]],
-  ['createexpr_20',['createExpr',['../namespacepyfortool_1_1expressions.html#aee4374310227b04bc99654447b6b33e5',1,'pyfortool::expressions']]],
-  ['createexprpart_21',['createExprPart',['../namespacepyfortool_1_1expressions.html#aa5bef8fac93ac6ce5ce529f88b561852',1,'pyfortool::expressions']]]
+  ['convertusemoduletoincludes_14',['convertuseModuleToIncludes',['../classpyfortool_1_1applications_1_1Applications.html#aead103077b37b734696e4cbc2b7808a7',1,'pyfortool::applications::Applications']]],
+  ['copyfromothertree_15',['copyFromOtherTree',['../classpyfortool_1_1tree_1_1Tree.html#a394615fc958da7f5d51ea50814661a4f',1,'pyfortool::tree::Tree']]],
+  ['copytoothertree_16',['copyToOtherTree',['../classpyfortool_1_1tree_1_1Tree.html#acacf04d58bc96402124429e636a72f79',1,'pyfortool::tree::Tree']]],
+  ['craybypassdoconcurrent_17',['craybyPassDOCONCURRENT',['../classpyfortool_1_1openacc_1_1Openacc.html#a5a4b1dd4c5122286ac8f51e86634d7aa',1,'pyfortool::openacc::Openacc']]],
+  ['createarraybounds_18',['createArrayBounds',['../namespacepyfortool_1_1expressions.html#a4563c6614b2eaec07fdd44f264369942',1,'pyfortool::expressions']]],
+  ['createdoconstruct_19',['createDoConstruct',['../classpyfortool_1_1statements_1_1Statements.html#a849400da9ccdd1bc555c36667eca41db',1,'pyfortool::statements::Statements']]],
+  ['createelem_20',['createElem',['../namespacepyfortool_1_1expressions.html#ad0b764a0fa30b050391a6a5967700c4a',1,'pyfortool::expressions']]],
+  ['createexpr_21',['createExpr',['../namespacepyfortool_1_1expressions.html#aee4374310227b04bc99654447b6b33e5',1,'pyfortool::expressions']]],
+  ['createexprpart_22',['createExprPart',['../namespacepyfortool_1_1expressions.html#aa5bef8fac93ac6ce5ce529f88b561852',1,'pyfortool::expressions']]]
 ];
