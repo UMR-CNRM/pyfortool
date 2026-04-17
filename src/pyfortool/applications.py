@@ -868,10 +868,12 @@ class Applications():
                 if nb > 0:
                     # Some automatic arrays have been modified,
                     # we need to add an argument to the routine
-                    scope.addArgInTree('YDSTACK', 'TYPE (STACK) :: YDSTACK', -1,
-                                       stopScopes, moduleVarList=[('STACK_MOD', ['STACK', 'SOF'])],
+                    scope.addArgInTree('YDSTACK', 'TYPE (STACK), INTENT(IN) :: YDSTACK', -1,
+                                       stopScopes, moduleVarList=[('STACK_MOD', ['STACK'])],
                                        otherNames=['YLSTACK'],
                                        parserOptions=parserOptions, wrapH=wrapH)
+                    # And we need the SOF subroutine
+                    scope.addModuleVar([(scope.path, 'STACK_MOD', 'SOF')])
 
                     # Copy the stack to a local variable and use it for call statements
                     # this operation must be done after the call to addArgInTree
@@ -951,6 +953,7 @@ class Applications():
         indexToCheck = {'JI': ('D%NIB', 'D%NIT'),
                         'JJ': ('D%NJB', 'D%NJT'),
                         'JIJ': ('D%NIJB', 'D%NIJT')}
+        hUupperBounds = [v[1] for v in indexToCheck.values()]  # Upper bounds for horizontal dim
 
         def slice2index(namedE, scope):
             """
@@ -996,12 +999,8 @@ class Applications():
                         ss.append(item)
                     ss.remove(lowerBound)
 
-        # 0 - Preparation
-        self.addArrayParentheses()
-        self.expandAllArraysPHYEX()
         if simplify:
             self.attachArraySpecToEntity()
-        hUupperBounds = [v[1] for v in indexToCheck.values()]  # Upper bounds for horizontal dim
 
         # Loop on all scopes (reversed order); except functions (in particular
         # FWSED from ice4_sedimentation_stat)
@@ -1010,6 +1009,10 @@ class Applications():
                          (scope.path in stopScopes or
                           self.tree.isUnderStopScopes(scope.path, stopScopes,
                                                       includeInterfaces=True))]:
+            # 0 - Preparation
+            scope.addArrayParentheses()
+            scope.expandAllArraysPHYEX()
+
             indexRemoved = []
 
             # 1 - Remove all DO loops on JI and JJ for preparation to compute on KLEV only
@@ -1150,6 +1153,12 @@ class Applications():
                             if index:
                                 slice2index(namedE, scope)
 
+                            # Remove useless ':'
+                            subs = namedE.findall('.//{*}section-subscript')  # After transform
+                            if len(subs) > 0 and all(alltext(sub) == ':' for sub in subs):
+                                nodeRLT = namedE.find('.//{*}R-LT')
+                                scope.getParent(nodeRLT).remove(nodeRLT)
+
                     # Remove dimensions in variable declaration statements
                     # This modification must be done after other modifications so that
                     # the findVar method still return an array
@@ -1175,7 +1184,7 @@ class Applications():
                 scope.insertStatement(
                     createExpr(loopIndex + " = " + indexToCheck[loopIndex][0])[0], True)
             if len(indexRemoved) > 0:
-                scope.addArgInTree('D', 'TYPE(DIMPHYEX_t) :: D',
+                scope.addArgInTree('D', 'TYPE(DIMPHYEX_t), INTENT(IN) :: D',
                                    0, stopScopes, moduleVarList=[('MODD_DIMPHYEX', ['DIMPHYEX_t'])],
                                    parserOptions=parserOptions, wrapH=wrapH)
             # Check loop index presence at declaration of the scope
@@ -1794,23 +1803,30 @@ class Applications():
                                         "modd_util_{t}.F90".format(t=typeName.lower()))
                 scope.tree.signal(filename)
                 with open(filename, 'w', encoding="utf-8") as file:
+                    needI = False  # Do we need the I local variable
                     file.write("""
 MODULE MODD_UTIL_{t}
 USE {m}, ONLY: {t}
+IMPLICIT NONE
 CONTAINS
 SUBROUTINE COPY_{t} (YD, LDCREATED)""".format(t=typeName,
                                               m=scope.path.split('/')[-2].split(':')[1]))
 
                     for var in scope.varList:
                         if 'TYPE(' in var['t'].replace(' ', '').upper():
+                            if var['as'] is not None and len(var['as']) != 0:
+                                needI = True
                             file.write("""
-USE MODD_UTIL_{t}""".format(t=var['t'].replace(' ', '')[5:-1]))
+USE MODD_UTIL_{t}, ONLY: COPY_{t}""".format(t=var['t'].replace(' ', '')[5:-1]))
 
                     file.write("""
 IMPLICIT NONE
 TYPE ({t}), INTENT(IN), TARGET :: YD
-LOGICAL, OPTIONAL, INTENT(IN) :: LDCREATED
-INTEGER :: I
+LOGICAL, OPTIONAL, INTENT(IN) :: LDCREATED""".format(t=typeName))
+                    if needI:
+                        file.write("""
+INTEGER :: I""")
+                    file.write("""
 LOGICAL :: LLCREATED
 LLCREATED = .FALSE.
 IF (PRESENT (LDCREATED)) THEN
@@ -1819,7 +1835,7 @@ ENDIF
 IF (.NOT. LLCREATED) THEN
   !$acc enter data create (YD)
   !$acc update device (YD)
-ENDIF""".format(t=typeName))
+ENDIF""")
 
                     for var in scope.varList:
                         if var['allocatable']:
@@ -1851,18 +1867,21 @@ SUBROUTINE WIPE_{t} (YD, LDDELETED)""".format(t=typeName))
                     for var in scope.varList:
                         if 'TYPE(' in var['t'].replace(' ', '').upper():
                             file.write("""
-USE MODD_UTIL_{t}""".format(t=var['t'].replace(' ', '')[5:-1]))
+USE MODD_UTIL_{t}, ONLY: WIPE_{t}""".format(t=var['t'].replace(' ', '')[5:-1]))
 
                     file.write("""
 IMPLICIT NONE
 TYPE ({t}), INTENT(IN), TARGET :: YD
-LOGICAL, OPTIONAL, INTENT(IN) :: LDDELETED
-INTEGER :: I
+LOGICAL, OPTIONAL, INTENT(IN) :: LDDELETED""".format(t=typeName))
+                    if needI:
+                        file.write("""
+INTEGER :: I""")
+                    file.write("""
 LOGICAL :: LLDELETED
 LLDELETED = .FALSE.
 IF (PRESENT (LDDELETED)) THEN
   LLDELETED = LDDELETED
-ENDIF""".format(t=typeName))
+ENDIF""")
 
                     for var in scope.varList:
                         if 'TYPE(' in var['t'].replace(' ', '').upper():
