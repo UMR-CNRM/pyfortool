@@ -12,10 +12,9 @@ description = "Python-fortran-tool"
 readme = "README.md"
 requires-python = ">=3.8"
 keywords = ["fortran", "static-analysis"]
-license = {text = "LICENSE"}
+license = "CECILL-C"
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: CeCILL-C Free Software License Agreement (CECILL-C)",
     "Operating System :: POSIX :: Linux",
 ]
 dependencies = [
