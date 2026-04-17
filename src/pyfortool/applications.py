@@ -235,7 +235,6 @@ class Applications():
                 if 'ONLY' in use_stmt[0].tail.upper():
                     routine_name = use_stmt.find('.//{*}use-N/{*}N/{*}n').text
                     if routine_name in routinesCalled:
-                        print("remove of " + alltext(use_stmt))
                         # remove the USE MODULE, ONLY: ROUTINE statement
                         self.removeStmtNode(use_stmt, simplifyVar=False, simplifyStruct=False)
                         # add the #include routine.intfb.h statement
@@ -244,7 +243,6 @@ class Applications():
                         includeNode.append(
                             createElem('filename', text=routine_name.lower()+'.intfb.h"'))
                         includeNode.tail = "\n"
-                        print("insertion of " + alltext(includeNode))
                         scope.insertStatement(includeNode, first=True)
 
     @debugDecor
