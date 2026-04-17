@@ -96,7 +96,8 @@ USE MODD_NEB_n,          ONLY: NEB_t
 USE MODD_TURB_n,     ONLY: TURB_t
 USE MODE_TIWMX,          ONLY : ESATW, ESATI
 USE MODE_ICECLOUD,       ONLY : ICECLOUD
-USE STACK_MOD, ONLY:STACK, SOF
+USE STACK_MOD, ONLY:STACK
+USE STACK_MOD, ONLY:SOF
 !
 IMPLICIT NONE
 !
@@ -208,7 +209,7 @@ REAL,PARAMETER :: ZL0     = 600.        ! tropospheric length scale
 REAL,PARAMETER :: ZCSIGMA = 0.2         ! constant in sigma_s parameterization
 REAL,PARAMETER :: ZCSIG_CONV = 0.30E-2  ! scaling factor for ZSIG_CONV as function of mass flux
 !
-TYPE (STACK) :: YDSTACK
+TYPE (STACK), INTENT(IN) :: YDSTACK
 TYPE (STACK) :: YLSTACK
 
 REAL, PARAMETER :: ZSRC_1D(-22:11) =(/                         &
