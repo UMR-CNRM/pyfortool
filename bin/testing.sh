@@ -244,7 +244,7 @@ if [ ${force} -eq 1 -o $(get_statuses "${SHA}" | grep -w "${context}" | wc -l) -
   . pyfortool.env/bin/activate
   cd ${WORKDIR}/pyfortool
   set +e
-  pip install . && pip install pylint flake8==7.1.1
+  pip install .[tests]
   result=$?
   set -e
   log 1 "virtual env installation"
