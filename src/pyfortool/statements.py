@@ -1311,31 +1311,29 @@ class Statements():
         flags = [flag.upper() for flag in flags]
         for scope in self.getScopes(excludeKinds=['type']):
             singleFalseBlock, multipleFalseBlock = [], []
-            # Loop on nodes composing the scope
-            for node in scope:
-                # Loop on condition nodes
-                for cond in node.findall('.//{*}condition-E'):
-                    found = False
-                    for namedE in [namedE for namedE
-                                   in node.findall('.//{*}condition-E//{*}named-E')
-                                   if alltext(namedE).upper() in flags]:
-                        # This named-E must be replaced by .FALSE.
-                        found = True
-                        namedE.tag = '{{{NAMESPACE}}}literal-E'
-                        namedE.text = '.FALSE.'
-                        for item in list(namedE):
-                            namedE.remove(item)
-                    if found:
-                        nodeOpE = cond.find('./{*}op-E')
-                        if nodeOpE is not None:
-                            # Multiple flags conditions
-                            multipleFalseBlock.append(nodeOpE)
-                        else:
-                            # Solo condition
-                            # <if-block><if-then-stmt>
-                            if tag(scope.getParent(cond)).startswith('if-stmt'):
-                                scope.changeIfStatementsInIfConstructs(scope.getParent(cond))
-                            singleFalseBlock.append(scope.getParent(cond, level=2))
+            # Loop on condition nodes
+            for cond in scope.findall('.//{*}condition-E'):
+                found = False
+                for namedE in [namedE for namedE
+                               in cond.findall('.//{*}named-E')
+                               if alltext(namedE).upper() in flags]:
+                    # This named-E must be replaced by .FALSE.
+                    found = True
+                    namedE.tag = '{{{NAMESPACE}}}literal-E'
+                    namedE.text = '.FALSE.'
+                    for item in list(namedE):
+                        namedE.remove(item)
+                if found:
+                    nodeOpE = cond.find('./{*}op-E')
+                    if nodeOpE is not None:
+                        # Multiple flags conditions
+                        multipleFalseBlock.append(nodeOpE)
+                    else:
+                        # Solo condition
+                        if tag(scope.getParent(cond)).startswith('if-stmt'):
+                            scope.changeIfStatementsInIfConstructs(scope.getParent(cond))
+                        # <if-construct><if-block><if-then-stmt>IF (<f:condition-E>
+                        singleFalseBlock.append(scope.getParent(cond, level=3))  # if-construct
             if simplify:
                 scope.removeStmtNode(singleFalseBlock, simplify, simplify)
                 scope.evalFalseIfStmt(multipleFalseBlock, simplify)

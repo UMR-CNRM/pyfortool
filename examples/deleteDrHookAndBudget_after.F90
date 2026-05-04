@@ -185,7 +185,7 @@ REAL, DIMENSION(D%NIJT,D%NKT) :: ZRSAT_UP ! Rsat in updraft
 
 LOGICAL :: GENTR_DETR  ! flag to recompute entrainment, detrainment and mass flux
 INTEGER, DIMENSION(D%NIJT,D%NKT) :: IERR
-INTEGER :: JIJ, JK, JSV
+INTEGER :: JIJ, JK 
 INTEGER :: IIJB,IIJE ! physical horizontal domain indices
 INTEGER :: IKT
 !
@@ -334,7 +334,6 @@ IF( PARAMMF%CMF_UPDRAFT == 'DUAL') THEN
 !  PDVDT_MF=0.
 ENDIF
 !
-
 !
 !
 CONTAINS
