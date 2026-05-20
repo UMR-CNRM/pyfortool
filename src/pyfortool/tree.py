@@ -856,6 +856,6 @@ class Tree():
         """
         for filename, scopes in self._scopes.items():
             for scopeInterface in scopes:
-                if re.search(r'interface:[a-zA-Z0-9_-]*/' + scopePath, scopeInterface):
+                if re.search(r'interface:[a-zA-Z0-9_-]*/' + scopePath + r'$', scopeInterface):
                     return filename, scopeInterface
         return None, None
