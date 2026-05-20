@@ -126,7 +126,7 @@ fi
 ##### Check unit tests
 if [ "${tests}" == "" -o "$(echo ${tests} | grep -w "pytest")" != "" ]; then
   set +e
-  output=$(PYTHONPATH=src pytest tests/ -v 2>&1)
+  output=$(PYTHONPATH=src pytest tests/ -v --tb=short 2>&1)
   retval=$?
   set -e
   [ ${verbose} == 1 ] && echo "${output}"

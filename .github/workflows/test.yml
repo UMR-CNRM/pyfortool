@@ -28,24 +28,7 @@ jobs:
 
       - name: Run pytest unit tests
         run: |
-          PYTHONPATH=src pytest tests/ -v --tb=short
-        env:
-          PYTHONPATH: src
-
-      - name: Run pytest with coverage
-        if: matrix.python-version == '3.11'
-        run: |
-          PYTHONPATH=src pytest tests/ -v --cov=pyfortool --cov-report=xml --cov-report=html
-        env:
-          PYTHONPATH: src
-
-      - name: Upload coverage to Codecov
-        if: matrix.python-version == '3.11'
-        uses: codecov/codecov-action@v4
-        with:
-          file: ./coverage.xml
-          flags: unittests
-          name: codecov-umbrella
+          ./bin/checks.sh pytest
 
   regression:
     runs-on: ubuntu-latest
@@ -64,7 +47,7 @@ jobs:
 
       - name: Run non-regression tests
         run: |
-          cd examples && ./tests.sh
+          ./bin/checks.sh examples
 
   lint:
     runs-on: ubuntu-latest
@@ -81,10 +64,35 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e .[tests]
 
-      - name: Run flake8
+      - name: lint_flake8
         run: |
-          flake8 src/pyfortool --count --select=E9,F63,F7,F82 --show-source --statistics
-          flake8 src/pyfortool --count --exit-zero --max-complexity=15 --max-line-length=120 --statistics
+          ./bin/checks.sh flake8
+
+      - name: lint_pylint
+        run: |
+          ./bin/checks.sh pylint
+
+  version_check:
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      - name: Check version consistency
+        run: |
+          ./bin/checks.sh version
 
   docs:
     runs-on: ubuntu-latest
