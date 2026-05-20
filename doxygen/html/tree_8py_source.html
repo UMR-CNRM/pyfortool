@@ -1012,7 +1012,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00856" name="l00856"></a><span class="lineno">  856</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
 <div class="line"><a id="l00857" name="l00857"></a><span class="lineno">  857</span>        <span class="keywordflow">for</span> filename, scopes <span class="keywordflow">in</span> self.<a class="code hl_variable" href="classpyfortool_1_1tree_1_1Tree.html#a44d73d9ae181afbee6134c19f4cbeb2d">_scopes</a>.items():</div>
 <div class="line"><a id="l00858" name="l00858"></a><span class="lineno">  858</span>            <span class="keywordflow">for</span> scopeInterface <span class="keywordflow">in</span> scopes:</div>
-<div class="line"><a id="l00859" name="l00859"></a><span class="lineno">  859</span>                <span class="keywordflow">if</span> re.search(<span class="stringliteral">r&#39;interface:[a-zA-Z0-9_-]*/&#39;</span> + scopePath, scopeInterface):</div>
+<div class="line"><a id="l00859" name="l00859"></a><span class="lineno">  859</span>                <span class="keywordflow">if</span> re.search(<span class="stringliteral">r&#39;interface:[a-zA-Z0-9_-]*/&#39;</span> + scopePath + <span class="stringliteral">r&#39;$&#39;</span>, scopeInterface):</div>
 <div class="line"><a id="l00860" name="l00860"></a><span class="lineno">  860</span>                    <span class="keywordflow">return</span> filename, scopeInterface</div>
 <div class="line"><a id="l00861" name="l00861"></a><span class="lineno">  861</span>        <span class="keywordflow">return</span> <span class="keywordtype">None</span>, <span class="keywordtype">None</span></div>
 </div>
