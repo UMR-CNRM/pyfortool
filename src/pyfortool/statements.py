@@ -1376,6 +1376,7 @@ class Statements():
         if not ok and mustRaise:
             raise PYFTError(("There are call arguments which are operations in file '{}'"
                              ).format(self.getFileName()))
+        return ok
 
     @debugDecor
     def checkEmptyParensInCall(self, mustRaise=False):
@@ -1397,6 +1398,7 @@ class Statements():
         if not ok and mustRaise:
             raise PYFTError(("There are call arguments which are arrays " +
                              "with empty parens in file '{}'").format(self.getFileName()))
+        return ok
 
     @debugDecor
     def insertStatement(self, stmt, first):

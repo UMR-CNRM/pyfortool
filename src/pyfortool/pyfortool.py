@@ -244,6 +244,15 @@ class PYFT(PYFTscope):
                                    for file in tree.getFiles()}
 
     @classmethod
+    def unsetParallel(cls):
+        """
+        Remove parallel processing configuration
+        """
+        cls.NO_PARALLEL_LOCK = None
+        cls.SHARED_TREE = None
+        cls.PARALLEL_FILE_LOCKS = None
+
+    @classmethod
     def lockFile(cls, filename):
         """
         Acquire file lock for parallel processing.

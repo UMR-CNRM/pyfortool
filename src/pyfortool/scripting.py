@@ -55,9 +55,11 @@ def task(filename):
         return (1, filename)
 
 
-def mainParallel():
+def mainParallel(argv=None):
     """
     Core of the pyfortool_parallel.py command
+    :param argv: list of arguments (including the 'programm' name in first position)
+                 as would be obtained by sys.argv. Or None to use sys.argv
     """
 
     class MyManager(BaseManager):
@@ -83,7 +85,7 @@ def mainParallel():
 
     updateParser(parser, withInput=False, withOutput=False, withXml=False, withPlotCentralFile=True,
                  treeIsOptional=False, nbPar=True, restrictScope=False)
-    commonArgs, getFileArgs = getArgs(parser)
+    commonArgs, getFileArgs = getArgs(parser, argv)
 
     # Manager to share the Tree instance
     with MyManager() as manager:
@@ -112,17 +114,22 @@ def mainParallel():
                 logging.error('  - %s', error)
             raise PYFTError(f"Errors have been reported in {status} file(s).")
 
+        # Unset parallel processing
+        PYFT.unsetParallel()
 
-def main():
+
+def main(argv=None):
     """
     Core of the pyfortool.py command
+    :param argv: list of arguments (including the 'programm' name in first position)
+                 as would be obtained by sys.argv. Or None to use sys.argv
     """
     parser = argparse.ArgumentParser(description='Python FORTRAN tool', allow_abbrev=False,
                                      epilog="The argument order matters.")
 
     updateParser(parser, withInput=True, withOutput=True, withXml=True, withPlotCentralFile=False,
                  treeIsOptional=True, nbPar=False, restrictScope=True)
-    args, orderedOptions = getArgs(parser)[1]()
+    args, orderedOptions = getArgs(parser, argv)[1]()
 
     parserOptions = getParserOptions(args)
     descTree = getDescTree(args)
@@ -163,10 +170,12 @@ ARG_UPDATE_CNT = ('--alignContinuation', '--addBeginContinuation',
                   '--emoveALLContinuation')
 
 
-def getArgs(parser):
+def getArgs(parser, argv):
     """
     Parse arguments and interpret the --optsByEnv option
     :param parser: argparse parser
+    :param argv: list of arguments (including the 'programm' name in first position)
+                 as would be obtained by sys.argv. Or None to use sys.argv.
     :return: a tuple with
                - an argparse namespace containing common arguments (not using the --optsEnv option)
                - a function taking a filename as input and returning
@@ -174,7 +183,9 @@ def getArgs(parser):
                     interpreting the --optsEnv option
                   - an ordered list of arguments
     """
-    args = parser.parse_args()
+    if argv is None:
+        argv = sys.argv
+    args = parser.parse_args(argv[1:])
 
     def getFileArgs(filename=args.INPUT if hasattr(args, 'INPUT') else None):
         """
@@ -183,7 +194,7 @@ def getArgs(parser):
                  a list given the order in which the arguments were provided
         """
         # Decode the --optsByEnv option
-        arguments = sys.argv[1:]
+        arguments = argv[1:]
         if args.optsByEnv is not None:
             extra = ''
             for line in [] if args.optsByEnv is None else os.environ[args.optsByEnv].split('\n'):
@@ -261,7 +272,7 @@ def updateParser(parser, withInput, withOutput, withXml, withPlotCentralFile, tr
     # IMPORTANT NOTE
     # Argument order matters but argparse is not able to give the order
     # Therefore, arguments are processed twice. The first time by argparse to fully decode them.
-    # The a second pass is made direcly on sys.argv. This mechanism has two implications:
+    # Then a second pass is made direcly on sys.argv. This mechanism has two implications:
     # allow_abbrev must be set to False in ArgumentParser
     # only long argument options are allowed (begining with two dashes)
     # ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !

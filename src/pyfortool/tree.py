@@ -226,7 +226,8 @@ class Tree():
             for filename in glob.glob(tDir + '/**/*', recursive=True):
                 if os.path.splitext(filename)[1] not in ('', '.json', '.fypp',
                                                          '.txt', '.cmake',
-                                                         '.in'):
+                                                         '.in', '.yaml',
+                                                         '.sh', '.py', '.pyc'):
                     # We only keep files with extension
                     filenames.append(filename)
         return filenames

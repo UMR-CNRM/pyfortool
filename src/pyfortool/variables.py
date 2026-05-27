@@ -522,6 +522,7 @@ class Variables():
         >>> pft.checkImplicitNone()  # Issues warning if missing
         >>> pft.checkImplicitNone(mustRaise=True)  # Raises error if missing
         """
+        ok = True
         for scope in self.getScopes():
             # The IMPLICIT NONE statement is inherited from the top unit, control at top
             # unit is enough apart for INTERFACE blocs
@@ -532,10 +533,12 @@ class Variables():
                     message = "The 'IMPLICIT NONE' statment is missing in file " + \
                               "'{file}' for {scopePath}.".format(file=scope.getFileName(),
                                                                  scopePath=scope.path)
+                    ok = False
                     if mustRaise:
                         logging.error(message)
                         raise PYFTError(message)
                     logging.warning(message)
+        return ok
 
     @debugDecor
     def checkIntent(self, mustRaise=False):
@@ -567,6 +570,7 @@ class Variables():
         if not ok and mustRaise:
             raise PYFTError("There are dummy arguments without INTENT attribute in " +
                             "file '{}'".format(self.getFileName()))
+        return ok
 
     @debugDecor
     def checkONLY(self, mustRaise=False):
@@ -594,11 +598,13 @@ class Variables():
         for useStmt in self.findall('.//{*}use-stmt'):
             module = useStmt.find('.//{*}module-N')
             if module.tail is None or module.tail.replace(' ', '').upper() != ',ONLY:':
+                ok = False
                 log(f"USE {n2name(module.find('.//{*}N'))} is not followed by an ONLY clause " +
                     f"in file'{self.getFileName()}'.")
         if not ok and mustRaise:
             raise PYFTError("There are USE statements not followed by an ONLY clause " +
                             f"file '{self.getFileName()}'")
+        return ok
 
     @debugDecor
     @noParallel
@@ -1030,15 +1036,18 @@ class Variables():
                                       (not v['arg']) and
                                       v['scopePath'].split('/')[-1].split(':')[0] != 'module' and
                                       v['scopePath'] == scope.path)])
+        ok = True
         for scope in scopes:
             for var in [k[1].upper() for (k, v) in varUsed.items()
                         if (not v) and k[0] == scope.path]:
                 message = f"The {var} variable is not used in file " + \
                           f"'{scope.getFileName()}' for {scope.path}."
+                ok = False
                 if mustRaise:
                     logging.error(message)
                     raise PYFTError(message)
                 logging.warning(message)
+        return ok
 
     @debugDecor
     def removeUnusedLocalVar(self, excludeList=None, simplify=False):
