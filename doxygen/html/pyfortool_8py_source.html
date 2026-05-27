@@ -338,215 +338,227 @@ $(document).ready(function() { init_codefold(0); });
 </div>
 <div class="line"><a id="l00246" name="l00246"></a><span class="lineno">  246</span>    <span class="preprocessor">@classmethod</span></div>
 <div class="foldopen" id="foldopen00247" data-start="" data-end="">
-<div class="line"><a id="l00247" name="l00247"></a><span class="lineno"><a class="line" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a43beca194bfd5f566f811e8638b09da1">  247</a></span>    <span class="keyword">def </span><a class="code hl_function" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a43beca194bfd5f566f811e8638b09da1">lockFile</a>(cls, filename):</div>
+<div class="line"><a id="l00247" name="l00247"></a><span class="lineno"><a class="line" href="classpyfortool_1_1pyfortool_1_1PYFT.html#ae4195d9d1a0fb0add38743a6780a1e17">  247</a></span>    <span class="keyword">def </span><a class="code hl_function" href="classpyfortool_1_1pyfortool_1_1PYFT.html#ae4195d9d1a0fb0add38743a6780a1e17">unsetParallel</a>(cls):</div>
 <div class="line"><a id="l00248" name="l00248"></a><span class="lineno">  248</span>        <span class="stringliteral">&quot;&quot;&quot;</span></div>
-<div class="line"><a id="l00249" name="l00249"></a><span class="lineno">  249</span><span class="stringliteral">        Acquire file lock for parallel processing.</span></div>
-<div class="line"><a id="l00250" name="l00250"></a><span class="lineno">  250</span><span class="stringliteral"></span> </div>
-<div class="line"><a id="l00251" name="l00251"></a><span class="lineno">  251</span><span class="stringliteral">        Parameters</span></div>
-<div class="line"><a id="l00252" name="l00252"></a><span class="lineno">  252</span><span class="stringliteral">        ----------</span></div>
-<div class="line"><a id="l00253" name="l00253"></a><span class="lineno">  253</span><span class="stringliteral">        filename : str</span></div>
-<div class="line"><a id="l00254" name="l00254"></a><span class="lineno">  254</span><span class="stringliteral">            Path to the file to lock.</span></div>
-<div class="line"><a id="l00255" name="l00255"></a><span class="lineno">  255</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
-<div class="line"><a id="l00256" name="l00256"></a><span class="lineno">  256</span>        filename = os.path.normpath(filename)</div>
-<div class="line"><a id="l00257" name="l00257"></a><span class="lineno">  257</span>        <span class="comment"># pylint: disable-next=unsupported-membership-test</span></div>
-<div class="line"><a id="l00258" name="l00258"></a><span class="lineno">  258</span>        <span class="keywordflow">if</span> cls.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#acb8cbd8590edfe904158b95ee2008137">PARALLEL_FILE_LOCKS</a> <span class="keywordflow">is</span> <span class="keywordflow">not</span> <span class="keywordtype">None</span> <span class="keywordflow">and</span> filename <span class="keywordflow">in</span> cls.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#acb8cbd8590edfe904158b95ee2008137">PARALLEL_FILE_LOCKS</a>:</div>
-<div class="line"><a id="l00259" name="l00259"></a><span class="lineno">  259</span>            <span class="comment"># pylint: disable-next=unsubscriptable-object</span></div>
-<div class="line"><a id="l00260" name="l00260"></a><span class="lineno">  260</span>            cls.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#acb8cbd8590edfe904158b95ee2008137">PARALLEL_FILE_LOCKS</a>[filename].acquire()</div>
-<div class="line"><a id="l00261" name="l00261"></a><span class="lineno">  261</span> </div>
+<div class="line"><a id="l00249" name="l00249"></a><span class="lineno">  249</span><span class="stringliteral">        Remove parallel processing configuration</span></div>
+<div class="line"><a id="l00250" name="l00250"></a><span class="lineno">  250</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
+<div class="line"><a id="l00251" name="l00251"></a><span class="lineno">  251</span>        cls.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a15c4ccefd44b4eab64561cc9bfb3bdf6">NO_PARALLEL_LOCK</a> = <span class="keywordtype">None</span></div>
+<div class="line"><a id="l00252" name="l00252"></a><span class="lineno">  252</span>        cls.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a13462d6be601322064e52d746eb4aa09">SHARED_TREE</a> = <span class="keywordtype">None</span></div>
+<div class="line"><a id="l00253" name="l00253"></a><span class="lineno">  253</span>        cls.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#acb8cbd8590edfe904158b95ee2008137">PARALLEL_FILE_LOCKS</a> = <span class="keywordtype">None</span></div>
+<div class="line"><a id="l00254" name="l00254"></a><span class="lineno">  254</span> </div>
 </div>
-<div class="line"><a id="l00262" name="l00262"></a><span class="lineno">  262</span>    <span class="preprocessor">@classmethod</span></div>
-<div class="foldopen" id="foldopen00263" data-start="" data-end="">
-<div class="line"><a id="l00263" name="l00263"></a><span class="lineno"><a class="line" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a301483ba888c26661c8f023085312d70">  263</a></span>    <span class="keyword">def </span><a class="code hl_function" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a301483ba888c26661c8f023085312d70">unlockFile</a>(cls, filename, silence=False):</div>
-<div class="line"><a id="l00264" name="l00264"></a><span class="lineno">  264</span>        <span class="stringliteral">&quot;&quot;&quot;</span></div>
-<div class="line"><a id="l00265" name="l00265"></a><span class="lineno">  265</span><span class="stringliteral">        Release file lock for parallel processing.</span></div>
-<div class="line"><a id="l00266" name="l00266"></a><span class="lineno">  266</span><span class="stringliteral"></span> </div>
-<div class="line"><a id="l00267" name="l00267"></a><span class="lineno">  267</span><span class="stringliteral">        Parameters</span></div>
-<div class="line"><a id="l00268" name="l00268"></a><span class="lineno">  268</span><span class="stringliteral">        ----------</span></div>
-<div class="line"><a id="l00269" name="l00269"></a><span class="lineno">  269</span><span class="stringliteral">        filename : str</span></div>
-<div class="line"><a id="l00270" name="l00270"></a><span class="lineno">  270</span><span class="stringliteral">            Path to the file to unlock.</span></div>
-<div class="line"><a id="l00271" name="l00271"></a><span class="lineno">  271</span><span class="stringliteral">        silence : bool, optional</span></div>
-<div class="line"><a id="l00272" name="l00272"></a><span class="lineno">  272</span><span class="stringliteral">            If True, suppress ValueError when file is not locked.</span></div>
-<div class="line"><a id="l00273" name="l00273"></a><span class="lineno">  273</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
-<div class="line"><a id="l00274" name="l00274"></a><span class="lineno">  274</span>        filename = os.path.normpath(filename)</div>
-<div class="line"><a id="l00275" name="l00275"></a><span class="lineno">  275</span>        <span class="comment"># pylint: disable-next=unsupported-membership-test</span></div>
-<div class="line"><a id="l00276" name="l00276"></a><span class="lineno">  276</span>        <span class="keywordflow">if</span> cls.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#acb8cbd8590edfe904158b95ee2008137">PARALLEL_FILE_LOCKS</a> <span class="keywordflow">is</span> <span class="keywordflow">not</span> <span class="keywordtype">None</span> <span class="keywordflow">and</span> filename <span class="keywordflow">in</span> cls.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#acb8cbd8590edfe904158b95ee2008137">PARALLEL_FILE_LOCKS</a>:</div>
-<div class="line"><a id="l00277" name="l00277"></a><span class="lineno">  277</span>            <span class="keywordflow">try</span>:</div>
-<div class="line"><a id="l00278" name="l00278"></a><span class="lineno">  278</span>                <span class="comment"># pylint: disable-next=unsubscriptable-object</span></div>
-<div class="line"><a id="l00279" name="l00279"></a><span class="lineno">  279</span>                cls.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#acb8cbd8590edfe904158b95ee2008137">PARALLEL_FILE_LOCKS</a>[filename].release()</div>
-<div class="line"><a id="l00280" name="l00280"></a><span class="lineno">  280</span>            <span class="keywordflow">except</span> ValueError:</div>
-<div class="line"><a id="l00281" name="l00281"></a><span class="lineno">  281</span>                <span class="keywordflow">if</span> <span class="keywordflow">not</span> silence:</div>
-<div class="line"><a id="l00282" name="l00282"></a><span class="lineno">  282</span>                    <span class="keywordflow">raise</span></div>
-<div class="line"><a id="l00283" name="l00283"></a><span class="lineno">  283</span> </div>
+<div class="line"><a id="l00255" name="l00255"></a><span class="lineno">  255</span>    <span class="preprocessor">@classmethod</span></div>
+<div class="foldopen" id="foldopen00256" data-start="" data-end="">
+<div class="line"><a id="l00256" name="l00256"></a><span class="lineno"><a class="line" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a43beca194bfd5f566f811e8638b09da1">  256</a></span>    <span class="keyword">def </span><a class="code hl_function" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a43beca194bfd5f566f811e8638b09da1">lockFile</a>(cls, filename):</div>
+<div class="line"><a id="l00257" name="l00257"></a><span class="lineno">  257</span>        <span class="stringliteral">&quot;&quot;&quot;</span></div>
+<div class="line"><a id="l00258" name="l00258"></a><span class="lineno">  258</span><span class="stringliteral">        Acquire file lock for parallel processing.</span></div>
+<div class="line"><a id="l00259" name="l00259"></a><span class="lineno">  259</span><span class="stringliteral"></span> </div>
+<div class="line"><a id="l00260" name="l00260"></a><span class="lineno">  260</span><span class="stringliteral">        Parameters</span></div>
+<div class="line"><a id="l00261" name="l00261"></a><span class="lineno">  261</span><span class="stringliteral">        ----------</span></div>
+<div class="line"><a id="l00262" name="l00262"></a><span class="lineno">  262</span><span class="stringliteral">        filename : str</span></div>
+<div class="line"><a id="l00263" name="l00263"></a><span class="lineno">  263</span><span class="stringliteral">            Path to the file to lock.</span></div>
+<div class="line"><a id="l00264" name="l00264"></a><span class="lineno">  264</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
+<div class="line"><a id="l00265" name="l00265"></a><span class="lineno">  265</span>        filename = os.path.normpath(filename)</div>
+<div class="line"><a id="l00266" name="l00266"></a><span class="lineno">  266</span>        <span class="comment"># pylint: disable-next=unsupported-membership-test</span></div>
+<div class="line"><a id="l00267" name="l00267"></a><span class="lineno">  267</span>        <span class="keywordflow">if</span> cls.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#acb8cbd8590edfe904158b95ee2008137">PARALLEL_FILE_LOCKS</a> <span class="keywordflow">is</span> <span class="keywordflow">not</span> <span class="keywordtype">None</span> <span class="keywordflow">and</span> filename <span class="keywordflow">in</span> cls.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#acb8cbd8590edfe904158b95ee2008137">PARALLEL_FILE_LOCKS</a>:</div>
+<div class="line"><a id="l00268" name="l00268"></a><span class="lineno">  268</span>            <span class="comment"># pylint: disable-next=unsubscriptable-object</span></div>
+<div class="line"><a id="l00269" name="l00269"></a><span class="lineno">  269</span>            cls.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#acb8cbd8590edfe904158b95ee2008137">PARALLEL_FILE_LOCKS</a>[filename].acquire()</div>
+<div class="line"><a id="l00270" name="l00270"></a><span class="lineno">  270</span> </div>
 </div>
-<div class="foldopen" id="foldopen00284" data-start="" data-end="">
-<div class="line"><a id="l00284" name="l00284"></a><span class="lineno"><a class="line" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a6e5b256af3aa7a7f96c78d28afc5eac1">  284</a></span>    <span class="keyword">def </span><a class="code hl_function" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a6e5b256af3aa7a7f96c78d28afc5eac1">__enter__</a>(self):</div>
-<div class="line"><a id="l00285" name="l00285"></a><span class="lineno">  285</span>        <span class="stringliteral">&quot;&quot;&quot;</span></div>
-<div class="line"><a id="l00286" name="l00286"></a><span class="lineno">  286</span><span class="stringliteral">        Enter context manager.</span></div>
-<div class="line"><a id="l00287" name="l00287"></a><span class="lineno">  287</span><span class="stringliteral"></span> </div>
-<div class="line"><a id="l00288" name="l00288"></a><span class="lineno">  288</span><span class="stringliteral">        Returns</span></div>
-<div class="line"><a id="l00289" name="l00289"></a><span class="lineno">  289</span><span class="stringliteral">        -------</span></div>
-<div class="line"><a id="l00290" name="l00290"></a><span class="lineno">  290</span><span class="stringliteral">        PYFT</span></div>
-<div class="line"><a id="l00291" name="l00291"></a><span class="lineno">  291</span><span class="stringliteral">            Self reference for use in with statement.</span></div>
-<div class="line"><a id="l00292" name="l00292"></a><span class="lineno">  292</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
-<div class="line"><a id="l00293" name="l00293"></a><span class="lineno">  293</span>        <span class="keywordflow">return</span> self</div>
-<div class="line"><a id="l00294" name="l00294"></a><span class="lineno">  294</span> </div>
+<div class="line"><a id="l00271" name="l00271"></a><span class="lineno">  271</span>    <span class="preprocessor">@classmethod</span></div>
+<div class="foldopen" id="foldopen00272" data-start="" data-end="">
+<div class="line"><a id="l00272" name="l00272"></a><span class="lineno"><a class="line" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a301483ba888c26661c8f023085312d70">  272</a></span>    <span class="keyword">def </span><a class="code hl_function" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a301483ba888c26661c8f023085312d70">unlockFile</a>(cls, filename, silence=False):</div>
+<div class="line"><a id="l00273" name="l00273"></a><span class="lineno">  273</span>        <span class="stringliteral">&quot;&quot;&quot;</span></div>
+<div class="line"><a id="l00274" name="l00274"></a><span class="lineno">  274</span><span class="stringliteral">        Release file lock for parallel processing.</span></div>
+<div class="line"><a id="l00275" name="l00275"></a><span class="lineno">  275</span><span class="stringliteral"></span> </div>
+<div class="line"><a id="l00276" name="l00276"></a><span class="lineno">  276</span><span class="stringliteral">        Parameters</span></div>
+<div class="line"><a id="l00277" name="l00277"></a><span class="lineno">  277</span><span class="stringliteral">        ----------</span></div>
+<div class="line"><a id="l00278" name="l00278"></a><span class="lineno">  278</span><span class="stringliteral">        filename : str</span></div>
+<div class="line"><a id="l00279" name="l00279"></a><span class="lineno">  279</span><span class="stringliteral">            Path to the file to unlock.</span></div>
+<div class="line"><a id="l00280" name="l00280"></a><span class="lineno">  280</span><span class="stringliteral">        silence : bool, optional</span></div>
+<div class="line"><a id="l00281" name="l00281"></a><span class="lineno">  281</span><span class="stringliteral">            If True, suppress ValueError when file is not locked.</span></div>
+<div class="line"><a id="l00282" name="l00282"></a><span class="lineno">  282</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
+<div class="line"><a id="l00283" name="l00283"></a><span class="lineno">  283</span>        filename = os.path.normpath(filename)</div>
+<div class="line"><a id="l00284" name="l00284"></a><span class="lineno">  284</span>        <span class="comment"># pylint: disable-next=unsupported-membership-test</span></div>
+<div class="line"><a id="l00285" name="l00285"></a><span class="lineno">  285</span>        <span class="keywordflow">if</span> cls.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#acb8cbd8590edfe904158b95ee2008137">PARALLEL_FILE_LOCKS</a> <span class="keywordflow">is</span> <span class="keywordflow">not</span> <span class="keywordtype">None</span> <span class="keywordflow">and</span> filename <span class="keywordflow">in</span> cls.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#acb8cbd8590edfe904158b95ee2008137">PARALLEL_FILE_LOCKS</a>:</div>
+<div class="line"><a id="l00286" name="l00286"></a><span class="lineno">  286</span>            <span class="keywordflow">try</span>:</div>
+<div class="line"><a id="l00287" name="l00287"></a><span class="lineno">  287</span>                <span class="comment"># pylint: disable-next=unsubscriptable-object</span></div>
+<div class="line"><a id="l00288" name="l00288"></a><span class="lineno">  288</span>                cls.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#acb8cbd8590edfe904158b95ee2008137">PARALLEL_FILE_LOCKS</a>[filename].release()</div>
+<div class="line"><a id="l00289" name="l00289"></a><span class="lineno">  289</span>            <span class="keywordflow">except</span> ValueError:</div>
+<div class="line"><a id="l00290" name="l00290"></a><span class="lineno">  290</span>                <span class="keywordflow">if</span> <span class="keywordflow">not</span> silence:</div>
+<div class="line"><a id="l00291" name="l00291"></a><span class="lineno">  291</span>                    <span class="keywordflow">raise</span></div>
+<div class="line"><a id="l00292" name="l00292"></a><span class="lineno">  292</span> </div>
 </div>
-<div class="foldopen" id="foldopen00295" data-start="" data-end="">
-<div class="line"><a id="l00295" name="l00295"></a><span class="lineno"><a class="line" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a953882ff5655f865cafab96e91277550">  295</a></span>    <span class="keyword">def </span><a class="code hl_function" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a953882ff5655f865cafab96e91277550">__exit__</a>(self, excType, excVal, excTb):</div>
-<div class="line"><a id="l00296" name="l00296"></a><span class="lineno">  296</span>        <span class="stringliteral">&quot;&quot;&quot;</span></div>
-<div class="line"><a id="l00297" name="l00297"></a><span class="lineno">  297</span><span class="stringliteral">        Exit context manager and close file.</span></div>
-<div class="line"><a id="l00298" name="l00298"></a><span class="lineno">  298</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
-<div class="line"><a id="l00299" name="l00299"></a><span class="lineno">  299</span>        self.<a class="code hl_function" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a9c7a896039ce417f52e7700530421033">close</a>()</div>
-<div class="line"><a id="l00300" name="l00300"></a><span class="lineno">  300</span> </div>
+<div class="foldopen" id="foldopen00293" data-start="" data-end="">
+<div class="line"><a id="l00293" name="l00293"></a><span class="lineno"><a class="line" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a6e5b256af3aa7a7f96c78d28afc5eac1">  293</a></span>    <span class="keyword">def </span><a class="code hl_function" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a6e5b256af3aa7a7f96c78d28afc5eac1">__enter__</a>(self):</div>
+<div class="line"><a id="l00294" name="l00294"></a><span class="lineno">  294</span>        <span class="stringliteral">&quot;&quot;&quot;</span></div>
+<div class="line"><a id="l00295" name="l00295"></a><span class="lineno">  295</span><span class="stringliteral">        Enter context manager.</span></div>
+<div class="line"><a id="l00296" name="l00296"></a><span class="lineno">  296</span><span class="stringliteral"></span> </div>
+<div class="line"><a id="l00297" name="l00297"></a><span class="lineno">  297</span><span class="stringliteral">        Returns</span></div>
+<div class="line"><a id="l00298" name="l00298"></a><span class="lineno">  298</span><span class="stringliteral">        -------</span></div>
+<div class="line"><a id="l00299" name="l00299"></a><span class="lineno">  299</span><span class="stringliteral">        PYFT</span></div>
+<div class="line"><a id="l00300" name="l00300"></a><span class="lineno">  300</span><span class="stringliteral">            Self reference for use in with statement.</span></div>
+<div class="line"><a id="l00301" name="l00301"></a><span class="lineno">  301</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
+<div class="line"><a id="l00302" name="l00302"></a><span class="lineno">  302</span>        <span class="keywordflow">return</span> self</div>
+<div class="line"><a id="l00303" name="l00303"></a><span class="lineno">  303</span> </div>
 </div>
-<div class="foldopen" id="foldopen00301" data-start="" data-end="">
-<div class="line"><a id="l00301" name="l00301"></a><span class="lineno"><a class="line" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a9c7a896039ce417f52e7700530421033">  301</a></span>    <span class="keyword">def </span><a class="code hl_function" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a9c7a896039ce417f52e7700530421033">close</a>(self):</div>
-<div class="line"><a id="l00302" name="l00302"></a><span class="lineno">  302</span>        <span class="stringliteral">&quot;&quot;&quot;</span></div>
-<div class="line"><a id="l00303" name="l00303"></a><span class="lineno">  303</span><span class="stringliteral">        Close the FORTRAN file and release resources.</span></div>
-<div class="line"><a id="l00304" name="l00304"></a><span class="lineno">  304</span><span class="stringliteral"></span> </div>
-<div class="line"><a id="l00305" name="l00305"></a><span class="lineno">  305</span><span class="stringliteral">        Prints debug statistics and releases file locks.</span></div>
-<div class="line"><a id="l00306" name="l00306"></a><span class="lineno">  306</span><span class="stringliteral">        Automatically called when exiting context manager.</span></div>
+<div class="foldopen" id="foldopen00304" data-start="" data-end="">
+<div class="line"><a id="l00304" name="l00304"></a><span class="lineno"><a class="line" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a953882ff5655f865cafab96e91277550">  304</a></span>    <span class="keyword">def </span><a class="code hl_function" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a953882ff5655f865cafab96e91277550">__exit__</a>(self, excType, excVal, excTb):</div>
+<div class="line"><a id="l00305" name="l00305"></a><span class="lineno">  305</span>        <span class="stringliteral">&quot;&quot;&quot;</span></div>
+<div class="line"><a id="l00306" name="l00306"></a><span class="lineno">  306</span><span class="stringliteral">        Exit context manager and close file.</span></div>
 <div class="line"><a id="l00307" name="l00307"></a><span class="lineno">  307</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
-<div class="line"><a id="l00308" name="l00308"></a><span class="lineno">  308</span>        printInfos()</div>
-<div class="line"><a id="l00309" name="l00309"></a><span class="lineno">  309</span>        self.__class__.<a class="code hl_function" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a301483ba888c26661c8f023085312d70">unlockFile</a>(self.<a class="code hl_function" href="classpyfortool_1_1scope_1_1PYFTscope.html#a5ce15a70bc7948feff004ffcf1787584">getFileName</a>())</div>
-<div class="line"><a id="l00310" name="l00310"></a><span class="lineno">  310</span> </div>
+<div class="line"><a id="l00308" name="l00308"></a><span class="lineno">  308</span>        self.<a class="code hl_function" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a9c7a896039ce417f52e7700530421033">close</a>()</div>
+<div class="line"><a id="l00309" name="l00309"></a><span class="lineno">  309</span> </div>
 </div>
-<div class="line"><a id="l00311" name="l00311"></a><span class="lineno">  311</span>    <span class="preprocessor">@property</span></div>
-<div class="foldopen" id="foldopen00312" data-start="" data-end="">
-<div class="line"><a id="l00312" name="l00312"></a><span class="lineno"><a class="line" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a9944688ca4b8367fc45b15236f34fbdd">  312</a></span>    <span class="keyword">def </span>xml(self):</div>
-<div class="line"><a id="l00313" name="l00313"></a><span class="lineno">  313</span>        <span class="stringliteral">&quot;&quot;&quot;</span></div>
-<div class="line"><a id="l00314" name="l00314"></a><span class="lineno">  314</span><span class="stringliteral">        Get the XML representation of the parsed code.</span></div>
-<div class="line"><a id="l00315" name="l00315"></a><span class="lineno">  315</span><span class="stringliteral"></span> </div>
-<div class="line"><a id="l00316" name="l00316"></a><span class="lineno">  316</span><span class="stringliteral">        Returns</span></div>
-<div class="line"><a id="l00317" name="l00317"></a><span class="lineno">  317</span><span class="stringliteral">        -------</span></div>
-<div class="line"><a id="l00318" name="l00318"></a><span class="lineno">  318</span><span class="stringliteral">        str</span></div>
-<div class="line"><a id="l00319" name="l00319"></a><span class="lineno">  319</span><span class="stringliteral">            XML string representation of the FORTRAN source.</span></div>
-<div class="line"><a id="l00320" name="l00320"></a><span class="lineno">  320</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
-<div class="line"><a id="l00321" name="l00321"></a><span class="lineno">  321</span>        <span class="keywordflow">return</span> tostring(self)</div>
-<div class="line"><a id="l00322" name="l00322"></a><span class="lineno">  322</span> </div>
+<div class="foldopen" id="foldopen00310" data-start="" data-end="">
+<div class="line"><a id="l00310" name="l00310"></a><span class="lineno"><a class="line" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a9c7a896039ce417f52e7700530421033">  310</a></span>    <span class="keyword">def </span><a class="code hl_function" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a9c7a896039ce417f52e7700530421033">close</a>(self):</div>
+<div class="line"><a id="l00311" name="l00311"></a><span class="lineno">  311</span>        <span class="stringliteral">&quot;&quot;&quot;</span></div>
+<div class="line"><a id="l00312" name="l00312"></a><span class="lineno">  312</span><span class="stringliteral">        Close the FORTRAN file and release resources.</span></div>
+<div class="line"><a id="l00313" name="l00313"></a><span class="lineno">  313</span><span class="stringliteral"></span> </div>
+<div class="line"><a id="l00314" name="l00314"></a><span class="lineno">  314</span><span class="stringliteral">        Prints debug statistics and releases file locks.</span></div>
+<div class="line"><a id="l00315" name="l00315"></a><span class="lineno">  315</span><span class="stringliteral">        Automatically called when exiting context manager.</span></div>
+<div class="line"><a id="l00316" name="l00316"></a><span class="lineno">  316</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
+<div class="line"><a id="l00317" name="l00317"></a><span class="lineno">  317</span>        printInfos()</div>
+<div class="line"><a id="l00318" name="l00318"></a><span class="lineno">  318</span>        self.__class__.<a class="code hl_function" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a301483ba888c26661c8f023085312d70">unlockFile</a>(self.<a class="code hl_function" href="classpyfortool_1_1scope_1_1PYFTscope.html#a5ce15a70bc7948feff004ffcf1787584">getFileName</a>())</div>
+<div class="line"><a id="l00319" name="l00319"></a><span class="lineno">  319</span> </div>
 </div>
-<div class="line"><a id="l00323" name="l00323"></a><span class="lineno">  323</span>    <span class="preprocessor">@property</span></div>
-<div class="foldopen" id="foldopen00324" data-start="" data-end="">
-<div class="line"><a id="l00324" name="l00324"></a><span class="lineno"><a class="line" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a3d9ef8ae55a381845e6b1098baf5d9be">  324</a></span>    <span class="keyword">def </span>fortran(self):</div>
-<div class="line"><a id="l00325" name="l00325"></a><span class="lineno">  325</span>        <span class="stringliteral">&quot;&quot;&quot;</span></div>
-<div class="line"><a id="l00326" name="l00326"></a><span class="lineno">  326</span><span class="stringliteral">        Get the FORTRAN source code representation.</span></div>
-<div class="line"><a id="l00327" name="l00327"></a><span class="lineno">  327</span><span class="stringliteral"></span> </div>
-<div class="line"><a id="l00328" name="l00328"></a><span class="lineno">  328</span><span class="stringliteral">        Returns</span></div>
-<div class="line"><a id="l00329" name="l00329"></a><span class="lineno">  329</span><span class="stringliteral">        -------</span></div>
-<div class="line"><a id="l00330" name="l00330"></a><span class="lineno">  330</span><span class="stringliteral">        str</span></div>
-<div class="line"><a id="l00331" name="l00331"></a><span class="lineno">  331</span><span class="stringliteral">            FORTRAN source code string.</span></div>
-<div class="line"><a id="l00332" name="l00332"></a><span class="lineno">  332</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
-<div class="line"><a id="l00333" name="l00333"></a><span class="lineno">  333</span>        <span class="keywordflow">return</span> tofortran(self)</div>
-<div class="line"><a id="l00334" name="l00334"></a><span class="lineno">  334</span> </div>
+<div class="line"><a id="l00320" name="l00320"></a><span class="lineno">  320</span>    <span class="preprocessor">@property</span></div>
+<div class="foldopen" id="foldopen00321" data-start="" data-end="">
+<div class="line"><a id="l00321" name="l00321"></a><span class="lineno"><a class="line" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a9944688ca4b8367fc45b15236f34fbdd">  321</a></span>    <span class="keyword">def </span>xml(self):</div>
+<div class="line"><a id="l00322" name="l00322"></a><span class="lineno">  322</span>        <span class="stringliteral">&quot;&quot;&quot;</span></div>
+<div class="line"><a id="l00323" name="l00323"></a><span class="lineno">  323</span><span class="stringliteral">        Get the XML representation of the parsed code.</span></div>
+<div class="line"><a id="l00324" name="l00324"></a><span class="lineno">  324</span><span class="stringliteral"></span> </div>
+<div class="line"><a id="l00325" name="l00325"></a><span class="lineno">  325</span><span class="stringliteral">        Returns</span></div>
+<div class="line"><a id="l00326" name="l00326"></a><span class="lineno">  326</span><span class="stringliteral">        -------</span></div>
+<div class="line"><a id="l00327" name="l00327"></a><span class="lineno">  327</span><span class="stringliteral">        str</span></div>
+<div class="line"><a id="l00328" name="l00328"></a><span class="lineno">  328</span><span class="stringliteral">            XML string representation of the FORTRAN source.</span></div>
+<div class="line"><a id="l00329" name="l00329"></a><span class="lineno">  329</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
+<div class="line"><a id="l00330" name="l00330"></a><span class="lineno">  330</span>        <span class="keywordflow">return</span> tostring(self)</div>
+<div class="line"><a id="l00331" name="l00331"></a><span class="lineno">  331</span> </div>
 </div>
-<div class="foldopen" id="foldopen00335" data-start="" data-end="">
-<div class="line"><a id="l00335" name="l00335"></a><span class="lineno"><a class="line" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a8732d4d8eb31ff40e184bb6bc8f474d7">  335</a></span>    <span class="keyword">def </span><a class="code hl_function" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a8732d4d8eb31ff40e184bb6bc8f474d7">renameUpper</a>(self):</div>
-<div class="line"><a id="l00336" name="l00336"></a><span class="lineno">  336</span>        <span class="stringliteral">&quot;&quot;&quot;</span></div>
-<div class="line"><a id="l00337" name="l00337"></a><span class="lineno">  337</span><span class="stringliteral">        Set output file extension to uppercase.</span></div>
-<div class="line"><a id="l00338" name="l00338"></a><span class="lineno">  338</span><span class="stringliteral"></span> </div>
-<div class="line"><a id="l00339" name="l00339"></a><span class="lineno">  339</span><span class="stringliteral">        Examples</span></div>
-<div class="line"><a id="l00340" name="l00340"></a><span class="lineno">  340</span><span class="stringliteral">        --------</span></div>
-<div class="line"><a id="l00341" name="l00341"></a><span class="lineno">  341</span><span class="stringliteral">        &gt;&gt;&gt; pft = PYFT(&#39;file.F90&#39;)</span></div>
-<div class="line"><a id="l00342" name="l00342"></a><span class="lineno">  342</span><span class="stringliteral">        &gt;&gt;&gt; pft.renameUpper()  # Output will be file.F90</span></div>
-<div class="line"><a id="l00343" name="l00343"></a><span class="lineno">  343</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
-<div class="line"><a id="l00344" name="l00344"></a><span class="lineno">  344</span>        self.<a class="code hl_function" href="classpyfortool_1_1pyfortool_1_1PYFT.html#adadda2836473595449d2ce499c7723cb">_rename</a>(str.upper)</div>
-<div class="line"><a id="l00345" name="l00345"></a><span class="lineno">  345</span> </div>
+<div class="line"><a id="l00332" name="l00332"></a><span class="lineno">  332</span>    <span class="preprocessor">@property</span></div>
+<div class="foldopen" id="foldopen00333" data-start="" data-end="">
+<div class="line"><a id="l00333" name="l00333"></a><span class="lineno"><a class="line" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a3d9ef8ae55a381845e6b1098baf5d9be">  333</a></span>    <span class="keyword">def </span>fortran(self):</div>
+<div class="line"><a id="l00334" name="l00334"></a><span class="lineno">  334</span>        <span class="stringliteral">&quot;&quot;&quot;</span></div>
+<div class="line"><a id="l00335" name="l00335"></a><span class="lineno">  335</span><span class="stringliteral">        Get the FORTRAN source code representation.</span></div>
+<div class="line"><a id="l00336" name="l00336"></a><span class="lineno">  336</span><span class="stringliteral"></span> </div>
+<div class="line"><a id="l00337" name="l00337"></a><span class="lineno">  337</span><span class="stringliteral">        Returns</span></div>
+<div class="line"><a id="l00338" name="l00338"></a><span class="lineno">  338</span><span class="stringliteral">        -------</span></div>
+<div class="line"><a id="l00339" name="l00339"></a><span class="lineno">  339</span><span class="stringliteral">        str</span></div>
+<div class="line"><a id="l00340" name="l00340"></a><span class="lineno">  340</span><span class="stringliteral">            FORTRAN source code string.</span></div>
+<div class="line"><a id="l00341" name="l00341"></a><span class="lineno">  341</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
+<div class="line"><a id="l00342" name="l00342"></a><span class="lineno">  342</span>        <span class="keywordflow">return</span> tofortran(self)</div>
+<div class="line"><a id="l00343" name="l00343"></a><span class="lineno">  343</span> </div>
 </div>
-<div class="foldopen" id="foldopen00346" data-start="" data-end="">
-<div class="line"><a id="l00346" name="l00346"></a><span class="lineno"><a class="line" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a2088997f490ae0b5c1e58e65de1fa6b3">  346</a></span>    <span class="keyword">def </span><a class="code hl_function" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a2088997f490ae0b5c1e58e65de1fa6b3">renameLower</a>(self):</div>
-<div class="line"><a id="l00347" name="l00347"></a><span class="lineno">  347</span>        <span class="stringliteral">&quot;&quot;&quot;</span></div>
-<div class="line"><a id="l00348" name="l00348"></a><span class="lineno">  348</span><span class="stringliteral">        Set output file extension to lowercase.</span></div>
-<div class="line"><a id="l00349" name="l00349"></a><span class="lineno">  349</span><span class="stringliteral"></span> </div>
-<div class="line"><a id="l00350" name="l00350"></a><span class="lineno">  350</span><span class="stringliteral">        Examples</span></div>
-<div class="line"><a id="l00351" name="l00351"></a><span class="lineno">  351</span><span class="stringliteral">        --------</span></div>
-<div class="line"><a id="l00352" name="l00352"></a><span class="lineno">  352</span><span class="stringliteral">        &gt;&gt;&gt; pft = PYFT(&#39;file.F90&#39;)</span></div>
-<div class="line"><a id="l00353" name="l00353"></a><span class="lineno">  353</span><span class="stringliteral">        &gt;&gt;&gt; pft.renameLower()  # Output will be file.f90</span></div>
-<div class="line"><a id="l00354" name="l00354"></a><span class="lineno">  354</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
-<div class="line"><a id="l00355" name="l00355"></a><span class="lineno">  355</span>        self.<a class="code hl_function" href="classpyfortool_1_1pyfortool_1_1PYFT.html#adadda2836473595449d2ce499c7723cb">_rename</a>(str.lower)</div>
-<div class="line"><a id="l00356" name="l00356"></a><span class="lineno">  356</span> </div>
+<div class="foldopen" id="foldopen00344" data-start="" data-end="">
+<div class="line"><a id="l00344" name="l00344"></a><span class="lineno"><a class="line" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a8732d4d8eb31ff40e184bb6bc8f474d7">  344</a></span>    <span class="keyword">def </span><a class="code hl_function" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a8732d4d8eb31ff40e184bb6bc8f474d7">renameUpper</a>(self):</div>
+<div class="line"><a id="l00345" name="l00345"></a><span class="lineno">  345</span>        <span class="stringliteral">&quot;&quot;&quot;</span></div>
+<div class="line"><a id="l00346" name="l00346"></a><span class="lineno">  346</span><span class="stringliteral">        Set output file extension to uppercase.</span></div>
+<div class="line"><a id="l00347" name="l00347"></a><span class="lineno">  347</span><span class="stringliteral"></span> </div>
+<div class="line"><a id="l00348" name="l00348"></a><span class="lineno">  348</span><span class="stringliteral">        Examples</span></div>
+<div class="line"><a id="l00349" name="l00349"></a><span class="lineno">  349</span><span class="stringliteral">        --------</span></div>
+<div class="line"><a id="l00350" name="l00350"></a><span class="lineno">  350</span><span class="stringliteral">        &gt;&gt;&gt; pft = PYFT(&#39;file.F90&#39;)</span></div>
+<div class="line"><a id="l00351" name="l00351"></a><span class="lineno">  351</span><span class="stringliteral">        &gt;&gt;&gt; pft.renameUpper()  # Output will be file.F90</span></div>
+<div class="line"><a id="l00352" name="l00352"></a><span class="lineno">  352</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
+<div class="line"><a id="l00353" name="l00353"></a><span class="lineno">  353</span>        self.<a class="code hl_function" href="classpyfortool_1_1pyfortool_1_1PYFT.html#adadda2836473595449d2ce499c7723cb">_rename</a>(str.upper)</div>
+<div class="line"><a id="l00354" name="l00354"></a><span class="lineno">  354</span> </div>
 </div>
-<div class="foldopen" id="foldopen00357" data-start="" data-end="">
-<div class="line"><a id="l00357" name="l00357"></a><span class="lineno"><a class="line" href="classpyfortool_1_1pyfortool_1_1PYFT.html#adadda2836473595449d2ce499c7723cb">  357</a></span>    <span class="keyword">def </span><a class="code hl_function" href="classpyfortool_1_1pyfortool_1_1PYFT.html#adadda2836473595449d2ce499c7723cb">_rename</a>(self, mod):</div>
-<div class="line"><a id="l00358" name="l00358"></a><span class="lineno">  358</span>        <span class="stringliteral">&quot;&quot;&quot;</span></div>
-<div class="line"><a id="l00359" name="l00359"></a><span class="lineno">  359</span><span class="stringliteral">        Apply a transformation function to the file extension.</span></div>
-<div class="line"><a id="l00360" name="l00360"></a><span class="lineno">  360</span><span class="stringliteral"></span> </div>
-<div class="line"><a id="l00361" name="l00361"></a><span class="lineno">  361</span><span class="stringliteral">        Parameters</span></div>
-<div class="line"><a id="l00362" name="l00362"></a><span class="lineno">  362</span><span class="stringliteral">        ----------</span></div>
-<div class="line"><a id="l00363" name="l00363"></a><span class="lineno">  363</span><span class="stringliteral">        mod : callable</span></div>
-<div class="line"><a id="l00364" name="l00364"></a><span class="lineno">  364</span><span class="stringliteral">            Function to apply to file extension (e.g., str.upper, str.lower).</span></div>
-<div class="line"><a id="l00365" name="l00365"></a><span class="lineno">  365</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
-<div class="line"><a id="l00366" name="l00366"></a><span class="lineno">  366</span>        <span class="keyword">def </span>_transExt(path, mod):</div>
-<div class="line"><a id="l00367" name="l00367"></a><span class="lineno">  367</span>            filename, ext = os.path.splitext(path)</div>
-<div class="line"><a id="l00368" name="l00368"></a><span class="lineno">  368</span>            <span class="keywordflow">return</span> filename + mod(ext)</div>
-<div class="line"><a id="l00369" name="l00369"></a><span class="lineno">  369</span>        <span class="keywordflow">if</span> self.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a65d161f90d621714fd91cc2d6910e228">_output</a> <span class="keywordflow">is</span> <span class="keywordtype">None</span>:</div>
-<div class="line"><a id="l00370" name="l00370"></a><span class="lineno">  370</span>            self.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#afdbf42680c28ab042f60e6269f136680">_filename</a> = _transExt(self.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#afdbf42680c28ab042f60e6269f136680">_filename</a>, mod)</div>
-<div class="line"><a id="l00371" name="l00371"></a><span class="lineno">  371</span>        <span class="keywordflow">else</span>:</div>
-<div class="line"><a id="l00372" name="l00372"></a><span class="lineno">  372</span>            self.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a65d161f90d621714fd91cc2d6910e228">_output</a> = _transExt(self.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a65d161f90d621714fd91cc2d6910e228">_output</a>, mod)</div>
-<div class="line"><a id="l00373" name="l00373"></a><span class="lineno">  373</span> </div>
+<div class="foldopen" id="foldopen00355" data-start="" data-end="">
+<div class="line"><a id="l00355" name="l00355"></a><span class="lineno"><a class="line" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a2088997f490ae0b5c1e58e65de1fa6b3">  355</a></span>    <span class="keyword">def </span><a class="code hl_function" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a2088997f490ae0b5c1e58e65de1fa6b3">renameLower</a>(self):</div>
+<div class="line"><a id="l00356" name="l00356"></a><span class="lineno">  356</span>        <span class="stringliteral">&quot;&quot;&quot;</span></div>
+<div class="line"><a id="l00357" name="l00357"></a><span class="lineno">  357</span><span class="stringliteral">        Set output file extension to lowercase.</span></div>
+<div class="line"><a id="l00358" name="l00358"></a><span class="lineno">  358</span><span class="stringliteral"></span> </div>
+<div class="line"><a id="l00359" name="l00359"></a><span class="lineno">  359</span><span class="stringliteral">        Examples</span></div>
+<div class="line"><a id="l00360" name="l00360"></a><span class="lineno">  360</span><span class="stringliteral">        --------</span></div>
+<div class="line"><a id="l00361" name="l00361"></a><span class="lineno">  361</span><span class="stringliteral">        &gt;&gt;&gt; pft = PYFT(&#39;file.F90&#39;)</span></div>
+<div class="line"><a id="l00362" name="l00362"></a><span class="lineno">  362</span><span class="stringliteral">        &gt;&gt;&gt; pft.renameLower()  # Output will be file.f90</span></div>
+<div class="line"><a id="l00363" name="l00363"></a><span class="lineno">  363</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
+<div class="line"><a id="l00364" name="l00364"></a><span class="lineno">  364</span>        self.<a class="code hl_function" href="classpyfortool_1_1pyfortool_1_1PYFT.html#adadda2836473595449d2ce499c7723cb">_rename</a>(str.lower)</div>
+<div class="line"><a id="l00365" name="l00365"></a><span class="lineno">  365</span> </div>
 </div>
-<div class="foldopen" id="foldopen00374" data-start="" data-end="">
-<div class="line"><a id="l00374" name="l00374"></a><span class="lineno"><a class="line" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a1fd1cfe46d42dc7eec8aa430e62001ad">  374</a></span>    <span class="keyword">def </span><a class="code hl_function" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a1fd1cfe46d42dc7eec8aa430e62001ad">write</a>(self):</div>
-<div class="line"><a id="l00375" name="l00375"></a><span class="lineno">  375</span>        <span class="stringliteral">&quot;&quot;&quot;</span></div>
-<div class="line"><a id="l00376" name="l00376"></a><span class="lineno">  376</span><span class="stringliteral">        Write the transformed FORTRAN source to file.</span></div>
-<div class="line"><a id="l00377" name="l00377"></a><span class="lineno">  377</span><span class="stringliteral"></span> </div>
-<div class="line"><a id="l00378" name="l00378"></a><span class="lineno">  378</span><span class="stringliteral">        Writes the current state of the code tree as FORTRAN source</span></div>
-<div class="line"><a id="l00379" name="l00379"></a><span class="lineno">  379</span><span class="stringliteral">        to the output file (or overwrites input if no output specified).</span></div>
-<div class="line"><a id="l00380" name="l00380"></a><span class="lineno">  380</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
-<div class="line"><a id="l00381" name="l00381"></a><span class="lineno">  381</span>        <span class="keyword">with</span> open(self.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#afdbf42680c28ab042f60e6269f136680">_filename</a> <span class="keywordflow">if</span> self.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a65d161f90d621714fd91cc2d6910e228">_output</a> <span class="keywordflow">is</span> <span class="keywordtype">None</span> <span class="keywordflow">else</span> self.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a65d161f90d621714fd91cc2d6910e228">_output</a>, <span class="stringliteral">&#39;w&#39;</span>,</div>
-<div class="line"><a id="l00382" name="l00382"></a><span class="lineno">  382</span>                  encoding=<span class="stringliteral">&#39;utf-8&#39;</span>) <span class="keyword">as</span> fo:</div>
-<div class="line"><a id="l00383" name="l00383"></a><span class="lineno">  383</span>            fo.write(self.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#ab3aa80e6d4ba749ba38177377458729b">fortran</a><a class="code hl_function" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a3d9ef8ae55a381845e6b1098baf5d9be">fortran</a>)</div>
-<div class="line"><a id="l00384" name="l00384"></a><span class="lineno">  384</span>            fo.flush()  <span class="comment"># ensuring all the existing buffers are written</span></div>
-<div class="line"><a id="l00385" name="l00385"></a><span class="lineno">  385</span>            os.fsync(fo.fileno())  <span class="comment"># forcefully writing to the file</span></div>
-<div class="line"><a id="l00386" name="l00386"></a><span class="lineno">  386</span> </div>
-<div class="line"><a id="l00387" name="l00387"></a><span class="lineno">  387</span>        <span class="keywordflow">if</span> self.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a65d161f90d621714fd91cc2d6910e228">_output</a> <span class="keywordflow">is</span> <span class="keywordtype">None</span> <span class="keywordflow">and</span> self.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#afdbf42680c28ab042f60e6269f136680">_filename</a> != self.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a86741ecf3ce8bef4fbe24cd0f74aae00">_originalName</a>:</div>
-<div class="line"><a id="l00388" name="l00388"></a><span class="lineno">  388</span>            <span class="comment"># We must perform an in-place update of the file, but the output file</span></div>
-<div class="line"><a id="l00389" name="l00389"></a><span class="lineno">  389</span>            <span class="comment"># name has been updated. Then, we must remove the original file.</span></div>
-<div class="line"><a id="l00390" name="l00390"></a><span class="lineno">  390</span>            os.unlink(self.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a86741ecf3ce8bef4fbe24cd0f74aae00">_originalName</a>)</div>
-<div class="line"><a id="l00391" name="l00391"></a><span class="lineno">  391</span> </div>
+<div class="foldopen" id="foldopen00366" data-start="" data-end="">
+<div class="line"><a id="l00366" name="l00366"></a><span class="lineno"><a class="line" href="classpyfortool_1_1pyfortool_1_1PYFT.html#adadda2836473595449d2ce499c7723cb">  366</a></span>    <span class="keyword">def </span><a class="code hl_function" href="classpyfortool_1_1pyfortool_1_1PYFT.html#adadda2836473595449d2ce499c7723cb">_rename</a>(self, mod):</div>
+<div class="line"><a id="l00367" name="l00367"></a><span class="lineno">  367</span>        <span class="stringliteral">&quot;&quot;&quot;</span></div>
+<div class="line"><a id="l00368" name="l00368"></a><span class="lineno">  368</span><span class="stringliteral">        Apply a transformation function to the file extension.</span></div>
+<div class="line"><a id="l00369" name="l00369"></a><span class="lineno">  369</span><span class="stringliteral"></span> </div>
+<div class="line"><a id="l00370" name="l00370"></a><span class="lineno">  370</span><span class="stringliteral">        Parameters</span></div>
+<div class="line"><a id="l00371" name="l00371"></a><span class="lineno">  371</span><span class="stringliteral">        ----------</span></div>
+<div class="line"><a id="l00372" name="l00372"></a><span class="lineno">  372</span><span class="stringliteral">        mod : callable</span></div>
+<div class="line"><a id="l00373" name="l00373"></a><span class="lineno">  373</span><span class="stringliteral">            Function to apply to file extension (e.g., str.upper, str.lower).</span></div>
+<div class="line"><a id="l00374" name="l00374"></a><span class="lineno">  374</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
+<div class="line"><a id="l00375" name="l00375"></a><span class="lineno">  375</span>        <span class="keyword">def </span>_transExt(path, mod):</div>
+<div class="line"><a id="l00376" name="l00376"></a><span class="lineno">  376</span>            filename, ext = os.path.splitext(path)</div>
+<div class="line"><a id="l00377" name="l00377"></a><span class="lineno">  377</span>            <span class="keywordflow">return</span> filename + mod(ext)</div>
+<div class="line"><a id="l00378" name="l00378"></a><span class="lineno">  378</span>        <span class="keywordflow">if</span> self.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a65d161f90d621714fd91cc2d6910e228">_output</a> <span class="keywordflow">is</span> <span class="keywordtype">None</span>:</div>
+<div class="line"><a id="l00379" name="l00379"></a><span class="lineno">  379</span>            self.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#afdbf42680c28ab042f60e6269f136680">_filename</a> = _transExt(self.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#afdbf42680c28ab042f60e6269f136680">_filename</a>, mod)</div>
+<div class="line"><a id="l00380" name="l00380"></a><span class="lineno">  380</span>        <span class="keywordflow">else</span>:</div>
+<div class="line"><a id="l00381" name="l00381"></a><span class="lineno">  381</span>            self.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a65d161f90d621714fd91cc2d6910e228">_output</a> = _transExt(self.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a65d161f90d621714fd91cc2d6910e228">_output</a>, mod)</div>
+<div class="line"><a id="l00382" name="l00382"></a><span class="lineno">  382</span> </div>
 </div>
-<div class="foldopen" id="foldopen00392" data-start="" data-end="">
-<div class="line"><a id="l00392" name="l00392"></a><span class="lineno"><a class="line" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a3ed78c75f6a74792cc0c77c0cb97c184">  392</a></span>    <span class="keyword">def </span><a class="code hl_function" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a3ed78c75f6a74792cc0c77c0cb97c184">writeXML</a>(self, filename):</div>
-<div class="line"><a id="l00393" name="l00393"></a><span class="lineno">  393</span>        <span class="stringliteral">&quot;&quot;&quot;</span></div>
-<div class="line"><a id="l00394" name="l00394"></a><span class="lineno">  394</span><span class="stringliteral">        Write the internal XML representation to a file.</span></div>
-<div class="line"><a id="l00395" name="l00395"></a><span class="lineno">  395</span><span class="stringliteral"></span> </div>
-<div class="line"><a id="l00396" name="l00396"></a><span class="lineno">  396</span><span class="stringliteral">        Parameters</span></div>
-<div class="line"><a id="l00397" name="l00397"></a><span class="lineno">  397</span><span class="stringliteral">        ----------</span></div>
-<div class="line"><a id="l00398" name="l00398"></a><span class="lineno">  398</span><span class="stringliteral">        filename : str</span></div>
-<div class="line"><a id="l00399" name="l00399"></a><span class="lineno">  399</span><span class="stringliteral">            Path for the output XML file.</span></div>
-<div class="line"><a id="l00400" name="l00400"></a><span class="lineno">  400</span><span class="stringliteral"></span> </div>
-<div class="line"><a id="l00401" name="l00401"></a><span class="lineno">  401</span><span class="stringliteral">        Examples</span></div>
-<div class="line"><a id="l00402" name="l00402"></a><span class="lineno">  402</span><span class="stringliteral">        --------</span></div>
-<div class="line"><a id="l00403" name="l00403"></a><span class="lineno">  403</span><span class="stringliteral">        &gt;&gt;&gt; pft = PYFT(&#39;input.F90&#39;)</span></div>
-<div class="line"><a id="l00404" name="l00404"></a><span class="lineno">  404</span><span class="stringliteral">        &gt;&gt;&gt; pft.writeXML(&#39;output.xml&#39;)</span></div>
-<div class="line"><a id="l00405" name="l00405"></a><span class="lineno">  405</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
-<div class="line"><a id="l00406" name="l00406"></a><span class="lineno">  406</span>        <span class="keyword">with</span> open(filename, <span class="stringliteral">&#39;w&#39;</span>, encoding=<span class="stringliteral">&#39;utf-8&#39;</span>) <span class="keyword">as</span> fo:</div>
-<div class="line"><a id="l00407" name="l00407"></a><span class="lineno">  407</span>            fo.write(self.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#afb7743b699ea44ee8ad4115bf8b65820">xml</a><a class="code hl_function" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a9944688ca4b8367fc45b15236f34fbdd">xml</a>)</div>
+<div class="foldopen" id="foldopen00383" data-start="" data-end="">
+<div class="line"><a id="l00383" name="l00383"></a><span class="lineno"><a class="line" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a1fd1cfe46d42dc7eec8aa430e62001ad">  383</a></span>    <span class="keyword">def </span><a class="code hl_function" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a1fd1cfe46d42dc7eec8aa430e62001ad">write</a>(self):</div>
+<div class="line"><a id="l00384" name="l00384"></a><span class="lineno">  384</span>        <span class="stringliteral">&quot;&quot;&quot;</span></div>
+<div class="line"><a id="l00385" name="l00385"></a><span class="lineno">  385</span><span class="stringliteral">        Write the transformed FORTRAN source to file.</span></div>
+<div class="line"><a id="l00386" name="l00386"></a><span class="lineno">  386</span><span class="stringliteral"></span> </div>
+<div class="line"><a id="l00387" name="l00387"></a><span class="lineno">  387</span><span class="stringliteral">        Writes the current state of the code tree as FORTRAN source</span></div>
+<div class="line"><a id="l00388" name="l00388"></a><span class="lineno">  388</span><span class="stringliteral">        to the output file (or overwrites input if no output specified).</span></div>
+<div class="line"><a id="l00389" name="l00389"></a><span class="lineno">  389</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
+<div class="line"><a id="l00390" name="l00390"></a><span class="lineno">  390</span>        <span class="keyword">with</span> open(self.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#afdbf42680c28ab042f60e6269f136680">_filename</a> <span class="keywordflow">if</span> self.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a65d161f90d621714fd91cc2d6910e228">_output</a> <span class="keywordflow">is</span> <span class="keywordtype">None</span> <span class="keywordflow">else</span> self.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a65d161f90d621714fd91cc2d6910e228">_output</a>, <span class="stringliteral">&#39;w&#39;</span>,</div>
+<div class="line"><a id="l00391" name="l00391"></a><span class="lineno">  391</span>                  encoding=<span class="stringliteral">&#39;utf-8&#39;</span>) <span class="keyword">as</span> fo:</div>
+<div class="line"><a id="l00392" name="l00392"></a><span class="lineno">  392</span>            fo.write(self.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#ab3aa80e6d4ba749ba38177377458729b">fortran</a><a class="code hl_function" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a3d9ef8ae55a381845e6b1098baf5d9be">fortran</a>)</div>
+<div class="line"><a id="l00393" name="l00393"></a><span class="lineno">  393</span>            fo.flush()  <span class="comment"># ensuring all the existing buffers are written</span></div>
+<div class="line"><a id="l00394" name="l00394"></a><span class="lineno">  394</span>            os.fsync(fo.fileno())  <span class="comment"># forcefully writing to the file</span></div>
+<div class="line"><a id="l00395" name="l00395"></a><span class="lineno">  395</span> </div>
+<div class="line"><a id="l00396" name="l00396"></a><span class="lineno">  396</span>        <span class="keywordflow">if</span> self.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a65d161f90d621714fd91cc2d6910e228">_output</a> <span class="keywordflow">is</span> <span class="keywordtype">None</span> <span class="keywordflow">and</span> self.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#afdbf42680c28ab042f60e6269f136680">_filename</a> != self.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a86741ecf3ce8bef4fbe24cd0f74aae00">_originalName</a>:</div>
+<div class="line"><a id="l00397" name="l00397"></a><span class="lineno">  397</span>            <span class="comment"># We must perform an in-place update of the file, but the output file</span></div>
+<div class="line"><a id="l00398" name="l00398"></a><span class="lineno">  398</span>            <span class="comment"># name has been updated. Then, we must remove the original file.</span></div>
+<div class="line"><a id="l00399" name="l00399"></a><span class="lineno">  399</span>            os.unlink(self.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a86741ecf3ce8bef4fbe24cd0f74aae00">_originalName</a>)</div>
+<div class="line"><a id="l00400" name="l00400"></a><span class="lineno">  400</span> </div>
+</div>
+<div class="foldopen" id="foldopen00401" data-start="" data-end="">
+<div class="line"><a id="l00401" name="l00401"></a><span class="lineno"><a class="line" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a3ed78c75f6a74792cc0c77c0cb97c184">  401</a></span>    <span class="keyword">def </span><a class="code hl_function" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a3ed78c75f6a74792cc0c77c0cb97c184">writeXML</a>(self, filename):</div>
+<div class="line"><a id="l00402" name="l00402"></a><span class="lineno">  402</span>        <span class="stringliteral">&quot;&quot;&quot;</span></div>
+<div class="line"><a id="l00403" name="l00403"></a><span class="lineno">  403</span><span class="stringliteral">        Write the internal XML representation to a file.</span></div>
+<div class="line"><a id="l00404" name="l00404"></a><span class="lineno">  404</span><span class="stringliteral"></span> </div>
+<div class="line"><a id="l00405" name="l00405"></a><span class="lineno">  405</span><span class="stringliteral">        Parameters</span></div>
+<div class="line"><a id="l00406" name="l00406"></a><span class="lineno">  406</span><span class="stringliteral">        ----------</span></div>
+<div class="line"><a id="l00407" name="l00407"></a><span class="lineno">  407</span><span class="stringliteral">        filename : str</span></div>
+<div class="line"><a id="l00408" name="l00408"></a><span class="lineno">  408</span><span class="stringliteral">            Path for the output XML file.</span></div>
+<div class="line"><a id="l00409" name="l00409"></a><span class="lineno">  409</span><span class="stringliteral"></span> </div>
+<div class="line"><a id="l00410" name="l00410"></a><span class="lineno">  410</span><span class="stringliteral">        Examples</span></div>
+<div class="line"><a id="l00411" name="l00411"></a><span class="lineno">  411</span><span class="stringliteral">        --------</span></div>
+<div class="line"><a id="l00412" name="l00412"></a><span class="lineno">  412</span><span class="stringliteral">        &gt;&gt;&gt; pft = PYFT(&#39;input.F90&#39;)</span></div>
+<div class="line"><a id="l00413" name="l00413"></a><span class="lineno">  413</span><span class="stringliteral">        &gt;&gt;&gt; pft.writeXML(&#39;output.xml&#39;)</span></div>
+<div class="line"><a id="l00414" name="l00414"></a><span class="lineno">  414</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
+<div class="line"><a id="l00415" name="l00415"></a><span class="lineno">  415</span>        <span class="keyword">with</span> open(filename, <span class="stringliteral">&#39;w&#39;</span>, encoding=<span class="stringliteral">&#39;utf-8&#39;</span>) <span class="keyword">as</span> fo:</div>
+<div class="line"><a id="l00416" name="l00416"></a><span class="lineno">  416</span>            fo.write(self.<a class="code hl_variable" href="classpyfortool_1_1pyfortool_1_1PYFT.html#afb7743b699ea44ee8ad4115bf8b65820">xml</a><a class="code hl_function" href="classpyfortool_1_1pyfortool_1_1PYFT.html#a9944688ca4b8367fc45b15236f34fbdd">xml</a>)</div>
 </div>
 </div>
 <div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html">pyfortool.pyfortool.PYFT</a></div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00113">pyfortool.py:113</a></div></div>
 <div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_a13462d6be601322064e52d746eb4aa09"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#a13462d6be601322064e52d746eb4aa09">pyfortool.pyfortool.PYFT.SHARED_TREE</a></div><div class="ttdeci">SHARED_TREE</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00146">pyfortool.py:146</a></div></div>
 <div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_a15c4ccefd44b4eab64561cc9bfb3bdf6"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#a15c4ccefd44b4eab64561cc9bfb3bdf6">pyfortool.pyfortool.PYFT.NO_PARALLEL_LOCK</a></div><div class="ttdeci">NO_PARALLEL_LOCK</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00147">pyfortool.py:147</a></div></div>
-<div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_a1fd1cfe46d42dc7eec8aa430e62001ad"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#a1fd1cfe46d42dc7eec8aa430e62001ad">pyfortool.pyfortool.PYFT.write</a></div><div class="ttdeci">write(self)</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00374">pyfortool.py:374</a></div></div>
-<div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_a2088997f490ae0b5c1e58e65de1fa6b3"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#a2088997f490ae0b5c1e58e65de1fa6b3">pyfortool.pyfortool.PYFT.renameLower</a></div><div class="ttdeci">renameLower(self)</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00346">pyfortool.py:346</a></div></div>
-<div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_a301483ba888c26661c8f023085312d70"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#a301483ba888c26661c8f023085312d70">pyfortool.pyfortool.PYFT.unlockFile</a></div><div class="ttdeci">unlockFile(cls, filename, silence=False)</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00263">pyfortool.py:263</a></div></div>
+<div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_a1fd1cfe46d42dc7eec8aa430e62001ad"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#a1fd1cfe46d42dc7eec8aa430e62001ad">pyfortool.pyfortool.PYFT.write</a></div><div class="ttdeci">write(self)</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00383">pyfortool.py:383</a></div></div>
+<div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_a2088997f490ae0b5c1e58e65de1fa6b3"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#a2088997f490ae0b5c1e58e65de1fa6b3">pyfortool.pyfortool.PYFT.renameLower</a></div><div class="ttdeci">renameLower(self)</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00355">pyfortool.py:355</a></div></div>
+<div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_a301483ba888c26661c8f023085312d70"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#a301483ba888c26661c8f023085312d70">pyfortool.pyfortool.PYFT.unlockFile</a></div><div class="ttdeci">unlockFile(cls, filename, silence=False)</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00272">pyfortool.py:272</a></div></div>
 <div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_a3b51adf38a61b34fd676a9a2b7982dbd"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#a3b51adf38a61b34fd676a9a2b7982dbd">pyfortool.pyfortool.PYFT._parserOptions</a></div><div class="ttdeci">_parserOptions</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00199">pyfortool.py:199</a></div></div>
-<div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_a3d9ef8ae55a381845e6b1098baf5d9be"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#a3d9ef8ae55a381845e6b1098baf5d9be">pyfortool.pyfortool.PYFT.fortran</a></div><div class="ttdeci">fortran(self)</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00324">pyfortool.py:324</a></div></div>
-<div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_a3ed78c75f6a74792cc0c77c0cb97c184"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#a3ed78c75f6a74792cc0c77c0cb97c184">pyfortool.pyfortool.PYFT.writeXML</a></div><div class="ttdeci">writeXML(self, filename)</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00392">pyfortool.py:392</a></div></div>
-<div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_a43beca194bfd5f566f811e8638b09da1"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#a43beca194bfd5f566f811e8638b09da1">pyfortool.pyfortool.PYFT.lockFile</a></div><div class="ttdeci">lockFile(cls, filename)</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00247">pyfortool.py:247</a></div></div>
+<div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_a3d9ef8ae55a381845e6b1098baf5d9be"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#a3d9ef8ae55a381845e6b1098baf5d9be">pyfortool.pyfortool.PYFT.fortran</a></div><div class="ttdeci">fortran(self)</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00333">pyfortool.py:333</a></div></div>
+<div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_a3ed78c75f6a74792cc0c77c0cb97c184"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#a3ed78c75f6a74792cc0c77c0cb97c184">pyfortool.pyfortool.PYFT.writeXML</a></div><div class="ttdeci">writeXML(self, filename)</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00401">pyfortool.py:401</a></div></div>
+<div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_a43beca194bfd5f566f811e8638b09da1"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#a43beca194bfd5f566f811e8638b09da1">pyfortool.pyfortool.PYFT.lockFile</a></div><div class="ttdeci">lockFile(cls, filename)</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00256">pyfortool.py:256</a></div></div>
 <div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_a5b383f6ab00f362f4a99842502342fe8"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#a5b383f6ab00f362f4a99842502342fe8">pyfortool.pyfortool.PYFT.DEFAULT_FXTRAN_OPTIONS</a></div><div class="ttdeci">list DEFAULT_FXTRAN_OPTIONS</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00144">pyfortool.py:144</a></div></div>
 <div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_a5d9d42ef91312ab24d837825f7e779ec"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#a5d9d42ef91312ab24d837825f7e779ec">pyfortool.pyfortool.PYFT.MANDATORY_FXTRAN_OPTIONS</a></div><div class="ttdeci">list MANDATORY_FXTRAN_OPTIONS</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00145">pyfortool.py:145</a></div></div>
 <div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_a65d161f90d621714fd91cc2d6910e228"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#a65d161f90d621714fd91cc2d6910e228">pyfortool.pyfortool.PYFT._output</a></div><div class="ttdeci">_output</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00193">pyfortool.py:193</a></div></div>
-<div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_a6e5b256af3aa7a7f96c78d28afc5eac1"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#a6e5b256af3aa7a7f96c78d28afc5eac1">pyfortool.pyfortool.PYFT.__enter__</a></div><div class="ttdeci">__enter__(self)</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00284">pyfortool.py:284</a></div></div>
+<div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_a6e5b256af3aa7a7f96c78d28afc5eac1"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#a6e5b256af3aa7a7f96c78d28afc5eac1">pyfortool.pyfortool.PYFT.__enter__</a></div><div class="ttdeci">__enter__(self)</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00293">pyfortool.py:293</a></div></div>
 <div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_a86741ecf3ce8bef4fbe24cd0f74aae00"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#a86741ecf3ce8bef4fbe24cd0f74aae00">pyfortool.pyfortool.PYFT._originalName</a></div><div class="ttdeci">_originalName</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00191">pyfortool.py:191</a></div></div>
-<div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_a8732d4d8eb31ff40e184bb6bc8f474d7"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#a8732d4d8eb31ff40e184bb6bc8f474d7">pyfortool.pyfortool.PYFT.renameUpper</a></div><div class="ttdeci">renameUpper(self)</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00335">pyfortool.py:335</a></div></div>
-<div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_a953882ff5655f865cafab96e91277550"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#a953882ff5655f865cafab96e91277550">pyfortool.pyfortool.PYFT.__exit__</a></div><div class="ttdeci">__exit__(self, excType, excVal, excTb)</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00295">pyfortool.py:295</a></div></div>
-<div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_a9944688ca4b8367fc45b15236f34fbdd"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#a9944688ca4b8367fc45b15236f34fbdd">pyfortool.pyfortool.PYFT.xml</a></div><div class="ttdeci">xml(self)</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00312">pyfortool.py:312</a></div></div>
-<div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_a9c7a896039ce417f52e7700530421033"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#a9c7a896039ce417f52e7700530421033">pyfortool.pyfortool.PYFT.close</a></div><div class="ttdeci">close(self)</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00301">pyfortool.py:301</a></div></div>
+<div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_a8732d4d8eb31ff40e184bb6bc8f474d7"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#a8732d4d8eb31ff40e184bb6bc8f474d7">pyfortool.pyfortool.PYFT.renameUpper</a></div><div class="ttdeci">renameUpper(self)</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00344">pyfortool.py:344</a></div></div>
+<div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_a953882ff5655f865cafab96e91277550"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#a953882ff5655f865cafab96e91277550">pyfortool.pyfortool.PYFT.__exit__</a></div><div class="ttdeci">__exit__(self, excType, excVal, excTb)</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00304">pyfortool.py:304</a></div></div>
+<div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_a9944688ca4b8367fc45b15236f34fbdd"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#a9944688ca4b8367fc45b15236f34fbdd">pyfortool.pyfortool.PYFT.xml</a></div><div class="ttdeci">xml(self)</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00321">pyfortool.py:321</a></div></div>
+<div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_a9c7a896039ce417f52e7700530421033"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#a9c7a896039ce417f52e7700530421033">pyfortool.pyfortool.PYFT.close</a></div><div class="ttdeci">close(self)</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00310">pyfortool.py:310</a></div></div>
 <div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_aa578df68bf1eee32ccf5dc8df37af937"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#aa578df68bf1eee32ccf5dc8df37af937">pyfortool.pyfortool.PYFT.setParallel</a></div><div class="ttdeci">setParallel(cls, tree, clsLock=None, clsRLock=None)</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00215">pyfortool.py:215</a></div></div>
-<div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_ab3aa80e6d4ba749ba38177377458729b"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#ab3aa80e6d4ba749ba38177377458729b">pyfortool.pyfortool.PYFT.fortran</a></div><div class="ttdeci">fortran</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00383">pyfortool.py:383</a></div></div>
+<div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_ab3aa80e6d4ba749ba38177377458729b"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#ab3aa80e6d4ba749ba38177377458729b">pyfortool.pyfortool.PYFT.fortran</a></div><div class="ttdeci">fortran</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00392">pyfortool.py:392</a></div></div>
 <div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_acb8cbd8590edfe904158b95ee2008137"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#acb8cbd8590edfe904158b95ee2008137">pyfortool.pyfortool.PYFT.PARALLEL_FILE_LOCKS</a></div><div class="ttdeci">PARALLEL_FILE_LOCKS</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00148">pyfortool.py:148</a></div></div>
-<div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_adadda2836473595449d2ce499c7723cb"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#adadda2836473595449d2ce499c7723cb">pyfortool.pyfortool.PYFT._rename</a></div><div class="ttdeci">_rename(self, mod)</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00357">pyfortool.py:357</a></div></div>
-<div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_afb7743b699ea44ee8ad4115bf8b65820"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#afb7743b699ea44ee8ad4115bf8b65820">pyfortool.pyfortool.PYFT.xml</a></div><div class="ttdeci">xml</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00407">pyfortool.py:407</a></div></div>
+<div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_adadda2836473595449d2ce499c7723cb"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#adadda2836473595449d2ce499c7723cb">pyfortool.pyfortool.PYFT._rename</a></div><div class="ttdeci">_rename(self, mod)</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00366">pyfortool.py:366</a></div></div>
+<div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_ae4195d9d1a0fb0add38743a6780a1e17"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#ae4195d9d1a0fb0add38743a6780a1e17">pyfortool.pyfortool.PYFT.unsetParallel</a></div><div class="ttdeci">unsetParallel(cls)</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00247">pyfortool.py:247</a></div></div>
+<div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_afb7743b699ea44ee8ad4115bf8b65820"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#afb7743b699ea44ee8ad4115bf8b65820">pyfortool.pyfortool.PYFT.xml</a></div><div class="ttdeci">xml</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00416">pyfortool.py:416</a></div></div>
 <div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_afdbf42680c28ab042f60e6269f136680"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#afdbf42680c28ab042f60e6269f136680">pyfortool.pyfortool.PYFT._filename</a></div><div class="ttdeci">_filename</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00190">pyfortool.py:190</a></div></div>
 <div class="ttc" id="aclasspyfortool_1_1pyfortool_1_1PYFT_html_afec8d7c7186e688bff9a60cbdb12fa63"><div class="ttname"><a href="classpyfortool_1_1pyfortool_1_1PYFT.html#afec8d7c7186e688bff9a60cbdb12fa63">pyfortool.pyfortool.PYFT.__init__</a></div><div class="ttdeci">__init__(self, filename, output=None, parserOptions=None, verbosity=None, wrapH=False, tree=None, enableCache=False)</div><div class="ttdef"><b>Definition</b> <a href="pyfortool_8py_source.html#l00151">pyfortool.py:152</a></div></div>
 <div class="ttc" id="aclasspyfortool_1_1scope_1_1ElementView_html_a2e88a77bc5baae0be275ac73d816d2c0"><div class="ttname"><a href="classpyfortool_1_1scope_1_1ElementView.html#a2e88a77bc5baae0be275ac73d816d2c0">pyfortool.scope.ElementView.append</a></div><div class="ttdeci">append(self, *args, **kwargs)</div><div class="ttdef"><b>Definition</b> <a href="scope_8py_source.html#l00172">scope.py:172</a></div></div>
