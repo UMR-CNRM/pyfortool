@@ -5,12 +5,13 @@ Provides the Cosmetics class for modifying FORTRAN code appearance including
 case, indentation, spacing, comments, and line continuation.
 
 Key Features
-------------
+-----------
 - Case conversion (upper/lower FORTRAN keywords)
 - Indentation fixing with directive exclusion
 - Comment removal with directive preservation
 - Whitespace normalization
 - Line continuation alignment
+- USE statement ordering and grouping
 
 Classes
 -------
@@ -27,8 +28,10 @@ Examples
 """
 
 import re
-from pyfortool.util import debugDecor, nonCode, tag
+from pyfortool.util import debugDecor, nonCode, tag, n2name
 from pyfortool.expressions import createElem
+from pyfortool.variables import updateVarList
+from pyfortool.tree import updateTree
 from pyfortool import NAMESPACE
 
 
@@ -1007,3 +1010,119 @@ class Cosmetics():
                                       'end-module-stmt'):
                 # CONTAINS bloc is empty
                 par.remove(contains)
+
+    @debugDecor
+    def formatModuleUse(self, upper=True):
+        """
+        Order USE declarations by module type and alphabetically.
+
+        Groups USE statements by module type prefix and sorts alphabetically
+        within each group. The group order is: MODD_, MODE_, MODI_, MODN_,
+        followed by any other modules sorted alphabetically.
+        Module names are optionally converted to uppercase.
+        Trailing comments after USE statements are preserved.
+
+        Parameters
+        ----------
+        upper : bool, optional
+            If True, convert module names to uppercase. Default is True.
+
+        Returns
+        -------
+        self
+            Returns self for method chaining.
+
+        Examples
+        --------
+        >>> pft = PYFT('input.F90')
+        >>> pft.formatModuleUse()
+        >>> pft.formatModuleUse(upper=False)
+
+        Notes
+        -----
+        Before:
+            USE modi_foo
+            USE modd_bar
+            USE mode_baz
+
+        After (upper=True):
+            USE MODD_BAR
+            USE MODE_BAZ
+            USE MODI_FOO
+        """
+        SORTED_GROUPS = ('MODD', 'MODE', 'MODI', 'MODN')
+
+        for progUnit in self.findall('.//{*}program-unit'):
+            children = list(progUnit)
+            useGroups = []
+            i = 0
+            while i < len(children):
+                child = children[i]
+                if tag(child) == 'use-stmt':
+                    comments = []
+                    i += 1
+                    while i < len(children) and tag(children[i]) == 'C':
+                        comments.append(children[i])
+                        i += 1
+                    useGroups.append([child, comments])
+                else:
+                    i += 1
+
+            if not useGroups:
+                continue
+
+            def _getModuleName(stmt):
+                n = stmt.find('.//{*}module-N/{*}N/{*}n')
+                return n.text if n is not None and n.text is not None else ''
+
+            groups = {prefix: [] for prefix in SORTED_GROUPS}
+            other = []
+
+            for stmt, comments in useGroups:
+                name = _getModuleName(stmt).upper()
+                categorized = False
+                for prefix in SORTED_GROUPS:
+                    if name.startswith(prefix + '_'):
+                        groups[prefix].append([stmt, comments])
+                        categorized = True
+                        break
+                if not categorized:
+                    other.append([stmt, comments])
+
+            for prefix in SORTED_GROUPS:
+                groups[prefix].sort(key=lambda g: _getModuleName(g[0]).upper())
+            other.sort(key=lambda g: _getModuleName(g[0]).upper())
+
+            ordered = []
+            for prefix in SORTED_GROUPS:
+                ordered.extend(groups[prefix])
+            ordered.extend(other)
+
+            firstIdx = None
+            for i, child in enumerate(progUnit):
+                if tag(child) == 'use-stmt':
+                    firstIdx = i
+                    break
+
+            if firstIdx is not None:
+                for stmt, comments in useGroups:
+                    progUnit.remove(stmt)
+                    for c in comments:
+                        progUnit.remove(c)
+                idx = firstIdx
+                for stmt, comments in ordered:
+                    progUnit.insert(idx, stmt)
+                    idx += 1
+                    for c in comments:
+                        progUnit.insert(idx, c)
+                        idx += 1
+
+            if upper:
+                for stmt, _ in ordered:
+                    modN = stmt.find('.//{*}module-N')
+                    modNNs = set(modN.findall('.//{*}n')) if modN is not None else set()
+                    for n in stmt.findall('.//{*}n'):
+                        if n not in modNNs and n.text:
+                            n.text = n.text.upper()
+
+        return self
