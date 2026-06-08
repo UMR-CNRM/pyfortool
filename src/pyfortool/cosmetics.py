@@ -28,10 +28,8 @@ Examples
 """
 
 import re
-from pyfortool.util import debugDecor, nonCode, tag, n2name
+from pyfortool.util import debugDecor, nonCode, tag
 from pyfortool.expressions import createElem
-from pyfortool.variables import updateVarList
-from pyfortool.tree import updateTree
 from pyfortool import NAMESPACE
 
 
