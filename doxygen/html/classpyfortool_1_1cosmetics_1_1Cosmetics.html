@@ -113,6 +113,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:af4c2bda1341d71046b8859458a11d4f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aea01c23ff6452dfdf28201858cf4d998" id="r_aea01c23ff6452dfdf28201858cf4d998"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpyfortool_1_1cosmetics_1_1Cosmetics.html#aea01c23ff6452dfdf28201858cf4d998">removeEmptyCONTAINS</a> (self)</td></tr>
 <tr class="separator:aea01c23ff6452dfdf28201858cf4d998"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a77b21570b19a6a9f360afe5c54414c44" id="r_a77b21570b19a6a9f360afe5c54414c44"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpyfortool_1_1cosmetics_1_1Cosmetics.html#a77b21570b19a6a9f360afe5c54414c44">formatModuleUse</a> (self, upper=True)</td></tr>
+<tr class="separator:a77b21570b19a6a9f360afe5c54414c44"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><pre class="fragment">Code formatting and style transformation methods.
@@ -120,7 +122,7 @@ Public Member Functions</h2></td></tr>
 Provides utilities for modifying code appearance including case,
 indentation, spacing, and comment handling.
 </pre> 
-<p class="definition">Definition at line <a class="el" href="cosmetics_8py_source.html#l00035">35</a> of file <a class="el" href="cosmetics_8py_source.html">cosmetics.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="cosmetics_8py_source.html#l00036">36</a> of file <a class="el" href="cosmetics_8py_source.html">cosmetics.py</a>.</p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
 <a id="af4c2bda1341d71046b8859458a11d4f8" name="af4c2bda1341d71046b8859458a11d4f8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af4c2bda1341d71046b8859458a11d4f8">&#9670;&#160;</a></span>changeIfStatementsInIfConstructs()</h2>
@@ -169,7 +171,7 @@ Examples
 &gt;&gt;&gt; pft = PYFT('input.F90')
 &gt;&gt;&gt; pft.changeIfStatementsInIfConstructs()
 </pre> 
-<p class="definition">Definition at line <a class="el" href="cosmetics_8py_source.html#l00916">916</a> of file <a class="el" href="cosmetics_8py_source.html">cosmetics.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="cosmetics_8py_source.html#l00917">917</a> of file <a class="el" href="cosmetics_8py_source.html">cosmetics.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -194,6 +196,88 @@ Here is the call graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="566,139,623,149,622,155,565,145"/>
 <area shape="poly" title=" " alt="" coords="845,101,904,93,905,98,846,107"/>
 <area shape="poly" title=" " alt="" coords="707,106,697,96,702,86,721,79,751,77,791,81,801,86,805,92,801,95,798,90,789,87,751,83,722,85,706,90,703,95,711,102"/>
+</map>
+</div>
+
+</div>
+</div>
+<a id="a77b21570b19a6a9f360afe5c54414c44" name="a77b21570b19a6a9f360afe5c54414c44"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a77b21570b19a6a9f360afe5c54414c44">&#9670;&#160;</a></span>formatModuleUse()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">pyfortool.cosmetics.Cosmetics.formatModuleUse </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>self</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>upper</em> = <code>True</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<pre class="fragment">Order USE declarations by module type and alphabetically.
+
+Groups USE statements by module type prefix and sorts alphabetically
+within each group. The group order is: MODD_, MODE_, MODI_, MODN_,
+followed by any other modules sorted alphabetically.
+Module names are optionally converted to uppercase.
+Trailing comments after USE statements are preserved.
+
+Parameters
+----------
+upper : bool, optional
+    If True, convert module names to uppercase. Default is True.
+
+Returns
+-------
+self
+    Returns self for method chaining.
+
+Examples
+--------
+&gt;&gt;&gt; pft = PYFT('input.F90')
+&gt;&gt;&gt; pft.formatModuleUse()
+&gt;&gt;&gt; pft.formatModuleUse(upper=False)
+
+Notes
+-----
+Before:
+    USE modi_foo
+    USE modd_bar
+    USE mode_baz
+
+After (upper=True):
+    USE MODD_BAR
+    USE MODE_BAZ
+    USE MODI_FOO
+</pre> 
+<p class="definition">Definition at line <a class="el" href="cosmetics_8py_source.html#l01013">1013</a> of file <a class="el" href="cosmetics_8py_source.html">cosmetics.py</a>.</p>
+<div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="classpyfortool_1_1cosmetics_1_1Cosmetics_a77b21570b19a6a9f360afe5c54414c44_cgraph.png" border="0" usemap="#aclasspyfortool_1_1cosmetics_1_1Cosmetics_a77b21570b19a6a9f360afe5c54414c44_cgraph" alt=""/></div>
+<map name="aclasspyfortool_1_1cosmetics_1_1Cosmetics_a77b21570b19a6a9f360afe5c54414c44_cgraph" id="aclasspyfortool_1_1cosmetics_1_1Cosmetics_a77b21570b19a6a9f360afe5c54414c44_cgraph">
+<area shape="rect" title=" " alt="" coords="5,22,276,62"/>
+<area shape="rect" href="classpyfortool_1_1scope_1_1ElementView.html#a16495974c6c803a6a3582bce4c738133" title=" " alt="" coords="324,29,580,55"/>
+<area shape="poly" title=" " alt="" coords="276,39,310,39,310,45,276,45"/>
+<area shape="poly" title=" " alt="" coords="407,31,397,21,402,11,421,5,452,3,493,7,504,12,507,18,503,21,500,16,492,12,452,8,422,10,405,15,402,20,410,27"/>
+<area shape="rect" href="classpyfortool_1_1scope_1_1ElementView.html#a7a1db7bc1c5100e0e9b813edf25d9239" title=" " alt="" coords="628,22,844,62"/>
+<area shape="poly" title=" " alt="" coords="580,39,614,39,614,45,580,45"/>
+<area shape="rect" href="classpyfortool_1_1scope_1_1ElementView.html#a1dbaf54daab3dba3a8d608ab623ca736" title=" " alt="" coords="892,29,1132,55"/>
+<area shape="poly" title=" " alt="" coords="844,48,878,48,878,54,844,53"/>
+<area shape="poly" title=" " alt="" coords="892,36,858,36,858,30,892,30"/>
+<area shape="poly" title=" " alt="" coords="968,31,958,21,963,11,981,5,1012,3,1051,7,1062,12,1066,18,1061,20,1059,16,1050,12,1012,8,982,10,967,15,963,20,972,27"/>
 </map>
 </div>
 
@@ -269,7 +353,7 @@ Examples
 &gt;&gt;&gt; pft.indent()  # Default indentation
 &gt;&gt;&gt; pft.indent(indentProgramunit=0, indentBranch=4)  # Custom
 </pre> 
-<p class="definition">Definition at line <a class="el" href="cosmetics_8py_source.html#l00074">74</a> of file <a class="el" href="cosmetics_8py_source.html">cosmetics.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="cosmetics_8py_source.html#l00075">75</a> of file <a class="el" href="cosmetics_8py_source.html">cosmetics.py</a>.</p>
 
 </div>
 </div>
@@ -296,7 +380,7 @@ Examples
 &gt;&gt;&gt; pft.lowerCase()
 # WRITE -&gt; write
 </pre> 
-<p class="definition">Definition at line <a class="el" href="cosmetics_8py_source.html#l00059">59</a> of file <a class="el" href="cosmetics_8py_source.html">cosmetics.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="cosmetics_8py_source.html#l00060">60</a> of file <a class="el" href="cosmetics_8py_source.html">cosmetics.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -367,7 +451,7 @@ Examples
 &gt;&gt;&gt; pft.removeComments(exclDirectives=[])  # Remove all
 &gt;&gt;&gt; pft.removeComments(pattern=re.compile(r'!.*TODO'))
 </pre> 
-<p class="definition">Definition at line <a class="el" href="cosmetics_8py_source.html#l00220">220</a> of file <a class="el" href="cosmetics_8py_source.html">cosmetics.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="cosmetics_8py_source.html#l00221">221</a> of file <a class="el" href="cosmetics_8py_source.html">cosmetics.py</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -402,7 +486,7 @@ Here is the caller graph for this function:</div>
 </div><div class="memdoc">
 <pre class="fragment">Remove the CONTAINS statement if this section is empty
 </pre> 
-<p class="definition">Definition at line <a class="el" href="cosmetics_8py_source.html#l00996">996</a> of file <a class="el" href="cosmetics_8py_source.html">cosmetics.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="cosmetics_8py_source.html#l00997">997</a> of file <a class="el" href="cosmetics_8py_source.html">cosmetics.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -461,7 +545,7 @@ Here is the caller graph for this function:</div>
 </div><div class="memdoc">
 <pre class="fragment">Remove empty lines
 </pre> 
-<p class="definition">Definition at line <a class="el" href="cosmetics_8py_source.html#l00207">207</a> of file <a class="el" href="cosmetics_8py_source.html">cosmetics.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="cosmetics_8py_source.html#l00208">208</a> of file <a class="el" href="cosmetics_8py_source.html">cosmetics.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -553,7 +637,7 @@ Here is the caller graph for this function:</div>
 When suppressed, the '&amp;' are replaced by a space character
 Comments after a '&amp;' are lost
 </pre> 
-<p class="definition">Definition at line <a class="el" href="cosmetics_8py_source.html#l00279">279</a> of file <a class="el" href="cosmetics_8py_source.html">cosmetics.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="cosmetics_8py_source.html#l00280">280</a> of file <a class="el" href="cosmetics_8py_source.html">cosmetics.py</a>.</p>
 
 </div>
 </div>
@@ -888,7 +972,7 @@ For example, to not change number of spaces after a comma, use afterComma=None
 
 Updates are done in the following order:
 </pre> 
-<p class="definition">Definition at line <a class="el" href="cosmetics_8py_source.html#l00483">483</a> of file <a class="el" href="cosmetics_8py_source.html">cosmetics.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="cosmetics_8py_source.html#l00484">484</a> of file <a class="el" href="cosmetics_8py_source.html">cosmetics.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -945,7 +1029,7 @@ Examples
 &gt;&gt;&gt; pft.upperCase()
 # WRITE -&gt; write becomes WRITE
 </pre> 
-<p class="definition">Definition at line <a class="el" href="cosmetics_8py_source.html#l00044">44</a> of file <a class="el" href="cosmetics_8py_source.html">cosmetics.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="cosmetics_8py_source.html#l00045">45</a> of file <a class="el" href="cosmetics_8py_source.html">cosmetics.py</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">

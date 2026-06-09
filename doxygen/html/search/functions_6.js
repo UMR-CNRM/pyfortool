@@ -8,7 +8,8 @@ var searchData=
   ['findscopeinterface_5',['findScopeInterface',['../classpyfortool_1_1tree_1_1Tree.html#ab4dac199eb52acda943346a453156ee7',1,'pyfortool::tree::Tree']]],
   ['findtext_6',['findtext',['../classpyfortool_1_1scope_1_1ElementView.html#ad828fd416586cfce531b2f78b72bdb0c',1,'pyfortool::scope::ElementView']]],
   ['findvar_7',['findVar',['../classpyfortool_1_1variables_1_1VarList.html#a6139fa4c40f430a9bdbbd8fd51a88d7b',1,'pyfortool::variables::VarList']]],
-  ['fortran_8',['fortran',['../classpyfortool_1_1pyfortool_1_1PYFT.html#a3d9ef8ae55a381845e6b1098baf5d9be',1,'pyfortool::pyfortool::PYFT']]],
-  ['fortran2xml_9',['fortran2xml',['../namespacepyfortool_1_1util.html#a38cababd3c55d251f604d82e2d342eca',1,'pyfortool::util']]],
-  ['fromjson_10',['fromJson',['../classpyfortool_1_1tree_1_1Tree.html#a937d659e6df8530a10fc0e973b66ac1d',1,'pyfortool::tree::Tree']]]
+  ['formatmoduleuse_8',['formatModuleUse',['../classpyfortool_1_1cosmetics_1_1Cosmetics.html#a77b21570b19a6a9f360afe5c54414c44',1,'pyfortool::cosmetics::Cosmetics']]],
+  ['fortran_9',['fortran',['../classpyfortool_1_1pyfortool_1_1PYFT.html#a3d9ef8ae55a381845e6b1098baf5d9be',1,'pyfortool::pyfortool::PYFT']]],
+  ['fortran2xml_10',['fortran2xml',['../namespacepyfortool_1_1util.html#a38cababd3c55d251f604d82e2d342eca',1,'pyfortool::util']]],
+  ['fromjson_11',['fromJson',['../classpyfortool_1_1tree_1_1Tree.html#a937d659e6df8530a10fc0e973b66ac1d',1,'pyfortool::tree::Tree']]]
 ];

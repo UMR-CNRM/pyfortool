@@ -15,9 +15,10 @@ var searchData=
   ['flow_12',['Data Flow',['../md__2home_2runner_2work_2pyfortool_2pyfortool_2doc_2developer_2architecture.html#autotoc_md49',1,'']]],
   ['follow_20coding_20standards_13',['Step 3: Follow Coding Standards',['../md__2home_2runner_2work_2pyfortool_2pyfortool_2doc_2developer_2architecture.html#autotoc_md53',1,'']]],
   ['format_14',['Format',['../md__2home_2runner_2work_2pyfortool_2pyfortool_2doc_2developer_2concepts.html#autotoc_md62',1,'']]],
-  ['formatting_15',['cosmetics.py - Code Formatting',['../md__2home_2runner_2work_2pyfortool_2pyfortool_2doc_2developer_2modules.html#autotoc_md112',1,'']]],
-  ['fortran_16',['fortran',['../classpyfortool_1_1pyfortool_1_1PYFT.html#a3d9ef8ae55a381845e6b1098baf5d9be',1,'pyfortool::pyfortool::PYFT']]],
-  ['fortran2xml_17',['fortran2xml',['../namespacepyfortool_1_1util.html#a38cababd3c55d251f604d82e2d342eca',1,'pyfortool::util']]],
-  ['fromjson_18',['fromJson',['../classpyfortool_1_1tree_1_1Tree.html#a937d659e6df8530a10fc0e973b66ac1d',1,'pyfortool::tree::Tree']]],
-  ['functions_19',['functions',['../md__2home_2runner_2work_2pyfortool_2pyfortool_2doc_2developer_2modules.html#autotoc_md128',1,'Functions'],['../md__2home_2runner_2work_2pyfortool_2pyfortool_2doc_2developer_2modules.html#autotoc_md131',1,'Functions'],['../md__2home_2runner_2work_2pyfortool_2pyfortool_2doc_2developer_2modules.html#autotoc_md134',1,'Functions']]]
+  ['formatmoduleuse_15',['formatModuleUse',['../classpyfortool_1_1cosmetics_1_1Cosmetics.html#a77b21570b19a6a9f360afe5c54414c44',1,'pyfortool::cosmetics::Cosmetics']]],
+  ['formatting_16',['cosmetics.py - Code Formatting',['../md__2home_2runner_2work_2pyfortool_2pyfortool_2doc_2developer_2modules.html#autotoc_md112',1,'']]],
+  ['fortran_17',['fortran',['../classpyfortool_1_1pyfortool_1_1PYFT.html#a3d9ef8ae55a381845e6b1098baf5d9be',1,'pyfortool::pyfortool::PYFT']]],
+  ['fortran2xml_18',['fortran2xml',['../namespacepyfortool_1_1util.html#a38cababd3c55d251f604d82e2d342eca',1,'pyfortool::util']]],
+  ['fromjson_19',['fromJson',['../classpyfortool_1_1tree_1_1Tree.html#a937d659e6df8530a10fc0e973b66ac1d',1,'pyfortool::tree::Tree']]],
+  ['functions_20',['functions',['../md__2home_2runner_2work_2pyfortool_2pyfortool_2doc_2developer_2modules.html#autotoc_md128',1,'Functions'],['../md__2home_2runner_2work_2pyfortool_2pyfortool_2doc_2developer_2modules.html#autotoc_md131',1,'Functions'],['../md__2home_2runner_2work_2pyfortool_2pyfortool_2doc_2developer_2modules.html#autotoc_md134',1,'Functions']]]
 ];

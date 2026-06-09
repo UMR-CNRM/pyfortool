@@ -1,0 +1,12 @@
+<map id="pyfortool.cosmetics.Cosmetics.formatModuleUse" name="pyfortool.cosmetics.Cosmetics.formatModuleUse">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,22,276,62"/>
+<area shape="rect" id="Node000002" href="$classpyfortool_1_1scope_1_1ElementView.html#a16495974c6c803a6a3582bce4c738133" title=" " alt="" coords="324,29,580,55"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="276,39,310,39,310,45,276,45"/>
+<area shape="poly" id="edge6_Node000002_Node000002" title=" " alt="" coords="407,31,397,21,402,11,421,5,452,3,493,7,504,12,507,18,503,21,500,16,492,12,452,8,422,10,405,15,402,20,410,27"/>
+<area shape="rect" id="Node000003" href="$classpyfortool_1_1scope_1_1ElementView.html#a7a1db7bc1c5100e0e9b813edf25d9239" title=" " alt="" coords="628,22,844,62"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="580,39,614,39,614,45,580,45"/>
+<area shape="rect" id="Node000004" href="$classpyfortool_1_1scope_1_1ElementView.html#a1dbaf54daab3dba3a8d608ab623ca736" title=" " alt="" coords="892,29,1132,55"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="844,48,878,48,878,54,844,53"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="892,36,858,36,858,30,892,30"/>
+<area shape="poly" id="edge5_Node000004_Node000004" title=" " alt="" coords="968,31,958,21,963,11,981,5,1012,3,1051,7,1062,12,1066,18,1061,20,1059,16,1050,12,1012,8,982,10,967,15,963,20,972,27"/>
+</map>
