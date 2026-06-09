@@ -265,7 +265,7 @@ ZDIRSINZW(:,:) = SQRT( 1. - PDIRCOSZW(:,:)**2 )
 CALL GX_U_M_PHY(D, OFLAT,PUM,PDXX,PDZZ,PDZX, ZGX_U_M3D_WORK1)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
-GX_U_M_PUM(:, :, :) = ZGX_U_M3D_WORK1(:, :, :)
+GX_U_M_PUM(1:IIT, 1:IJT, 1:IKT) = ZGX_U_M3D_WORK1(1:IIT, 1:IJT, 1:IKT)
 !$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
 !$acc end kernels
 !
@@ -273,7 +273,7 @@ IF (.NOT. O2D) THEN
   CALL GY_V_M_PHY(D, OFLAT,PVM,PDYY,PDZZ,PDZY, ZGY_V_M3D_WORK1)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
-GY_V_M_PVM(:, :, :) = ZGY_V_M3D_WORK1(:, :, :)
+GY_V_M_PVM(1:IIT, 1:IJT, 1:IKT) = ZGY_V_M3D_WORK1(1:IIT, 1:IJT, 1:IKT)
 !$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
 !$acc end kernels
 !
@@ -281,7 +281,7 @@ END IF
 CALL GZ_W_M_PHY(D, PWM,PDZZ, ZGZ_W_M3D_WORK1)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
-GZ_W_M_PWM(:, :, :) = ZGZ_W_M3D_WORK1(:, :, :)
+GZ_W_M_PWM(1:IIT, 1:IJT, 1:IKT) = ZGZ_W_M3D_WORK1(1:IIT, 1:IJT, 1:IKT)
 !$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
 !$acc end kernels
 !
@@ -289,7 +289,7 @@ GZ_W_M_PWM(:, :, :) = ZGZ_W_M3D_WORK1(:, :, :)
 CALL MZF_PHY(D, PDZZ, ZMZF3D_WORK1)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
-ZMZF_DZZ(:, :, :) = ZMZF3D_WORK1(:, :, :)
+ZMZF_DZZ(1:IIT, 1:IJT, 1:IKT) = ZMZF3D_WORK1(1:IIT, 1:IJT, 1:IKT)
 !$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
 !$acc end kernels
 !
@@ -342,33 +342,33 @@ END IF
 CALL MXM2D_PHY(D, PDZZ(:,:,IKB), ZMXM2D_WORK1)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT)
-ZDZZ(:,:,IKB) = ZMXM2D_WORK1(:, :)
+ZDZZ(1:IIT,1:IJT,IKB) = ZMXM2D_WORK1(1:IIT, 1:IJT)
 !$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT)
 !$acc end kernels
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT)
-ZSHUGRADWK1_2D(:, :) = PDZZ(:,:,IKB+1)
-!$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT)
-!$acc end kernels
-!
-CALL MXM2D_PHY(D, ZSHUGRADWK1_2D, ZMXM2D_WORK1)
-!
-!$acc kernels
-!$mnh_expand_array(JI=1:IIT,JJ=1:IJT)
-ZDZZ(:,:,IKB+1) = ZMXM2D_WORK1(:, :)
-!$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT)
-!$acc end kernels
-!
-!$acc kernels
-!$mnh_expand_array(JI=1:IIT,JJ=1:IJT)
-ZSHUGRADWK1_2D(:, :) = PDZZ(:,:,IKB+2)
+ZSHUGRADWK1_2D(1:IIT, 1:IJT) = PDZZ(1:IIT,1:IJT,IKB+1)
 !$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT)
 !$acc end kernels
 !
 CALL MXM2D_PHY(D, ZSHUGRADWK1_2D, ZMXM2D_WORK1)
+!
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT)
-ZDZZ(:,:,IKB+2) = ZMXM2D_WORK1(:, :)
+ZDZZ(1:IIT,1:IJT,IKB+1) = ZMXM2D_WORK1(1:IIT, 1:IJT)
+!$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT)
+!$acc end kernels
+!
+!$acc kernels
+!$mnh_expand_array(JI=1:IIT,JJ=1:IJT)
+ZSHUGRADWK1_2D(1:IIT, 1:IJT) = PDZZ(1:IIT,1:IJT,IKB+2)
+!$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT)
+!$acc end kernels
+!
+CALL MXM2D_PHY(D, ZSHUGRADWK1_2D, ZMXM2D_WORK1)
+!$acc kernels
+!$mnh_expand_array(JI=1:IIT,JJ=1:IJT)
+ZDZZ(1:IIT,1:IJT,IKB+2) = ZMXM2D_WORK1(1:IIT, 1:IJT)
 !$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT)
 !$acc end kernels
 !
@@ -385,7 +385,7 @@ ZDZZ(:,:,IKB+2) = ZMXM2D_WORK1(:, :)
 !
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT)
-ZSHUGRADWK1_2D(:, :) = (ZCOEFF(:,:,IKB+2)*PUM(:,:,IKB+2)        +ZCOEFF(:,:,IKB+1)*PUM(:,:,IKB+1)        +ZCOEFF(:,:,IKB)*PUM(:,:,IKB)       ) * 0.5 * ( PDZX(:,:,IKB+1)+PDZX(:,:,IKB))
+ZSHUGRADWK1_2D(1:IIT, 1:IJT) = (ZCOEFF(1:IIT,1:IJT,IKB+2)*PUM(1:IIT,1:IJT,IKB+2)        +ZCOEFF(1:IIT,1:IJT,IKB+1)*PUM(1:IIT,1:IJT,IKB+1)        +ZCOEFF(1:IIT,1:IJT,IKB)*PUM(1:IIT,1:IJT,IKB)       ) * 0.5 * ( PDZX(1:IIT,1:IJT,IKB+1)+PDZX(1:IIT,1:IJT,IKB))
 !$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT)
 !$acc end kernels
 !
@@ -393,7 +393,7 @@ CALL MXF2D_PHY(D, ZSHUGRADWK1_2D, ZMXF2D_WORK1)
 CALL MXF2D_PHY(D, PDXX(:,:,IKB), ZMXF2D_WORK2)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT)
-ZDU_DZ_DZS_DX(:,:)=ZMXF2D_WORK1(:, :)/ ZMXF2D_WORK2(:, :)
+ZDU_DZ_DZS_DX(1:IIT,1:IJT)=ZMXF2D_WORK1(1:IIT, 1:IJT)/ ZMXF2D_WORK2(1:IIT, 1:IJT)
 !$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT)
 !$acc end kernels
 !
@@ -401,33 +401,33 @@ ZDU_DZ_DZS_DX(:,:)=ZMXF2D_WORK1(:, :)/ ZMXF2D_WORK2(:, :)
 CALL MYM2D_PHY(D, PDZZ(:,:,IKB), ZMYM2D_WORK1)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT)
-ZDZZ(:,:,IKB) = ZMYM2D_WORK1(:, :)
+ZDZZ(1:IIT,1:IJT,IKB) = ZMYM2D_WORK1(1:IIT, 1:IJT)
 !$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT)
 !$acc end kernels
 !
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT)
-ZSHUGRADWK1_2D(:, :) = PDZZ(:,:,IKB+1)
-!$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT)
-!$acc end kernels
-!
-CALL MYM2D_PHY(D, ZSHUGRADWK1_2D, ZMYM2D_WORK1)
-!$acc kernels
-!$mnh_expand_array(JI=1:IIT,JJ=1:IJT)
-ZDZZ(:,:,IKB+1) = ZMYM2D_WORK1(:, :)
-!$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT)
-!$acc end kernels
-!
-!$acc kernels
-!$mnh_expand_array(JI=1:IIT,JJ=1:IJT)
-ZSHUGRADWK1_2D(:, :) = PDZZ(:,:,IKB+2)
+ZSHUGRADWK1_2D(1:IIT, 1:IJT) = PDZZ(1:IIT,1:IJT,IKB+1)
 !$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT)
 !$acc end kernels
 !
 CALL MYM2D_PHY(D, ZSHUGRADWK1_2D, ZMYM2D_WORK1)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT)
-ZDZZ(:,:,IKB+2) = ZMYM2D_WORK1(:, :)
+ZDZZ(1:IIT,1:IJT,IKB+1) = ZMYM2D_WORK1(1:IIT, 1:IJT)
+!$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT)
+!$acc end kernels
+!
+!$acc kernels
+!$mnh_expand_array(JI=1:IIT,JJ=1:IJT)
+ZSHUGRADWK1_2D(1:IIT, 1:IJT) = PDZZ(1:IIT,1:IJT,IKB+2)
+!$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT)
+!$acc end kernels
+!
+CALL MYM2D_PHY(D, ZSHUGRADWK1_2D, ZMYM2D_WORK1)
+!$acc kernels
+!$mnh_expand_array(JI=1:IIT,JJ=1:IJT)
+ZDZZ(1:IIT,1:IJT,IKB+2) = ZMYM2D_WORK1(1:IIT, 1:IJT)
 !$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT)
 !$acc end kernels
 !
@@ -445,7 +445,7 @@ ZDZZ(:,:,IKB+2) = ZMYM2D_WORK1(:, :)
 
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT)
-ZSHUGRADWK1_2D(:, :) = (ZCOEFF(:,:,IKB+2)*PVM(:,:,IKB+2)        +ZCOEFF(:,:,IKB+1)*PVM(:,:,IKB+1)        +ZCOEFF(:,:,IKB)*PVM(:,:,IKB)       ) * 0.5 * ( PDZY(:,:,IKB+1)+PDZY(:,:,IKB))
+ZSHUGRADWK1_2D(1:IIT, 1:IJT) = (ZCOEFF(1:IIT,1:IJT,IKB+2)*PVM(1:IIT,1:IJT,IKB+2)        +ZCOEFF(1:IIT,1:IJT,IKB+1)*PVM(1:IIT,1:IJT,IKB+1)        +ZCOEFF(1:IIT,1:IJT,IKB)*PVM(1:IIT,1:IJT,IKB)       ) * 0.5 * ( PDZY(1:IIT,1:IJT,IKB+1)+PDZY(1:IIT,1:IJT,IKB))
 !$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT)
 !$acc end kernels
 !
@@ -453,7 +453,7 @@ CALL MYF2D_PHY(D, ZSHUGRADWK1_2D, ZMYF2D_WORK1)
 CALL MYF2D_PHY(D, PDYY(:,:,IKB), ZMYF2D_WORK2)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT)
-ZDV_DZ_DZS_DY(:,:)=ZMYF2D_WORK1(:, :)/ ZMYF2D_WORK2(:, :)
+ZDV_DZ_DZS_DY(1:IIT,1:IJT)=ZMYF2D_WORK1(1:IIT, 1:IJT)/ ZMYF2D_WORK2(1:IIT, 1:IJT)
 !$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT)
 !$acc end kernels
 !
@@ -463,8 +463,8 @@ CALL DXF2D_PHY(D, PUM(:,:,IKB), ZDXF2D_WORK1)
 CALL MXF2D_PHY(D, PDXX(:,:,IKB), ZMXF2D_WORK1)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT)
-ZDU_DX(:,:)=  ZDXF2D_WORK1(:, :) / ZMXF2D_WORK1(:, :)  &
-              - ZDU_DZ_DZS_DX(:,:)
+ZDU_DX(1:IIT,1:IJT)=  ZDXF2D_WORK1(1:IIT, 1:IJT) / ZMXF2D_WORK1(1:IIT, 1:IJT)  &
+              - ZDU_DZ_DZS_DX(1:IIT,1:IJT)
 !$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT)
 !$acc end kernels
 !
@@ -472,8 +472,8 @@ CALL DYF2D_PHY(D, PVM(:,:,IKB), ZDYF2D_WORK1)
 CALL MYF2D_PHY(D, PDYY(:,:,IKB), ZMYF2D_WORK1)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT)
-ZDV_DY(:,:)=  ZDYF2D_WORK1(:, :) / ZMYF2D_WORK1(:, :) &
-              - ZDV_DZ_DZS_DY(:,:)
+ZDV_DY(1:IIT,1:IJT)=  ZDYF2D_WORK1(1:IIT, 1:IJT) / ZMYF2D_WORK1(1:IIT, 1:IJT) &
+              - ZDV_DZ_DZS_DY(1:IIT,1:IJT)
 !$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT)
 !$acc end kernels
 !
@@ -584,7 +584,7 @@ IF (.NOT. OFLAT) THEN
   CALL MXF_PHY(D, PDXX, ZMXF3D_WORK1)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
-ZSHUGRADWK1_3D(:, :, :) = PRHODJ(:, :, :) * ZFLX(:, :, :) / ZMXF3D_WORK1(:, :, :)
+ZSHUGRADWK1_3D(1:IIT, 1:IJT, 1:IKT) = PRHODJ(1:IIT, 1:IJT, 1:IKT) * ZFLX(1:IIT, 1:IJT, 1:IKT) / ZMXF3D_WORK1(1:IIT, 1:IJT, 1:IKT)
 !$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
 !$acc end kernels
 !
@@ -592,30 +592,30 @@ CALL DXM_PHY(D, ZSHUGRADWK1_3D, ZDXM3D_WORK1)
 CALL MZM_PHY(D, PDXX, ZMZM3D_WORK1)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
-ZSHUGRADWK2_3D(:, :, :) = PRHODJ(:, :, :)*ZFLX(:, :, :)
+ZSHUGRADWK2_3D(1:IIT, 1:IJT, 1:IKT) = PRHODJ(1:IIT, 1:IJT, 1:IKT)*ZFLX(1:IIT, 1:IJT, 1:IKT)
 !$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
 !$acc end kernels
 !
 CALL MZM_PHY(D, ZSHUGRADWK2_3D, ZMZM3D_WORK2)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
-ZSHUGRADWK1_3D(:, :, :) = ZMZM3D_WORK2(:, :, :) * PINV_PDZZ(:, :, :)
+ZSHUGRADWK1_3D(1:IIT, 1:IJT, 1:IKT) = ZMZM3D_WORK2(1:IIT, 1:IJT, 1:IKT) * PINV_PDZZ(1:IIT, 1:IJT, 1:IKT)
 !$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
 !$acc end kernels
 !
 CALL MXM_PHY(D, ZSHUGRADWK1_3D, ZMXM3D_WORK1)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
-ZSHUGRADWK1_3D(:, :, :) = PDZX(:, :, :) / ZMZM3D_WORK1(:, :, :) * ZMXM3D_WORK1(:, :, :)
+ZSHUGRADWK1_3D(1:IIT, 1:IJT, 1:IKT) = PDZX(1:IIT, 1:IJT, 1:IKT) / ZMZM3D_WORK1(1:IIT, 1:IJT, 1:IKT) * ZMXM3D_WORK1(1:IIT, 1:IJT, 1:IKT)
 !$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
 !$acc end kernels
 !
 CALL DZF_PHY(D, ZSHUGRADWK1_3D, ZDZF3D_WORK1)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
-PRUS(:,:,:)=PRUS(:, :, :)                                            &
-              -ZDXM3D_WORK1(:, :, :)                &
-              +ZDZF3D_WORK1(:, :, :)
+PRUS(1:IIT,1:IJT,1:IKT)=PRUS(1:IIT, 1:IJT, 1:IKT)                                            &
+              -ZDXM3D_WORK1(1:IIT, 1:IJT, 1:IKT)                &
+              +ZDZF3D_WORK1(1:IIT, 1:IJT, 1:IKT)
 !$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
 !$acc end kernels
 !
@@ -623,14 +623,14 @@ ELSE
   CALL MXF_PHY(D, PDXX, ZMXF3D_WORK1)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
-ZSHUGRADWK1_3D(:, :, :) = PRHODJ(:, :, :) * ZFLX(:, :, :) / ZMXF3D_WORK1(:, :, :)
+ZSHUGRADWK1_3D(1:IIT, 1:IJT, 1:IKT) = PRHODJ(1:IIT, 1:IJT, 1:IKT) * ZFLX(1:IIT, 1:IJT, 1:IKT) / ZMXF3D_WORK1(1:IIT, 1:IJT, 1:IKT)
 !$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
 !$acc end kernels
 !
 CALL DXM_PHY(D, ZSHUGRADWK1_3D, ZDXM3D_WORK1)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
-PRUS(:,:,:)=PRUS(:, :, :) -ZDXM3D_WORK1(:, :, :)
+PRUS(1:IIT,1:IJT,1:IKT)=PRUS(1:IIT, 1:IJT, 1:IKT) -ZDXM3D_WORK1(1:IIT, 1:IJT, 1:IKT)
 !$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
 !$acc end kernels
 !
@@ -782,7 +782,7 @@ IF (.NOT. O2D) THEN
     CALL MYF_PHY(D, PDYY, ZMYF3D_WORK1)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
-ZSHUGRADWK1_3D(:, :, :) = PRHODJ(:, :, :) * ZFLX(:, :, :) / ZMYF3D_WORK1(:, :, :)
+ZSHUGRADWK1_3D(1:IIT, 1:IJT, 1:IKT) = PRHODJ(1:IIT, 1:IJT, 1:IKT) * ZFLX(1:IIT, 1:IJT, 1:IKT) / ZMYF3D_WORK1(1:IIT, 1:IJT, 1:IKT)
 !$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
 !$acc end kernels
 !
@@ -790,31 +790,31 @@ CALL DYM_PHY(D, ZSHUGRADWK1_3D, ZDYM3D_WORK1)
 CALL MZM_PHY(D, PDYY, ZMZM3D_WORK1)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
-ZSHUGRADWK2_3D(:, :, :) = PRHODJ(:, :, :)*ZFLX(:, :, :)
+ZSHUGRADWK2_3D(1:IIT, 1:IJT, 1:IKT) = PRHODJ(1:IIT, 1:IJT, 1:IKT)*ZFLX(1:IIT, 1:IJT, 1:IKT)
 !$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
 !$acc end kernels
 !
 CALL MZM_PHY(D, ZSHUGRADWK2_3D, ZMZM3D_WORK2)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
-ZSHUGRADWK1_3D(:, :, :) = ZMZM3D_WORK2(:, :, :) * PINV_PDZZ(:, :, :)
+ZSHUGRADWK1_3D(1:IIT, 1:IJT, 1:IKT) = ZMZM3D_WORK2(1:IIT, 1:IJT, 1:IKT) * PINV_PDZZ(1:IIT, 1:IJT, 1:IKT)
 !$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
 !$acc end kernels
 !
 CALL MYM_PHY(D, ZSHUGRADWK1_3D, ZMYM3D_WORK1)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
-ZSHUGRADWK1_3D(:, :, :) = PDZY(:, :, :) / ZMZM3D_WORK1(:, :, :) *                      &
-                ZMYM3D_WORK1(:, :, :)
+ZSHUGRADWK1_3D(1:IIT, 1:IJT, 1:IKT) = PDZY(1:IIT, 1:IJT, 1:IKT) / ZMZM3D_WORK1(1:IIT, 1:IJT, 1:IKT) *                      &
+                ZMYM3D_WORK1(1:IIT, 1:IJT, 1:IKT)
 !$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
 !$acc end kernels
 !
 CALL DZF_PHY(D, ZSHUGRADWK1_3D, ZDZF3D_WORK1)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
-PRVS(:,:,:)=PRVS(:, :, :)                                          &
-                -ZDYM3D_WORK1(:, :, :)              &
-                +ZDZF3D_WORK1(:, :, :)  
+PRVS(1:IIT,1:IJT,1:IKT)=PRVS(1:IIT, 1:IJT, 1:IKT)                                          &
+                -ZDYM3D_WORK1(1:IIT, 1:IJT, 1:IKT)              &
+                +ZDZF3D_WORK1(1:IIT, 1:IJT, 1:IKT)  
 !$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
 !$acc end kernels
 !
@@ -822,14 +822,14 @@ ELSE
     CALL MYF_PHY(D, PDYY, ZMYF3D_WORK1)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
-ZSHUGRADWK1_3D(:, :, :) = PRHODJ(:, :, :) * ZFLX(:, :, :) / ZMYF3D_WORK1(:, :, :)
+ZSHUGRADWK1_3D(1:IIT, 1:IJT, 1:IKT) = PRHODJ(1:IIT, 1:IJT, 1:IKT) * ZFLX(1:IIT, 1:IJT, 1:IKT) / ZMYF3D_WORK1(1:IIT, 1:IJT, 1:IKT)
 !$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
 !$acc end kernels
 !
 CALL DYM_PHY(D, ZSHUGRADWK1_3D, ZDYM3D_WORK1)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
-PRVS(:,:,:)=PRVS(:, :, :) -ZDYM3D_WORK1(:, :, :)  
+PRVS(1:IIT,1:IJT,1:IKT)=PRVS(1:IIT, 1:IJT, 1:IKT) -ZDYM3D_WORK1(1:IIT, 1:IJT, 1:IKT)  
 !$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
 !$acc end kernels
 !
@@ -987,7 +987,7 @@ CALL TRIDIAG_W(PWM,ZFLX,ZDFDDWDZ,PTSTEP,ZMZF_DZZ,PRHODJ,ZWP)
 CALL MZM_PHY(D, PRHODJ, ZMZM3D_WORK1)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
-PRWS(:, :, :) = PRWS(:,:,:) + ZMZM3D_WORK1(:, :, :)*(ZWP(:,:,:)-PWM(:,:,:))/PTSTEP
+PRWS(1:IIT, 1:IJT, 1:IKT) = PRWS(1:IIT,1:IJT,1:IKT) + ZMZM3D_WORK1(1:IIT, 1:IJT, 1:IKT)*(ZWP(1:IIT,1:IJT,1:IKT)-PWM(1:IIT,1:IJT,1:IKT))/PTSTEP
 !$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
 !$acc end kernels
 !
@@ -997,7 +997,7 @@ PRWS(:, :, :) = PRWS(:,:,:) + ZMZM3D_WORK1(:, :, :)*(ZWP(:,:,:)-PWM(:,:,:))/PTST
 CALL GZ_W_M_PHY(D, ZWP,PDZZ, ZGZ_W_M3D_WORK1)
 !$acc kernels
 !$mnh_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
-GZ_W_M_ZWP(:, :, :) = ZGZ_W_M3D_WORK1(:, :, :)
+GZ_W_M_ZWP(1:IIT, 1:IJT, 1:IKT) = ZGZ_W_M3D_WORK1(1:IIT, 1:IJT, 1:IKT)
 !$mnh_end_expand_array(JI=1:IIT,JJ=1:IJT,JK=1:IKT)
 !$acc end kernels
 !

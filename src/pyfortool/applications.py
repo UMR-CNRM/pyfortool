@@ -34,7 +34,8 @@ import os
 import re
 
 from pyfortool.util import debugDecor, alltext, n2name, isStmt, PYFTError, tag, noParallel
-from pyfortool.expressions import createExpr, createExprPart, createElem, simplifyExpr
+from pyfortool.expressions import (createExpr, createExprPart, createElem,
+                                   simplifyExpr, createArrayBounds)
 from pyfortool.tree import updateTree
 from pyfortool.variables import updateVarList
 from pyfortool import NAMESPACE
@@ -1582,7 +1583,8 @@ class Applications():
             if not scope.varList.findVar(workingVar):
                 scope.addVar([[scope.path, workingVar, dimWorkingVar + workingVar, None]])
 
-            return callStmt, computeStmt, nbzshugradwk, newFuncName, localVariables
+            return (callStmt, computeStmt, nbzshugradwk, newFuncName,
+                    localVariables, mnhExpandArrayIndexes)
 
         shumansGradients = {'MZM': 0, 'MXM': 0, 'MYM': 0, 'MZF': 0, 'MXF': 0, 'MYF': 0,
                             'DZM': 0, 'DXM': 0, 'DYM': 0, 'DZF': 0, 'DXF': 0, 'DYF': 0,
@@ -1727,7 +1729,8 @@ class Applications():
                                                            nbzshugradwk, arrayDim,
                                                            dimWorkingVar)
                                     (newCallStmt, newComputeStmt,
-                                     nbzshugradwk, newFuncName, lv) = result
+                                     nbzshugradwk, newFuncName, lv,
+                                     mnhExpandArrayIndexes) = result
                                     localVariablesToAdd.update(lv)
                                     subToInclude.add(newFuncName)
                                     # Update the list of elements to check if there are still
@@ -1738,7 +1741,8 @@ class Applications():
                                     # to be checked and add Parenthesis to arrays for mnh_expand
                                     if len(newComputeStmt) > 0:
                                         elemToLookFor.append(newComputeStmt)
-                                        computeStmtforParenthesis.append(newComputeStmt)
+                                        computeStmtforParenthesis.append(
+                                            [newComputeStmt, mnhExpandArrayIndexes])
                                         # Allow to save that this newComputeStmt comes with 2
                                         # extra lines before and after
                                         # (mnh_expand and acc directives)
@@ -1760,18 +1764,35 @@ class Applications():
                         if nbzshugradwk > maxnbZshugradwk:
                             maxnbZshugradwk = nbzshugradwk
 
-                    # Add parenthesis around all variables, except in call
-                    if tag(foundStmtandCalls[stmt][0]) != 'call-stmt':
-                        scope.addArrayParenthesesInNode(foundStmtandCalls[stmt][0])
-
-                    # For the last compute statement, add mnh_expand and acc
+                    # For the last compute statement, add parenthesis around all
+                    # variables (with actual index ranges), mnh_expand and acc
                     # kernels if not call statement
                     if tag(foundStmtandCalls[stmt][0]) != 'call-stmt':
-                        # get mnhExpandArrayIndexes
-                        # Here dimSuffRoutine, dimSuffVar are not used
                         dimSuffRoutine, dimSuffVar, mnhExpandArrayIndexes, lv = \
                             getDimsAndMNHExpandIndexes(arrayDim, dimWorkingVar)
                         localVariablesToAdd.update(lv)
+
+                        scope.addArrayParenthesesInNode(foundStmtandCalls[stmt][0])
+                        # Convert (:,:) to explicit bounds from mnh_expand directive
+                        table = {c.split('=')[0]: c.split('=')[1].split(':')
+                                 for c in mnhExpandArrayIndexes.split(',')}
+                        table.pop('OPENACC', None)
+                        for namedE in foundStmtandCalls[stmt][0].findall(
+                                './/{*}R-LT/..'):
+                            arrayR = namedE.find('./{*}R-LT/{*}array-R')
+                            if arrayR is None:
+                                continue
+                            ivar = -1
+                            for ss in arrayR.findall(
+                                    './{*}section-subscript-LT/{*}section-subscript'):
+                                if ':' in (ss.text or ''):
+                                    ivar += 1
+                                    varName = list(table.keys())[ivar]
+                                    lowerStr, upperStr = table[varName]
+                                    lb, ub = createArrayBounds(
+                                        lowerStr, upperStr, 'ARRAY')
+                                    ss.text = ''
+                                    ss.extend([lb, ub])
 
                         parStmt = scope.getParent(foundStmtandCalls[stmt][0])
                         indexForCall = list(parStmt).index(foundStmtandCalls[stmt][0])
@@ -1786,11 +1807,30 @@ class Applications():
                         parStmt.insert(indexForCall + 4,
                                        createElem('C', text="!$acc end kernels", tail='\n'))
                         parStmt.insert(indexForCall + 5,
-                                       createElem('C', text="!", tail='\n'))  # For readibility
+                                       createElem('C', text="!", tail='\n'))
 
                 # For all saved intermediate newComputeStmt, add parenthesis around all variables
-                for stmt in computeStmtforParenthesis:
+                # (with actual index ranges from mnh_expand)
+                for stmt, mnhExpandArrayIndexes in computeStmtforParenthesis:
                     scope.addArrayParenthesesInNode(stmt)
+                    table = {c.split('=')[0]: c.split('=')[1].split(':')
+                             for c in mnhExpandArrayIndexes.split(',')}
+                    table.pop('OPENACC', None)
+                    for namedE in stmt.findall('.//{*}R-LT/..'):
+                        arrayR = namedE.find('./{*}R-LT/{*}array-R')
+                        if arrayR is None:
+                            continue
+                        ivar = -1
+                        for ss in arrayR.findall(
+                                './{*}section-subscript-LT/{*}section-subscript'):
+                            if ':' in (ss.text or ''):
+                                ivar += 1
+                                varName = list(table.keys())[ivar]
+                                lowerStr, upperStr = table[varName]
+                                lb, ub = createArrayBounds(
+                                    lowerStr, upperStr, 'ARRAY')
+                                ss.text = ''
+                                ss.extend([lb, ub])
 
                 # Add the use statements
                 moduleVars = []
