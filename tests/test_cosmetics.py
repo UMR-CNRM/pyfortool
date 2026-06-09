@@ -345,3 +345,220 @@ END MODULE MOD_EMPTY
         pft_empty_contains.removeEmptyCONTAINS()
         result = pft_empty_contains.fortran
         assert 'CONTAINS' not in result
+
+
+class TestCosmeticsFormatModuleUse:
+    """Tests for formatModuleUse method."""
+
+    @pytest.fixture
+    def fortran_unordered_use(self):
+        """FORTRAN code with unordered USE declarations."""
+        return """
+MODULE MOD_TARGET
+    USE MODI_FOO
+    USE MODD_PARAM
+    USE MODN_NAMELIST
+    USE MODE_ENV
+    USE MODD_DATA
+    USE MODI_BAR
+    IMPLICIT NONE
+CONTAINS
+    SUBROUTINE SUB
+        USE MODD_LOCAL
+        USE MODI_UTIL
+        USE MODE_HELPER
+        IMPLICIT NONE
+        INTEGER :: X
+        X = 1
+    END SUBROUTINE SUB
+END MODULE MOD_TARGET
+"""
+
+    @pytest.fixture
+    def fortran_mixed_case_use(self):
+        """FORTRAN code with mixed case USE declarations."""
+        return """
+MODULE MOD_MIXED
+    USE modi_foo
+    USE MODD_bar
+    USE mode_baz
+    USE Modd_qux
+    IMPLICIT NONE
+END MODULE MOD_MIXED
+"""
+
+    @pytest.fixture
+    def fortran_use_with_only(self):
+        """FORTRAN code with ONLY clauses in USE."""
+        return """
+MODULE MOD_ONLY
+    USE MODD_PARAM, ONLY: JPX, JPY
+    USE MODI_BAR, ONLY: bar_sub
+    USE MODD_DATA, ONLY: JPDATA
+    IMPLICIT NONE
+END MODULE MOD_ONLY
+"""
+
+    @pytest.fixture
+    def fortran_use_with_comments(self):
+        """FORTRAN code with trailing comments on USE lines."""
+        return """
+MODULE MOD_COMMENT
+    USE MODI_FOO   ! Interface for FOO
+    USE MODD_PARAM ! Data parameters
+    USE MODE_ENV   ! Environment setup
+    IMPLICIT NONE
+END MODULE MOD_COMMENT
+"""
+
+    @pytest.fixture
+    def fortran_use_mixed_case_only(self):
+        """FORTRAN code with mixed-case in ONLY clause."""
+        return """
+MODULE MOD_MIXED_ONLY
+    USE modd_params, ONLY: jpx, Jpy
+    USE modi_routines, ONLY: bar_Sub
+    IMPLICIT NONE
+END MODULE MOD_MIXED_ONLY
+"""
+
+    @pytest.fixture
+    def pft_unordered_use(self, fortran_unordered_use):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fpath = os.path.join(tmpdir, 'test.F90')
+            with open(fpath, 'w') as f:
+                f.write(fortran_unordered_use)
+            return PYFT(fpath)
+
+    @pytest.fixture
+    def pft_mixed_case_use(self, fortran_mixed_case_use):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fpath = os.path.join(tmpdir, 'test.F90')
+            with open(fpath, 'w') as f:
+                f.write(fortran_mixed_case_use)
+            return PYFT(fpath)
+
+    @pytest.fixture
+    def pft_use_with_only(self, fortran_use_with_only):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fpath = os.path.join(tmpdir, 'test.F90')
+            with open(fpath, 'w') as f:
+                f.write(fortran_use_with_only)
+            return PYFT(fpath)
+
+    @pytest.fixture
+    def pft_use_with_comments(self, fortran_use_with_comments):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fpath = os.path.join(tmpdir, 'test.F90')
+            with open(fpath, 'w') as f:
+                f.write(fortran_use_with_comments)
+            return PYFT(fpath)
+
+    @pytest.fixture
+    def pft_use_mixed_case_only(self, fortran_use_mixed_case_only):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fpath = os.path.join(tmpdir, 'test.F90')
+            with open(fpath, 'w') as f:
+                f.write(fortran_use_mixed_case_only)
+            return PYFT(fpath)
+
+    def test_group_order(self, pft_unordered_use):
+        """Test that USE statements are grouped in MODD, MODE, MODI, MODN order."""
+        before = pft_unordered_use.fortran
+        assert 'USE MODI_FOO' in before
+        assert 'USE MODD_PARAM' in before
+
+        pft_unordered_use.formatModuleUse()
+        result = pft_unordered_use.fortran
+
+        modd_idx = result.index('USE MODD_PARAM')
+        mode_idx = result.index('USE MODE_ENV')
+        modi_foo_idx = result.index('USE MODI_FOO')
+        modi_bar_idx = result.index('USE MODI_BAR')
+        modn_idx = result.index('USE MODN_NAMELIST')
+
+        assert modd_idx < mode_idx < modi_foo_idx < modn_idx
+        assert modi_bar_idx < modn_idx
+
+    def test_alphabetical_order_within_group(self, pft_unordered_use):
+        """Test that USE statements are sorted alphabetically within each group."""
+        pft_unordered_use.formatModuleUse()
+        result = pft_unordered_use.fortran
+
+        modd_data = result.index('USE MODD_DATA')
+        modd_param = result.index('USE MODD_PARAM')
+        assert modd_data < modd_param
+
+        modi_bar = result.index('USE MODI_BAR')
+        modi_foo = result.index('USE MODI_FOO')
+        assert modi_bar < modi_foo
+
+    def test_uppercase_only_after_comma(self, pft_mixed_case_use):
+        """Test that upper=True only uppercases text after the comma (ONLY clause),
+        not the module name."""
+        pft_mixed_case_use.formatModuleUse(upper=True)
+        result = pft_mixed_case_use.fortran
+
+        # Module names preserved as-is (no comma in these, so no change)
+        assert 'USE modi_foo' in result
+        assert 'USE MODD_bar' in result
+        assert 'USE mode_baz' in result
+
+    def test_preserve_case_when_upper_false(self, pft_mixed_case_use):
+        """Test that original case is preserved when upper=False."""
+        pft_mixed_case_use.formatModuleUse(upper=False)
+        result = pft_mixed_case_use.fortran
+
+        assert 'USE modi_foo' in result
+        assert 'USE mode_baz' in result
+
+    def test_preserves_only_clause(self, pft_use_with_only):
+        """Test that ONLY clauses are preserved after formatting."""
+        pft_use_with_only.formatModuleUse()
+        result = pft_use_with_only.fortran
+
+        assert 'ONLY: JPX' in result or 'ONLY: JPX, JPY' in result
+        assert 'USE MODD_DATA' in result
+        assert 'USE MODD_PARAM' in result
+        assert 'USE MODI_BAR' in result
+
+    def test_subroutine_use_statements(self, pft_unordered_use):
+        """Test that USE statements in subroutines are also formatted."""
+        pft_unordered_use.formatModuleUse()
+        result = pft_unordered_use.fortran
+
+        lines = [l.strip() for l in result.split('\n')]
+        sub_uses = [l for l in lines if l.startswith('USE MOD') and
+                    'MODULE MOD_TARGET' not in l]
+
+        assert 'USE MODD_LOCAL' in sub_uses or 'USE MODD_LOCAL' in result
+        assert 'USE MODE_HELPER' in sub_uses or 'USE MODE_HELPER' in result
+        assert 'USE MODI_UTIL' in sub_uses or 'USE MODI_UTIL' in result
+
+    def test_no_use_statements(self, pft_module):
+        """Test that code without USE statements is unchanged."""
+        before = pft_module.fortran
+        pft_module.formatModuleUse()
+        result = pft_module.fortran
+        assert result == before
+
+    def test_preserves_trailing_comments(self, pft_use_with_comments):
+        """Test that trailing comments stay with their USE statement after reordering."""
+        pft_use_with_comments.formatModuleUse()
+        result = pft_use_with_comments.fortran
+
+        assert 'USE MODD_PARAM ! Data parameters' in result
+        assert 'USE MODE_ENV   ! Environment setup' in result
+        assert 'USE MODI_FOO   ! Interface for FOO' in result
+
+    def test_upper_uppercases_only_vars(self, pft_use_mixed_case_only):
+        """Test that upper=True uppercases variable names in ONLY clause."""
+        pft_use_mixed_case_only.formatModuleUse(upper=True)
+        result = pft_use_mixed_case_only.fortran
+
+        # Module names are NOT uppercased
+        assert 'USE modd_params' in result
+        assert 'USE modi_routines' in result
+        # ONLY clause vars ARE uppercased
+        assert ', ONLY: JPX, JPY' in result
+        assert ', ONLY: BAR_SUB' in result

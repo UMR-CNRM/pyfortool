@@ -122,7 +122,7 @@ tests/
 │   ├── TestIsNodeInProcedure
 │   └── TestIsNodeInCall
 │
-├── test_cosmetics.py              # Cosmetics mixin (16 tests)
+├── test_cosmetics.py              # Cosmetics mixin (23 tests)
 │   ├── TestCosmeticsCase          # upperCase, lowerCase
 │   ├── TestCosmeticsIndent        # indent method
 │   ├── TestCosmeticsComments      # removeComments
@@ -130,7 +130,8 @@ tests/
 │   ├── TestCosmeticsContinuation
 │   ├── TestCosmeticsSpaces
 │   ├── TestCosmeticsIfStatements
-│   └── TestCosmeticsContains
+│   ├── TestCosmeticsContains
+│   └── TestCosmeticsFormatModuleUse  # formatModuleUse
 │
 ├── test_cpp.py                    # Cpp mixin (12 tests)
 │   ├── TestCppApplyIfdef          # #ifdef evaluation

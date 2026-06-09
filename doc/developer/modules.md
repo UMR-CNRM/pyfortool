@@ -216,6 +216,7 @@ pft.setFalseIfStmt(['LDEBUG', 'LVERBOSE'], simplify=True)
 | `updateContinuation()` | Handle line continuations |
 | `prettify()` | Full formatting |
 | `minify()` | Compact formatting |
+| `formatModuleUse(upper)` | Order USE statements by module type and alphabetically; uppercase ONLY clause vars |
 
 ### Usage
 

@@ -224,6 +224,10 @@ surrounded by spaces...
 
 **--removeEmptyCONTAINS** removes CONTAINS statement when the section is empty
 
+**--formatModuleUse** orders USE declarations by module type (MODD_, MODE_,
+MODI_, MODN_) and alphabetically within each group. Variable names in
+ONLY clauses are converted to uppercase; module names are preserved as-is.
+
 ### Checks
 
 **--checkIMPLICIT=Warn\|Err** if the 'IMPLICIT NONE' statment is missing,

@@ -495,6 +495,9 @@ def updateParserCosmetics(parser):
                             help='Simplify the source code (indentation, spaces...)')
     gCosmetics.add_argument('--removeEmptyCONTAINS', default=False, action='store_true',
                             help='Remove useless CONTAINS statements')
+    gCosmetics.add_argument('--formatModuleUse', default=False, action='store_true',
+                            help='Order USE declarations by module type (MODD_, MODE_, ' +
+                            'MODI_, MODN_) and alphabetically within each group')
 
 
 def updateParserApplications(parser):
@@ -942,6 +945,8 @@ def applyTransfoCosmetics(pft, arg, args):
         pft.updateContinuation(align=False, removeALL=True, addBegin=False)
     elif arg == '--removeEmptyCONTAINS':
         pft.removeEmptyCONTAINS()
+    elif arg == '--formatModuleUse':
+        pft.formatModuleUse()
 
 
 def applyTransfoChecks(pft, arg, args):
