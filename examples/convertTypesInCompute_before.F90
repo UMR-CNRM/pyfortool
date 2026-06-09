@@ -363,7 +363,9 @@ ZINV_TSTEP=1./PTSTEP
 !
 ! LSFACT and LVFACT without exner, and LLMICRO
 ! LLMICRO is a mask with a True value on points where microphysics is active
-ZRSMIN(1:KRR) = ICED%XRTMIN(1:KRR) * ZINV_TSTEP
+DO JRR=1,KIRR
+  ZRSMIN(JRR) = ICED%XRTMIN(JRR) * ZINV_TSTEP
+END DO 
 LLMICRO(:,:)=.FALSE.
 DO JK = IKTB,IKTE
   DO JIJ = IIJB,IIJE

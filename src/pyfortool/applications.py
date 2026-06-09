@@ -273,7 +273,20 @@ class Applications():
         - Does not handle arrays with deferred shapes
         - Type components must have known dimensions
         """
-        def convertOneType(component, newVarList, scope):
+        def _getShapeFromLHS(aStmt, scope):
+            """
+            Get array shape from the LHS variable declaration.
+            """
+            e1 = aStmt[0]
+            varNode = e1.find('.//{*}N/{*}n')
+            if varNode is None:
+                return None
+            varDesc = scope.varList.findVar(varNode.text)
+            if varDesc is None or not varDesc.get('as') or len(varDesc['as']) == 0:
+                return None
+            return varDesc['as']
+
+        def convertOneType(component, newVarList, scope, aStmt=None):
             # 1) Build the name of the new variable
             objType = scope.getParent(component, 2)  # The object STR%VAR
             objTypeStr = alltext(objType).upper()
@@ -295,8 +308,30 @@ class Applications():
                 arrayIndices = arrayIndices + txt
             elif len(objType.findall('.//{*}element-LT')) > 0:
                 # Case with single element such as ICED%XRTMIN(1)
+                # Check if all elements are numeric constants
+                elements = []
                 for elem in objType.findall('.//{*}element'):
-                    arrayIndices = arrayIndices + alltext(elem)
+                    txt = alltext(elem)
+                    elements.append(txt)
+                    arrayIndices = arrayIndices + txt
+                allConst = all(t.lstrip('-').isdigit() for t in elements)
+                if not allConst and aStmt is not None:
+                    # Variable index case - try to get shape from LHS
+                    memberShape = _getShapeFromLHS(aStmt, scope)
+                    if memberShape is not None:
+                        # Build name without index suffix
+                        newName = variable[0] + structure + variable[1:]
+                        newName = newName.upper()
+                        # Modify tree: replace name, remove only component-R
+                        namedENn.text = newName
+                        rlt = objType.find('.//{*}R-LT')
+                        compR = rlt.find('.//{*}component-R')
+                        rlt.remove(compR)
+                        # Store as 4-tuple: (memberShape, objTypeStr, structure, variable)
+                        if newName not in newVarList:
+                            newVarList[newName] = (memberShape, objTypeStr,
+                                                   structure, variable)
+                        return
             newName = variable[0] + structure + variable[1:] + arrayIndices
             newName = newName.upper()
 
@@ -344,7 +379,8 @@ class Applications():
                         if nbNamedEinE2 > 1 or nbNamedEinE2 == 1 and \
                            len(aStmt[0].findall('.//{*}R-LT')) == 1:
                             for elcompoE2 in compoE2:
-                                convertOneType(elcompoE2, newVarList, scope)
+                                convertOneType(elcompoE2, newVarList, scope,
+                                               aStmt=aStmt)
 
             # For converted variables (= newVarList), look for possible affection
             # If found, add an extra affection for the new variables
@@ -377,7 +413,21 @@ class Applications():
                                     el + ' in convertTypesInCompute')
                 varArray = ''
                 # Handle the case the variable is an array
-                if var[0]:
+                if isinstance(var[0], list):
+                    # 4-tuple: shape derived from LHS variable declaration
+                    memberShape = var[0]
+                    varArray = ', DIMENSION('
+                    for i, bound in enumerate(memberShape):
+                        if i > 0:
+                            varArray += ','
+                        if bound[1]:
+                            varArray += bound[1]
+                        elif bound[0]:
+                            varArray += bound[0]
+                        else:
+                            varArray += ':'
+                    varArray += ')'
+                elif var[0]:
                     varArray = ', DIMENSION('
                     for i, sub in enumerate(var[0].findall('.//{*}section-subscript')):
                         if len(sub.findall('.//{*}upper-bound')) > 0:
@@ -394,7 +444,11 @@ class Applications():
                 scope.addVar([[scope.path, el, varType + varArray + ' :: ' + el, None]])
 
                 # Affectation
-                stmtAffect = createExpr(el + "=" + var[1])[0]
+                if isinstance(var[0], list):
+                    # 4-tuple: use structure%variable as RHS
+                    stmtAffect = createExpr(el + "=" + var[2] + '%' + var[3])[0]
+                else:
+                    stmtAffect = createExpr(el + "=" + var[1])[0]
                 scope.insertStatement(scope.indent(stmtAffect), first=True)
 
     @debugDecor
