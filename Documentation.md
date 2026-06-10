@@ -254,6 +254,11 @@ otherwise issue an error message and raise an exception.
 **--checkONLY=Warn\|Err* if a USE statement is not followed by an ONLY clause,
 issue a warning if option is 'Warn'; otherwise issue an error message and raise an exception.
 
+**--checkKeyDim=Warn\|Err** if a variable has MERGE-based array dimensions that
+are inconsistent across scopes (different MERGE content for the same variable
+name), issue a warning if option is 'Warn'; otherwise issue an error message
+and raise an exception.
+
 ### Dealing with statements
 
 **--removeCall CALLNAME** removes call statements. The argument is the subprogram name.

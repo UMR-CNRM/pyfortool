@@ -133,6 +133,7 @@ Manages variable declarations for a scope.
 | `checkImplicitNone()` | Check for IMPLICIT NONE |
 | `checkIntent()` | Check INTENT attributes |
 | `checkUnusedLocalVar()` | Find unused variables |
+| `checkKeyDimConsistency()` | Check MERGE-based array dims consistency |
 | `removeUnusedLocalVar()` | Remove unused variables |
 | `addExplicitArrayBounds()` | Expand A(:) to A(lbound:ubound) |
 | `addArrayParentheses()` | Add A to A(:) |

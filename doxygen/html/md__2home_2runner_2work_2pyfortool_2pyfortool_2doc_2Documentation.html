@@ -218,6 +218,7 @@ Checks</h2>
 <p><b>&ndash;checkUnusedLocalVar=Warn|Err</b> if a local variable is unused, issue a warning if option is 'Warn'; otherwise issue an error message and raise an exception.</p>
 <p><b>&ndash;checkPHYEXUnusedLocalVar=Warn|Err</b> if a local variable is unused (excluding variables needed for mnh_expand directives, issue a warning if option is 'Warn'; otherwise issue an error message and raise an exception.</p>
 <p>**&ndash;checkONLY=Warn|Err* if a USE statement is not followed by an ONLY clause, issue a warning if option is 'Warn'; otherwise issue an error message and raise an exception.</p>
+<p><b>&ndash;checkKeyDim=Warn|Err</b> if a variable has MERGE-based array dimensions that are inconsistent across scopes (different MERGE content for the same variable name), issue a warning if option is 'Warn'; otherwise issue an error message and raise an exception.</p>
 <h2><a class="anchor" id="autotoc_md22"></a>
 Dealing with statements</h2>
 <p><b>&ndash;removeCall CALLNAME</b> removes call statements. The argument is the subprogram name.</p>
