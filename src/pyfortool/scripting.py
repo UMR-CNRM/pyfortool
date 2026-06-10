@@ -975,10 +975,6 @@ def applyTransfoChecks(pft, arg, args, stopScopes):
     elif arg == '--checkONLY':
         pft.checkONLY(args.checkONLY == 'Err')
     elif arg == '--checkKeyDim':
-        if args.descTree is not None and stopScopes is None:
-            raise PYFTError(
-                "--checkKeyDim requires --stopScopes when --descTree "
-                "is provided")
         pft.checkKeyDimConsistency(args.checkKeyDim == 'Err',
                                    stopScopes=stopScopes)
 
