@@ -630,6 +630,9 @@ def updateParserChecks(parser):
     gChecks.add_argument('--checkONLY', choices={'Warn', 'Err'}, default=None,
                          help='Send a warning or raise an error if a USE statement is not '
                               'followed by an ONLY clause.')
+    gChecks.add_argument('--checkKeyDim', choices={'Warn', 'Err'}, default=None,
+                         help='Send a warning or raise an error if MERGE-based array '
+                              'dimensions are inconsistent across scopes.')
 
 
 def updateParserStatements(parser):
@@ -728,7 +731,7 @@ def applyTransfo(pft, arg, args, plotCentralFile):
     applyTransfoCosmetics(pft, arg, args)
 
     # Checks
-    applyTransfoChecks(pft, arg, args)
+    applyTransfoChecks(pft, arg, args, stopScopes)
 
     # Statements
     applyTransfoStatements(pft, arg, args, simplify)
@@ -949,12 +952,13 @@ def applyTransfoCosmetics(pft, arg, args):
         pft.formatModuleUse()
 
 
-def applyTransfoChecks(pft, arg, args):
+def applyTransfoChecks(pft, arg, args, stopScopes):
     """
     Apply checks transformations on a PYFT instance
     :param pft: PYFT instance
     :param arg: argument to deal with
     :param args: parsed argparsed arguments
+    :param stopScopes: list of scope paths or None
     """
     if arg == '--checkIMPLICIT':
         pft.checkImplicitNone(args.checkIMPLICIT == 'Err')
@@ -970,6 +974,9 @@ def applyTransfoChecks(pft, arg, args):
         pft.checkEmptyParensInCall(args.checkEmptyParensInCall == 'Err')
     elif arg == '--checkONLY':
         pft.checkONLY(args.checkONLY == 'Err')
+    elif arg == '--checkKeyDim':
+        pft.checkKeyDimConsistency(args.checkKeyDim == 'Err',
+                                   stopScopes=stopScopes)
 
 
 def applyTransfoStatements(pft, arg, args, simplify):

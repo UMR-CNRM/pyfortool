@@ -96,7 +96,7 @@ tests/
 │   ├── TestVarListProperty        # __len__, __getitem__
 │   └── TestVarListShowVarList
 │
-├── test_variables.py              # Variables mixin (23 tests)
+├── test_variables.py              # Variables mixin (27 tests)
 │   ├── TestAttachArraySpecToEntity# DIMENSION to entity
 │   ├── TestCheckImplicitNone      # IMPLICIT NONE check
 │   ├── TestCheckIntent            # INTENT attribute check
@@ -110,7 +110,8 @@ tests/
 │   ├── TestRemoveVarIfUnused
 │   ├── TestAddVar
 │   ├── TestRemoveVar
-│   └── TestRenameVar
+│   ├── TestRenameVar
+│   └── TestCheckKeyDimConsistency    # MERGE-based dims check
 │
 ├── test_statements.py             # Statements mixin (14 tests)
 │   ├── TestRemoveCall             # Remove CALL statements
