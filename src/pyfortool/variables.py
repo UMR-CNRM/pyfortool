@@ -607,6 +607,71 @@ class Variables():
         return ok
 
     @debugDecor
+    def checkKeyDimConsistency(self, mustRaise=False, stopScopes=None):
+        """
+        Check consistency of MERGE-based array dimensions across scopes.
+
+        For each variable name that has a MERGE-based dimension in any scope,
+        verify that all occurrences of the same variable name use the same
+        MERGE expression (full content inside MERGE()).
+
+        Parameters
+        ----------
+        mustRaise : bool, optional
+            If False (default), issue warnings and continue.
+            If True, issue errors and raise PYFTError.
+        stopScopes : list of str, optional
+            Scope paths to use as roots for call tree filtering.
+            When provided (and the tree is available), only scopes
+            called by these roots are checked.
+
+        Examples
+        --------
+        >>> pft = PYFT('input.F90')
+        >>> pft.checkKeyDimConsistency()
+        >>> pft.checkKeyDimConsistency(mustRaise=True)
+        """
+        ok = True
+        log = logging.error if mustRaise else logging.warning
+        mergeVars = {}
+
+        for scope in self.getScopes():
+            if (stopScopes is not None and
+                    self.tree.isValid):
+                if not self.tree.isUnderStopScopes(
+                        scope.path, stopScopes, includeStopScopes=True):
+                    continue
+            for var in self.varList:
+                if var['as'] is None:
+                    continue
+                for dim in var['as']:
+                    upper = dim[1]
+                    if upper is not None and 'MERGE(' in upper.upper():
+                        match = re.match(
+                            r'^MERGE\((.+)\)$', upper.strip(), re.IGNORECASE)
+                        if match:
+                            mergeContent = match.group(1)
+                            varName = var['n'].upper()
+                            if varName not in mergeVars:
+                                mergeVars[varName] = {}
+                            if mergeContent not in mergeVars[varName]:
+                                mergeVars[varName][mergeContent] = []
+                            mergeVars[varName][mergeContent].append(
+                                scope.path)
+
+        for varName, mergeGroups in mergeVars.items():
+            if len(mergeGroups) > 1:
+                for mergeContent, scopes in mergeGroups.items():
+                    msg = (f"Variable {varName} has MERGE dimension "
+                           f"'MERGE({mergeContent})' in {', '.join(scopes)}.")
+                    ok = False
+                    log(msg)
+
+        if not ok and mustRaise:
+            raise PYFTError("Inconsistent MERGE-based array dimensions found.")
+        return ok
+
+    @debugDecor
     @noParallel
     @updateVarList
     @updateTree('signal')

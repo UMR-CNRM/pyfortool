@@ -480,3 +480,101 @@ END MODULE MOD_RENAME
         
         assert 'OLD_NAME' not in after
         assert 'NEW_NAME' in after
+
+
+class TestCheckKeyDimConsistency:
+    """Tests for checkKeyDimConsistency() method."""
+
+    @pytest.fixture
+    def fortran_merge_consistent(self):
+        """FORTRAN code with consistent MERGE dimensions."""
+        return """
+MODULE MOD_MERGE
+    IMPLICIT NONE
+CONTAINS
+    SUBROUTINE PARENT(A)
+        REAL, DIMENSION(MERGE(10,0,FLAG)), INTENT(INOUT) :: A
+        A = 0
+    END SUBROUTINE PARENT
+    SUBROUTINE CHILD(A)
+        REAL, DIMENSION(MERGE(10,0,FLAG)), INTENT(INOUT) :: A
+        A = 0
+    END SUBROUTINE CHILD
+END MODULE MOD_MERGE
+"""
+
+    @pytest.fixture
+    def fortran_merge_inconsistent(self):
+        """FORTRAN code with inconsistent MERGE dimensions."""
+        return """
+MODULE MOD_MERGE_BAD
+    IMPLICIT NONE
+CONTAINS
+    SUBROUTINE PARENT(A)
+        REAL, DIMENSION(MERGE(10,0,FLAG)), INTENT(INOUT) :: A
+        A = 0
+    END SUBROUTINE PARENT
+    SUBROUTINE CHILD(A)
+        REAL, DIMENSION(MERGE(20,0,OTHER)), INTENT(INOUT) :: A
+        A = 0
+    END SUBROUTINE CHILD
+END MODULE MOD_MERGE_BAD
+"""
+
+    @pytest.fixture
+    def fortran_merge_none(self):
+        """FORTRAN code without MERGE dimensions."""
+        return """
+MODULE MOD_NO_MERGE
+    IMPLICIT NONE
+CONTAINS
+    SUBROUTINE SUB(A)
+        REAL, INTENT(INOUT) :: A
+        A = 0
+    END SUBROUTINE SUB
+END MODULE MOD_NO_MERGE
+"""
+
+    @pytest.fixture
+    def pft_merge_consistent(self, fortran_merge_consistent):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fpath = os.path.join(tmpdir, 'test.F90')
+            with open(fpath, 'w') as f:
+                f.write(fortran_merge_consistent)
+            return PYFT(fpath)
+
+    @pytest.fixture
+    def pft_merge_inconsistent(self, fortran_merge_inconsistent):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fpath = os.path.join(tmpdir, 'test.F90')
+            with open(fpath, 'w') as f:
+                f.write(fortran_merge_inconsistent)
+            return PYFT(fpath)
+
+    @pytest.fixture
+    def pft_merge_none(self, fortran_merge_none):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fpath = os.path.join(tmpdir, 'test.F90')
+            with open(fpath, 'w') as f:
+                f.write(fortran_merge_none)
+            return PYFT(fpath)
+
+    def test_consistent_merge_returns_true(self, pft_merge_consistent):
+        """Test with consistent MERGE dims returns True."""
+        result = pft_merge_consistent.checkKeyDimConsistency()
+        assert result is True
+
+    def test_inconsistent_merge_returns_false(self, pft_merge_inconsistent):
+        """Test with inconsistent MERGE dims returns False."""
+        result = pft_merge_inconsistent.checkKeyDimConsistency()
+        assert result is False
+
+    def test_inconsistent_merge_raises(self, pft_merge_inconsistent):
+        """Test with inconsistent MERGE dims raises when mustRaise=True."""
+        with pytest.raises(Exception):
+            pft_merge_inconsistent.checkKeyDimConsistency(mustRaise=True)
+
+    def test_no_merge_returns_true(self, pft_merge_none):
+        """Test without MERGE dims returns True."""
+        result = pft_merge_none.checkKeyDimConsistency()
+        assert result is True
