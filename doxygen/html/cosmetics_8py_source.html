@@ -1195,39 +1195,52 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l01091" name="l01091"></a><span class="lineno"> 1091</span>                groups[prefix].sort(key=<span class="keyword">lambda</span> g: _getModuleName(g[0]).upper())</div>
 <div class="line"><a id="l01092" name="l01092"></a><span class="lineno"> 1092</span>            other.sort(key=<span class="keyword">lambda</span> g: _getModuleName(g[0]).upper())</div>
 <div class="line"><a id="l01093" name="l01093"></a><span class="lineno"> 1093</span> </div>
-<div class="line"><a id="l01094" name="l01094"></a><span class="lineno"> 1094</span>            ordered = []</div>
-<div class="line"><a id="l01095" name="l01095"></a><span class="lineno"> 1095</span>            <span class="keywordflow">for</span> prefix <span class="keywordflow">in</span> SORTED_GROUPS:</div>
-<div class="line"><a id="l01096" name="l01096"></a><span class="lineno"> 1096</span>                ordered.extend(groups[prefix])</div>
-<div class="line"><a id="l01097" name="l01097"></a><span class="lineno"> 1097</span>            ordered.extend(other)</div>
-<div class="line"><a id="l01098" name="l01098"></a><span class="lineno"> 1098</span> </div>
-<div class="line"><a id="l01099" name="l01099"></a><span class="lineno"> 1099</span>            firstIdx = <span class="keywordtype">None</span></div>
-<div class="line"><a id="l01100" name="l01100"></a><span class="lineno"> 1100</span>            <span class="keywordflow">for</span> i, child <span class="keywordflow">in</span> enumerate(progUnit):</div>
-<div class="line"><a id="l01101" name="l01101"></a><span class="lineno"> 1101</span>                <span class="keywordflow">if</span> tag(child) == <span class="stringliteral">&#39;use-stmt&#39;</span>:</div>
-<div class="line"><a id="l01102" name="l01102"></a><span class="lineno"> 1102</span>                    firstIdx = i</div>
-<div class="line"><a id="l01103" name="l01103"></a><span class="lineno"> 1103</span>                    <span class="keywordflow">break</span></div>
-<div class="line"><a id="l01104" name="l01104"></a><span class="lineno"> 1104</span> </div>
-<div class="line"><a id="l01105" name="l01105"></a><span class="lineno"> 1105</span>            <span class="keywordflow">if</span> firstIdx <span class="keywordflow">is</span> <span class="keywordflow">not</span> <span class="keywordtype">None</span>:</div>
-<div class="line"><a id="l01106" name="l01106"></a><span class="lineno"> 1106</span>                <span class="keywordflow">for</span> stmt, comments <span class="keywordflow">in</span> useGroups:</div>
-<div class="line"><a id="l01107" name="l01107"></a><span class="lineno"> 1107</span>                    progUnit.remove(stmt)</div>
-<div class="line"><a id="l01108" name="l01108"></a><span class="lineno"> 1108</span>                    <span class="keywordflow">for</span> c <span class="keywordflow">in</span> comments:</div>
-<div class="line"><a id="l01109" name="l01109"></a><span class="lineno"> 1109</span>                        progUnit.remove(c)</div>
-<div class="line"><a id="l01110" name="l01110"></a><span class="lineno"> 1110</span>                idx = firstIdx</div>
-<div class="line"><a id="l01111" name="l01111"></a><span class="lineno"> 1111</span>                <span class="keywordflow">for</span> stmt, comments <span class="keywordflow">in</span> ordered:</div>
-<div class="line"><a id="l01112" name="l01112"></a><span class="lineno"> 1112</span>                    progUnit.insert(idx, stmt)</div>
-<div class="line"><a id="l01113" name="l01113"></a><span class="lineno"> 1113</span>                    idx += 1</div>
-<div class="line"><a id="l01114" name="l01114"></a><span class="lineno"> 1114</span>                    <span class="keywordflow">for</span> c <span class="keywordflow">in</span> comments:</div>
-<div class="line"><a id="l01115" name="l01115"></a><span class="lineno"> 1115</span>                        progUnit.insert(idx, c)</div>
-<div class="line"><a id="l01116" name="l01116"></a><span class="lineno"> 1116</span>                        idx += 1</div>
+<div class="line"><a id="l01094" name="l01094"></a><span class="lineno"> 1094</span>            <span class="keyword">def </span>_addSep(ordered):</div>
+<div class="line"><a id="l01095" name="l01095"></a><span class="lineno"> 1095</span>                prev_stmt, prev_comments = ordered[-1]</div>
+<div class="line"><a id="l01096" name="l01096"></a><span class="lineno"> 1096</span>                <span class="keywordflow">if</span> prev_comments:</div>
+<div class="line"><a id="l01097" name="l01097"></a><span class="lineno"> 1097</span>                    prev_comments[-1].tail = (prev_comments[-1].tail <span class="keywordflow">or</span> <span class="stringliteral">&#39;&#39;</span>).rstrip(<span class="stringliteral">&#39;\n&#39;</span>) + <span class="stringliteral">&#39;\n!\n&#39;</span></div>
+<div class="line"><a id="l01098" name="l01098"></a><span class="lineno"> 1098</span>                <span class="keywordflow">else</span>:</div>
+<div class="line"><a id="l01099" name="l01099"></a><span class="lineno"> 1099</span>                    prev_stmt.tail = (prev_stmt.tail <span class="keywordflow">or</span> <span class="stringliteral">&#39;&#39;</span>).rstrip(<span class="stringliteral">&#39;\n&#39;</span>) + <span class="stringliteral">&#39;\n!\n&#39;</span></div>
+<div class="line"><a id="l01100" name="l01100"></a><span class="lineno"> 1100</span> </div>
+<div class="line"><a id="l01101" name="l01101"></a><span class="lineno"> 1101</span>            ordered = []</div>
+<div class="line"><a id="l01102" name="l01102"></a><span class="lineno"> 1102</span>            <span class="keywordflow">for</span> prefix <span class="keywordflow">in</span> SORTED_GROUPS:</div>
+<div class="line"><a id="l01103" name="l01103"></a><span class="lineno"> 1103</span>                <span class="keywordflow">if</span> groups[prefix]:</div>
+<div class="line"><a id="l01104" name="l01104"></a><span class="lineno"> 1104</span>                    <span class="keywordflow">if</span> ordered:</div>
+<div class="line"><a id="l01105" name="l01105"></a><span class="lineno"> 1105</span>                        _addSep(ordered)</div>
+<div class="line"><a id="l01106" name="l01106"></a><span class="lineno"> 1106</span>                    ordered.extend(groups[prefix])</div>
+<div class="line"><a id="l01107" name="l01107"></a><span class="lineno"> 1107</span>            <span class="keywordflow">if</span> other:</div>
+<div class="line"><a id="l01108" name="l01108"></a><span class="lineno"> 1108</span>                <span class="keywordflow">if</span> ordered:</div>
+<div class="line"><a id="l01109" name="l01109"></a><span class="lineno"> 1109</span>                    _addSep(ordered)</div>
+<div class="line"><a id="l01110" name="l01110"></a><span class="lineno"> 1110</span>                ordered.extend(other)</div>
+<div class="line"><a id="l01111" name="l01111"></a><span class="lineno"> 1111</span> </div>
+<div class="line"><a id="l01112" name="l01112"></a><span class="lineno"> 1112</span>            firstIdx = <span class="keywordtype">None</span></div>
+<div class="line"><a id="l01113" name="l01113"></a><span class="lineno"> 1113</span>            <span class="keywordflow">for</span> i, child <span class="keywordflow">in</span> enumerate(progUnit):</div>
+<div class="line"><a id="l01114" name="l01114"></a><span class="lineno"> 1114</span>                <span class="keywordflow">if</span> tag(child) == <span class="stringliteral">&#39;use-stmt&#39;</span>:</div>
+<div class="line"><a id="l01115" name="l01115"></a><span class="lineno"> 1115</span>                    firstIdx = i</div>
+<div class="line"><a id="l01116" name="l01116"></a><span class="lineno"> 1116</span>                    <span class="keywordflow">break</span></div>
 <div class="line"><a id="l01117" name="l01117"></a><span class="lineno"> 1117</span> </div>
-<div class="line"><a id="l01118" name="l01118"></a><span class="lineno"> 1118</span>            <span class="keywordflow">if</span> upper:</div>
-<div class="line"><a id="l01119" name="l01119"></a><span class="lineno"> 1119</span>                <span class="keywordflow">for</span> stmt, _ <span class="keywordflow">in</span> ordered:</div>
-<div class="line"><a id="l01120" name="l01120"></a><span class="lineno"> 1120</span>                    modN = stmt.find(<span class="stringliteral">&#39;.//{*}module-N&#39;</span>)</div>
-<div class="line"><a id="l01121" name="l01121"></a><span class="lineno"> 1121</span>                    modNNs = set(modN.findall(<span class="stringliteral">&#39;.//{*}n&#39;</span>)) <span class="keywordflow">if</span> modN <span class="keywordflow">is</span> <span class="keywordflow">not</span> <span class="keywordtype">None</span> <span class="keywordflow">else</span> set()</div>
-<div class="line"><a id="l01122" name="l01122"></a><span class="lineno"> 1122</span>                    <span class="keywordflow">for</span> n <span class="keywordflow">in</span> stmt.findall(<span class="stringliteral">&#39;.//{*}n&#39;</span>):</div>
-<div class="line"><a id="l01123" name="l01123"></a><span class="lineno"> 1123</span>                        <span class="keywordflow">if</span> n <span class="keywordflow">not</span> <span class="keywordflow">in</span> modNNs <span class="keywordflow">and</span> n.text:</div>
-<div class="line"><a id="l01124" name="l01124"></a><span class="lineno"> 1124</span>                            n.text = n.text.upper()</div>
-<div class="line"><a id="l01125" name="l01125"></a><span class="lineno"> 1125</span> </div>
-<div class="line"><a id="l01126" name="l01126"></a><span class="lineno"> 1126</span>        <span class="keywordflow">return</span> self</div>
+<div class="line"><a id="l01118" name="l01118"></a><span class="lineno"> 1118</span>            <span class="keywordflow">if</span> firstIdx <span class="keywordflow">is</span> <span class="keywordflow">not</span> <span class="keywordtype">None</span>:</div>
+<div class="line"><a id="l01119" name="l01119"></a><span class="lineno"> 1119</span>                <span class="keywordflow">for</span> stmt, comments <span class="keywordflow">in</span> useGroups:</div>
+<div class="line"><a id="l01120" name="l01120"></a><span class="lineno"> 1120</span>                    progUnit.remove(stmt)</div>
+<div class="line"><a id="l01121" name="l01121"></a><span class="lineno"> 1121</span>                    <span class="keywordflow">for</span> c <span class="keywordflow">in</span> comments:</div>
+<div class="line"><a id="l01122" name="l01122"></a><span class="lineno"> 1122</span>                        progUnit.remove(c)</div>
+<div class="line"><a id="l01123" name="l01123"></a><span class="lineno"> 1123</span>                idx = firstIdx</div>
+<div class="line"><a id="l01124" name="l01124"></a><span class="lineno"> 1124</span>                <span class="keywordflow">for</span> stmt, comments <span class="keywordflow">in</span> ordered:</div>
+<div class="line"><a id="l01125" name="l01125"></a><span class="lineno"> 1125</span>                    progUnit.insert(idx, stmt)</div>
+<div class="line"><a id="l01126" name="l01126"></a><span class="lineno"> 1126</span>                    idx += 1</div>
+<div class="line"><a id="l01127" name="l01127"></a><span class="lineno"> 1127</span>                    <span class="keywordflow">for</span> c <span class="keywordflow">in</span> comments:</div>
+<div class="line"><a id="l01128" name="l01128"></a><span class="lineno"> 1128</span>                        progUnit.insert(idx, c)</div>
+<div class="line"><a id="l01129" name="l01129"></a><span class="lineno"> 1129</span>                        idx += 1</div>
+<div class="line"><a id="l01130" name="l01130"></a><span class="lineno"> 1130</span> </div>
+<div class="line"><a id="l01131" name="l01131"></a><span class="lineno"> 1131</span>            <span class="keywordflow">if</span> upper:</div>
+<div class="line"><a id="l01132" name="l01132"></a><span class="lineno"> 1132</span>                <span class="keywordflow">for</span> stmt, _ <span class="keywordflow">in</span> ordered:</div>
+<div class="line"><a id="l01133" name="l01133"></a><span class="lineno"> 1133</span>                    modN = stmt.find(<span class="stringliteral">&#39;.//{*}module-N&#39;</span>)</div>
+<div class="line"><a id="l01134" name="l01134"></a><span class="lineno"> 1134</span>                    modNNs = set(modN.findall(<span class="stringliteral">&#39;.//{*}n&#39;</span>)) <span class="keywordflow">if</span> modN <span class="keywordflow">is</span> <span class="keywordflow">not</span> <span class="keywordtype">None</span> <span class="keywordflow">else</span> set()</div>
+<div class="line"><a id="l01135" name="l01135"></a><span class="lineno"> 1135</span>                    <span class="keywordflow">for</span> n <span class="keywordflow">in</span> stmt.findall(<span class="stringliteral">&#39;.//{*}n&#39;</span>):</div>
+<div class="line"><a id="l01136" name="l01136"></a><span class="lineno"> 1136</span>                        <span class="keywordflow">if</span> n <span class="keywordflow">not</span> <span class="keywordflow">in</span> modNNs <span class="keywordflow">and</span> n.text:</div>
+<div class="line"><a id="l01137" name="l01137"></a><span class="lineno"> 1137</span>                            n.text = n.text.upper()</div>
+<div class="line"><a id="l01138" name="l01138"></a><span class="lineno"> 1138</span> </div>
+<div class="line"><a id="l01139" name="l01139"></a><span class="lineno"> 1139</span>        <span class="keywordflow">return</span> self</div>
 </div>
 </div>
 <div class="ttc" id="aclasspyfortool_1_1cosmetics_1_1Cosmetics_html"><div class="ttname"><a href="classpyfortool_1_1cosmetics_1_1Cosmetics.html">pyfortool.cosmetics.Cosmetics</a></div><div class="ttdef"><b>Definition</b> <a href="cosmetics_8py_source.html#l00036">cosmetics.py:36</a></div></div>
