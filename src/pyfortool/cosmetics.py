@@ -1091,10 +1091,23 @@ class Cosmetics():
                 groups[prefix].sort(key=lambda g: _getModuleName(g[0]).upper())
             other.sort(key=lambda g: _getModuleName(g[0]).upper())
 
+            def _addSep(ordered):
+                prev_stmt, prev_comments = ordered[-1]
+                if prev_comments:
+                    prev_comments[-1].tail = (prev_comments[-1].tail or '').rstrip('\n') + '\n!\n'
+                else:
+                    prev_stmt.tail = (prev_stmt.tail or '').rstrip('\n') + '\n!\n'
+
             ordered = []
             for prefix in SORTED_GROUPS:
-                ordered.extend(groups[prefix])
-            ordered.extend(other)
+                if groups[prefix]:
+                    if ordered:
+                        _addSep(ordered)
+                    ordered.extend(groups[prefix])
+            if other:
+                if ordered:
+                    _addSep(ordered)
+                ordered.extend(other)
 
             firstIdx = None
             for i, child in enumerate(progUnit):
