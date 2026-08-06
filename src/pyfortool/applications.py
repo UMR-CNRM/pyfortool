@@ -130,7 +130,7 @@ class Applications():
         """
         filename = self.getFileName()
         fortran = 'MODULE MODI_' + os.path.splitext(os.path.basename(filename))[0].upper() + \
-                  '\nEND MODULE'
+                  '\nEND MODULE MODI_' + os.path.splitext(os.path.basename(filename))[0].upper()
         modi = pyfortool.pyfortool.generateEmptyPYFT(
             os.path.join(os.path.dirname(filename), 'modi_' + os.path.basename(filename)), fortran)
         module = modi.find('.//{*}program-unit')
@@ -141,8 +141,30 @@ class Applications():
         for scope in self.getScopes(level=1):
             prog = createElem('program-unit')
             prog.append(copy.deepcopy(scope[0]))
-            for use in scope.findall('./use-stmt'):
-                prog.append(copy.deepcopy(use))
+            for comments in scope.findall('./{*}C'):
+                if '!$ACDC singlecolumn --nocreate-interface' in comments.text:
+                    prog.append(createExpr('!$ACDC singlecolumn')[0])
+                    break
+            derived_types = set()
+            for var in scope.varList:
+                if var['arg'] and var['t'] and 'TYPE(' in var['t'].replace(' ', '').upper():
+                    match = re.search(r'TYPE\s*\(\s*(\w+)\s*\)', var['t'], re.IGNORECASE)
+                    if match:
+                        derived_types.add(match.group(1).upper())
+            for use in scope.findall('./{*}use-stmt'):
+                imported = {}
+                for use_n in use.findall('.//{*}use-N'):
+                    name = n2name(use_n.find('.//{*}N'))
+                    imported[name.upper()] = name
+                needed_names = [imported[k] for k in (imported.keys() & derived_types)]
+                if needed_names:
+                    module_name = n2name(use.find('.//{*}module-N').find('.//{*}N'))
+                    if len(needed_names) == len(imported):
+                        prog.append(copy.deepcopy(use))
+                    else:
+                        only_list = ', '.join(sorted(needed_names))
+                        prog.extend(createExpr('USE {}, ONLY: {}'.format(
+                            module_name, only_list)))
             prog.append(createElem('implicit-none-stmt', text='IMPLICIT NONE', tail='\n'))
             for var in [var for var in scope.varList if var['arg'] or var['result']]:
                 prog.append(createExpr(self.varSpec2stmt(var, True))[0])

@@ -69,6 +69,10 @@ for file in $tests; do
     output=$(pyfortool --wrapH --tree . --descTree ${jsonpath}desctree.json --logLevel error \
              $file $trans $transfo 2>&1)
     res=$?
+    #buildModi generates a modi_ file: copy it to $trans for comparison
+    if [[ "$transfo" == "--buildModi" ]]; then
+      cp modi_buildModi_before.F90 $trans
+    fi
     if [[ $file == *_before.F90 ]]; then
       #Transformation must execute without error and must give the same result as reference
       [ "$output" != "" ] && echo "$output"
