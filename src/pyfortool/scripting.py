@@ -633,6 +633,9 @@ def updateParserChecks(parser):
     gChecks.add_argument('--checkKeyDim', choices={'Warn', 'Err'}, default=None,
                          help='Send a warning or raise an error if MERGE-based array '
                               'dimensions are inconsistent across scopes.')
+    gChecks.add_argument('--checkTopLevelUSE', choices={'Warn', 'Err'}, default=None,
+                         help='Send a warning or raise an error if a USE statement in '
+                              'top-level module is present')
 
 
 def updateParserStatements(parser):
@@ -977,6 +980,8 @@ def applyTransfoChecks(pft, arg, args, stopScopes):
     elif arg == '--checkKeyDim':
         pft.checkKeyDimConsistency(args.checkKeyDim == 'Err',
                                    stopScopes=stopScopes)
+    elif arg == '--checkTopLevelUSE':
+        pft.checkTopLevelUSE(args.checkTopLevelUSE == 'Err')
 
 
 def applyTransfoStatements(pft, arg, args, simplify):

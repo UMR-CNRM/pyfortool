@@ -607,6 +607,53 @@ class Variables():
         return ok
 
     @debugDecor
+    def checkTopLevelUSE(self, mustRaise=False):
+        """
+        Detect USE statements in top‑level modules.
+        Checks each module found at the root of the file.  For every
+        module, all ``<use‑stmt>`` elements are reported.  When
+        ``mustRaise`` is ``True`` an error is logged and a
+        :class:`PYFTError` is raised; otherwise a warning is produced.
+
+        Parameters
+        ----------
+        mustRaise : bool, optional
+            If ``False`` (default), issue warnings and continue.
+            If ``True``, issue errors and raise :class:`PYFTError`.
+        """
+        ok = True
+        modules = [s for s in self.getScopes(level=1, includeItself=False)
+                   if s.path.startswith('module:')]
+        if not modules:
+            return
+        log = logging.error if mustRaise else logging.warning
+        for module in modules:
+            use_elems = module.findall('./{*}use-stmt')
+            if not use_elems:
+                continue
+            # Emit information.  This stays identical to the original
+            # behaviour to keep backward compatibility.
+            print(f"Module {module.path} uses:")
+            for use in use_elems:
+                print(f"  {alltext(use).strip()}")
+            # Mark that we found at least one USE statement.
+            ok = False
+            if mustRaise:
+                log(f"USE statements found in top‑level module {module.path} of file ' \
+                    {self.getFileName()}'")
+            # List routines inside this module.
+            routines = [r for r in module.getScopes(level=2)
+                        if r.path.split('/')[-1].startswith(('sub:', 'func:'))]
+            if routines:
+                print(f"  Routines in module {module.path}:")
+                for r in routines:
+                    print(f"    {r.path}")
+        if not ok and mustRaise:
+            raise PYFTError(f"There are USE statements in top‑level modules in file ' \
+                            {self.getFileName()}'")
+        return ok
+
+    @debugDecor
     def checkKeyDimConsistency(self, mustRaise=False, stopScopes=None):
         """
         Check consistency of MERGE-based array dimensions across scopes.
