@@ -3,7 +3,7 @@ This module contains functions usefull to build scripts around the pyfortool lib
 """
 
 import sys
-from multiprocessing import cpu_count, Pool
+from multiprocessing import cpu_count, get_context
 from multiprocessing.managers import BaseManager
 import re
 import shlex
@@ -55,31 +55,33 @@ def task(filename):
         return (1, filename)
 
 
+class MyManager(BaseManager):
+    """
+    Custom manager to deal with Tree instances
+    """
+
+
+MyManager.register('Tree', Tree)
+
+
+def poolInit(cls, afa):
+    """
+    Pool initializer
+    """
+    # After many, many attempts, it seems very difficult (if not impossible)
+    # to do without global variables
+    global PYFT  # pylint: disable=global-statement
+    global allFileArgs  # pylint: disable=global-statement
+    PYFT = cls
+    allFileArgs = afa
+
+
 def mainParallel(argv=None):
     """
     Core of the pyfortool_parallel.py command
     :param argv: list of arguments (including the 'programm' name in first position)
                  as would be obtained by sys.argv. Or None to use sys.argv
     """
-
-    class MyManager(BaseManager):
-        """
-        Custom manager to deal with Tree instances
-        """
-
-    MyManager.register('Tree', Tree)
-
-    def init(cls, afa):
-        """
-        Pool initializer
-        """
-        # After many, many attempts, it seems very difficult (if not impossible)
-        # to do without global variables
-        global PYFT  # pylint: disable=global-statement
-        global allFileArgs  # pylint: disable=global-statement
-        PYFT = cls
-        allFileArgs = afa
-
     parser = argparse.ArgumentParser(description='Python FORTRAN tool', allow_abbrev=False,
                                      epilog="The argument order matters.")
 
@@ -87,8 +89,15 @@ def mainParallel(argv=None):
                  treeIsOptional=False, nbPar=True, restrictScope=False)
     commonArgs, getFileArgs = getArgs(parser, argv)
 
+    # The 'fork' start method is requested explicitly. The parallel configuration installed
+    # by PYFT.setParallel below is held in class attributes, and child processes can only
+    # receive it by inheriting the parent memory. Python 3.14 made 'forkserver' the default
+    # on Linux, under which the workers would start from a freshly imported (and therefore
+    # unconfigured) PYFT class.
+    ctx = get_context('fork')
+
     # Manager to share the Tree instance
-    with MyManager() as manager:
+    with MyManager(ctx=ctx) as manager:
         # Set-up the Tree instance
         sharedTree = getDescTree(commonArgs, manager.Tree)
 
@@ -99,7 +108,8 @@ def mainParallel(argv=None):
         allFileArgs = {file: getFileArgs(file) for file in sharedTree.getFiles()}
         logging.info('Executing in parallel on %i files with a maximum of %i processes',
                      len(allFileArgs), commonArgs.nbPar)
-        with Pool(commonArgs.nbPar, initializer=init, initargs=(PYFT, allFileArgs)) as pool:
+        with ctx.Pool(commonArgs.nbPar, initializer=poolInit,
+                      initargs=(PYFT, allFileArgs)) as pool:
             result = pool.map(task, sharedTree.getFiles())
 
         # Writting the descTree object
