@@ -241,6 +241,35 @@ class Statements():
         self.removeStmtNode(self.findall('.//{*}print-stmt'), simplify, simplify)
 
     @debugDecor
+    def checkEmptyParensInMnhExpand(self, mustRaise=False):
+        """
+        :param mustRaise: True to raise
+        Issue a logging.warning if there are empty parens inside mnh_expand blocks
+        If mustRaise is True, issue a logging.error instead and raise an error
+        """
+        ok = True
+        log = logging.error if mustRaise else logging.warning
+        for openmnh in [comment for comment in self.findall('.//{*}C')
+                        if comment.text.lstrip(' ').startswith('!$mnh_expand')]:
+            for sibling in self.getSiblings(openmnh, before=False, after=True):
+                if tag(sibling) == 'C' and sibling.text.lstrip(' ').startswith('!$mnh_end_expand'):
+                    break
+
+                for sslt in sibling.findall('.//{*}named-E/' +
+                                            '{*}R-LT/{*}array-R/{*}section-subscript-LT'):
+                    if all(alltext(ss) == ':' for ss in sslt.findall('./{*}section-subscript')):
+                        arg = self.getParent(sslt, 3)
+                        log(("{} is an array with empty parens inside an mnh_expand " +
+                             "directive, in file '{}'"
+                             ).format(alltext(arg).replace('\n', ' \\n '), self.getFileName()))
+                        ok = False
+
+        if not ok and mustRaise:
+            raise PYFTError(("There are empty parens inside mnh_expand blocks in file '{}'"
+                             ).format(self.getFileName()))
+        return ok
+
+    @debugDecor
     def removeArraySyntax(self, concurrent=False, useMnhExpand=True, everywhere=True,
                           loopVar=None, reuseLoop=True, funcList=None,
                           updateMemSet=False, updateCopy=False, addAccIndependentCollapse=True):
