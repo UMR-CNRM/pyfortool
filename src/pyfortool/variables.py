@@ -30,6 +30,7 @@ Examples
 """
 
 import logging
+import warnings
 import copy
 import re
 from functools import wraps
@@ -433,27 +434,104 @@ class Variables():
         return self.mainScope._varList.restrict(self.path, self._excludeContains)
 
     # No @debugDecor for this low-level method
-    def _normalizeScopeVar(self, scopeVarList):
+    @staticmethod
+    def _normalizeUniqVar(varList):
         """
-        Internal method to normalize scopeVarList
-        (list of tuples made of scope path, variable name, and optional other values)
+        Internal method to normalize varList and suppress duplicates.
+
+        Parameters
+        ----------
+        varList : list
+            Each item is either a variable name (str) or a tuple whose first
+            element is a variable name (followed by optional other values).
+
+        Returns
+        -------
+        list
+            Same items, with the variable name in uppercase and without duplicates.
+            Order is preserved (a set would give a different order from one execution
+            to the other).
         """
-        return [(self.normalizeScope(scopePath), var.upper(), *other)
-                for (scopePath, var, *other) in scopeVarList]
+        result = []
+        for item in varList:
+            item = item.upper() if isinstance(item, str) else (item[0].upper(), *item[1:])
+            if item not in result:
+                result.append(item)
+        return result
 
     # No @debugDecor for this low-level method
-    def _normalizeUniqVar(self, scopeVarList):
+    def _splitLegacyScopePath(self, varList, nbItems, funcName):
         """
-        Internal method to suppress duplicates in scopeVarList
-        (list of tuples made of scope path, variable name, and optional other values)
+        Detect the deprecated form of varList whose items were prefixed by a scope path.
+
+        Until version 0.2.19, addVar, removeVar, removeVarIfUnused, addModuleVar and
+        isVarUsed received items of the form (scopePath, name, ...) and could be
+        called on any scope. Now, they must be called on the scope holding the
+        variables and items no longer contain the scope path.
+
+        Parameters
+        ----------
+        varList : list
+            List given to the calling method.
+        nbItems : int
+            Number of elements of an item in the new form (1 when the item is a bare
+            variable name).
+        funcName : str
+            Name of the calling method (for the warning message).
+
+        Returns
+        -------
+        dict or None
+            None if varList is in the new form. Otherwise, a dict whose keys are the
+            normalized scope paths and values the lists of items (in the new form)
+            belonging to this scope.
+
+        Raises
+        ------
+        PYFTError
+            If varList mixes both forms.
         """
-        # We could use list(set(self._normalizeScopeVar(scopeVarList)))
-        # but order differs from one execution to the other
-        result = []
-        for scopeVar in self._normalizeScopeVar(scopeVarList):
-            if scopeVar not in result:
-                result.append(scopeVar)
+        legacy = [item for item in varList
+                  if not isinstance(item, str) and len(item) == nbItems + 1]
+        if len(legacy) == 0:
+            return None
+        if len(legacy) != len(varList):
+            raise PYFTError(f"{funcName}: varList mixes items with and without scope path")
+        warnings.warn(f"{funcName}: giving the scope path in the varList items is deprecated, "
+                      f"call {funcName} on the scope holding the variables instead",
+                      DeprecationWarning, stacklevel=3)
+        result = {}
+        for scopePath, *item in varList:
+            scopePath = self.normalizeScope(scopePath)
+            result.setdefault(scopePath, []).append(item[0] if nbItems == 1 else tuple(item))
         return result
+
+    # No @debugDecor for this low-level method
+    def _declScope(self):
+        """
+        Return the scope to use to look for declarations.
+
+        Declarations are never in the CONTAINS section, so the returned scope
+        always excludes it (even if self does not).
+
+        Returns
+        -------
+        PYFTscope
+            self, or a copy of self excluding the CONTAINS section.
+
+        Raises
+        ------
+        PYFTError
+            If self is not a scope node (e.g. the whole file).
+        """
+        if not self.isScopeNode(self):
+            raise PYFTError(f"'{self.path}' is not a scope, this method must be called on a "
+                            "module, subroutine, function, or type scope (see getScopeNode)")
+        if self._excludeContains:
+            return self
+        scope = copy.copy(self)
+        scope._excludeContains = True  # pylint: disable=protected-access
+        return scope
 
     @debugDecor
     def attachArraySpecToEntity(self):
@@ -679,16 +757,13 @@ class Variables():
         """
         Remove variables from declarations and argument lists.
 
+        The method must be called on the scope where the variables are used.
+        Variables not declared in this scope are searched in the enclosing scopes.
+
         Parameters
         ----------
-        varList : list of tuple
-            List of variables to remove. Each item is a list or tuple of two elements:
-            - First element: scope path where the variable is used (or declared).
-              This is a '/' separated path where each element has the form:
-              'module:<name>', 'sub:<name>', 'func:<name>', or 'type:<name>'.
-            - Second element: variable name (string).
-
-            Example: [('module:MOD/sub:SUB', 'X'), ('module:MOD/sub:SUB', 'Y')]
+        varList : list of str
+            Names of the variables to remove.
         simplify : bool, optional
             If True, also remove variables that become unused after the deletion
             (e.g., kind selectors used only by the removed variable).
@@ -697,10 +772,10 @@ class Variables():
         --------
         Remove variable X from subroutine SUB in module MOD:
         >>> pft = PYFT('input.F90')
-        >>> pft.removeVar([('module:MOD/sub:SUB', 'X')])
+        >>> pft.getScopeNode('module:MOD/sub:SUB').removeVar(['X'])
 
         Remove multiple variables with simplification:
-        >>> pft.removeVar([('module:MOD/sub:SUB', 'KIND_VAR')], simplify=True)
+        >>> pft.getScopeNode('module:MOD/sub:SUB').removeVar(['X', 'KIND_VAR'], simplify=True)
 
         Notes
         -----
@@ -708,125 +783,113 @@ class Variables():
         - USE statement variables are removed from ONLY clauses.
         - If all variables in a declaration statement are removed, the statement
           itself is deleted (unless simplify=True, which may delete additional unused variables).
+        - Giving items of the form (scopePath, varName) is deprecated.
         """
-        varList = self._normalizeUniqVar(varList)
+        legacy = self._splitLegacyScopePath(varList, 1, 'removeVar')
+        if legacy is not None:
+            for scopePath, names in legacy.items():
+                self.mainScope.getScopeNode(scopePath).removeVar(names, simplify=simplify)
+            return
 
-        # Sort scopes by depth
-        sortedVarList = {}
-        for scopePath, varName in varList:
-            nb = scopePath.count('/')
-            sortedVarList[nb] = sortedVarList.get(nb, []) + [(scopePath, varName.upper())]
-
+        # Variables searched in this scope
+        varNames = self._normalizeUniqVar(varList)
+        if len(varNames) == 0:
+            return
+        scope = self._declScope()
+        declStmt = _getDeclStmtTag(scope.path)
         varToRemoveIfUnused = []
-        # Loop on varList starting by inner most variables
-        nbList = [] if len(sortedVarList.keys()) == 0 else \
-            range(max(sortedVarList.keys()) + 1)[::-1]
-        for nb in nbList:
-            sortedVarList[nb] = sortedVarList.get(nb, [])
-            # Loop on scopes
-            for scopePath in list(set(scopePath for scopePath, _ in sortedVarList[nb])):
-                # use of mainScope because variable can be declared upper than self
-                scope = self.mainScope.getScopeNode(scopePath)
-                # Variables searched in this scope
-                varNames = list(set(v for (w, v) in sortedVarList[nb] if w == scopePath))
-                declStmt = _getDeclStmtTag(scopePath)
-                # If scopePath is "module:XX/sub:YY", getScopeNode returns a node
-                # containing the subroutine declaration statements and
-                # excluding the subroutine and functions potentially included
-                # after a "contains" statement
-                previous = None
-                # list() to allow removing during the iteration
-                for node in list(scope):
-                    deleted = False
+        previous = None
+        # list() to allow removing during the iteration
+        for node in list(scope):
+            deleted = False
 
-                    # Checks if variable is a dummy argument
-                    dummyList = node.find('{*}dummy-arg-LT')  # This is the list of the dummies
-                    if dummyList is not None:
-                        # Loop over all dummy arguments
-                        for arg in dummyList.findall('.//{*}arg-N'):
-                            name = n2name(arg.find('.//{*}N')).upper()
-                            for varName in [v for v in varNames if v == name]:
-                                # This dummy arg is a searched variable, we remove it from the list
-                                scope.removeFromList(arg, dummyList)
+            # Checks if variable is a dummy argument
+            dummyList = node.find('{*}dummy-arg-LT')  # This is the list of the dummies
+            if dummyList is not None:
+                # Loop over all dummy arguments
+                for arg in dummyList.findall('.//{*}arg-N'):
+                    name = n2name(arg.find('.//{*}N')).upper()
+                    for varName in [v for v in varNames if v == name]:
+                        # This dummy arg is a searched variable, we remove it from the list
+                        scope.removeFromList(arg, dummyList)
 
-                    # In case the variable is declared
-                    if tag(node) == declStmt:
-                        # We are in a declaration statement
-                        # list of declaration in the current statment
-                        declList = node.find('./{*}EN-decl-LT')
-                        for enDecl in declList.findall('.//{*}EN-decl'):
-                            name = n2name(enDecl.find('.//{*}N')).upper()
-                            for varName in [v for v in varNames if v == name]:
-                                # The argument is declared here,
-                                # we suppress it from the declaration list
-                                varNames.remove(varName)
-                                scope.removeFromList(enDecl, declList)
-                        # In all the variables are suppressed from the declaration statement
-                        if len(list(declList.findall('./{*}EN-decl'))) == 0:
-                            if simplify:
-                                varToRemoveIfUnused.extend([[scopePath, n2name(nodeN)]
-                                                            for nodeN in node.findall('.//{*}N')])
-                            # We will delete the current node but we don't want to lose
-                            # any text. So, we put the node's text in the tail of the previous node
-                            if previous is not None and node.tail is not None:
-                                if previous.tail is None:
-                                    previous.tail = ''
-                                previous.tail += node.tail
-                            deleted = True
-                            scope.getParent(node).remove(node)
+            # In case the variable is declared
+            if tag(node) == declStmt:
+                # We are in a declaration statement
+                # list of declaration in the current statment
+                declList = node.find('./{*}EN-decl-LT')
+                for enDecl in declList.findall('.//{*}EN-decl'):
+                    name = n2name(enDecl.find('.//{*}N')).upper()
+                    for varName in [v for v in varNames if v == name]:
+                        # The argument is declared here,
+                        # we suppress it from the declaration list
+                        varNames.remove(varName)
+                        scope.removeFromList(enDecl, declList)
+                # In all the variables are suppressed from the declaration statement
+                if len(list(declList.findall('./{*}EN-decl'))) == 0:
+                    if simplify:
+                        varToRemoveIfUnused.extend([n2name(nodeN)
+                                                    for nodeN in node.findall('.//{*}N')])
+                    # We will delete the current node but we don't want to lose
+                    # any text. So, we put the node's text in the tail of the previous node
+                    if previous is not None and node.tail is not None:
+                        if previous.tail is None:
+                            previous.tail = ''
+                        previous.tail += node.tail
+                    deleted = True
+                    scope.getParent(node).remove(node)
 
-                    # In case the variable is a module variable
-                    if tag(node) == 'use-stmt':
-                        # We are in a use statement
-                        useList = node.find('./{*}rename-LT')
-                        if useList is not None:
-                            for rename in useList.findall('.//{*}rename'):
-                                name = n2name(rename.find('.//{*}N')).upper()
-                                for varName in [v for v in varNames if v == name]:
-                                    varNames.remove(varName)
-                                    # The variable is declared here, we remove it from the list
-                                    scope.removeFromList(rename, useList)
-                                    # In case the variable was alone
-                                    attribute = node.find('{*}module-N').tail
-                                    if attribute is None:
-                                        attribute = ''
-                                    attribute = attribute.replace(' ', '').replace('\n', '')
-                                    attribute = attribute.replace('&', '').upper()
-                                    useList = node.find('./{*}rename-LT')
-                                    if len(useList) == 0 and attribute[0] == ',' and \
-                                       attribute[1:] == 'ONLY:':
-                                        # If there is a 'ONLY' attribute,
-                                        # we suppress the use statement entirely
-                                        if previous is not None and node.tail is not None:
-                                            if previous.tail is None:
-                                                previous.tail = ''
-                                            previous.tail += node.tail
-                                        deleted = True
-                                        scope.getParent(node).remove(node)
-                                        scope.tree.signal(scope)  # Tree must be updated
-                                    elif len(useList) == 0:
-                                        # there is no 'ONLY' attribute
-                                        moduleName = scope.getSiblings(useList, before=True,
-                                                                       after=False)[-1]
-                                        previousTail = moduleName.tail
-                                        if previousTail is not None:
-                                            moduleName.tail = previousTail.replace(',', '')
-                                        scope.getParent(useList).remove(useList)
-                    # end loop if all variables have been found
-                    if len(varNames) == 0:
-                        break
-                    # Store node for the following iteration
-                    if not deleted:
-                        previous = node
+            # In case the variable is a module variable
+            if tag(node) == 'use-stmt':
+                # We are in a use statement
+                useList = node.find('./{*}rename-LT')
+                if useList is not None:
+                    for rename in useList.findall('.//{*}rename'):
+                        name = n2name(rename.find('.//{*}N')).upper()
+                        for varName in [v for v in varNames if v == name]:
+                            varNames.remove(varName)
+                            # The variable is declared here, we remove it from the list
+                            scope.removeFromList(rename, useList)
+                            # In case the variable was alone
+                            attribute = node.find('{*}module-N').tail
+                            if attribute is None:
+                                attribute = ''
+                            attribute = attribute.replace(' ', '').replace('\n', '')
+                            attribute = attribute.replace('&', '').upper()
+                            useList = node.find('./{*}rename-LT')
+                            if len(useList) == 0 and attribute[0] == ',' and \
+                               attribute[1:] == 'ONLY:':
+                                # If there is a 'ONLY' attribute,
+                                # we suppress the use statement entirely
+                                if previous is not None and node.tail is not None:
+                                    if previous.tail is None:
+                                        previous.tail = ''
+                                    previous.tail += node.tail
+                                deleted = True
+                                scope.getParent(node).remove(node)
+                                scope.tree.signal(scope)  # Tree must be updated
+                            elif len(useList) == 0:
+                                # there is no 'ONLY' attribute
+                                moduleName = scope.getSiblings(useList, before=True,
+                                                               after=False)[-1]
+                                previousTail = moduleName.tail
+                                if previousTail is not None:
+                                    moduleName.tail = previousTail.replace(',', '')
+                                scope.getParent(useList).remove(useList)
+            # end loop if all variables have been found
+            if len(varNames) == 0:
+                break
+            # Store node for the following iteration
+            if not deleted:
+                previous = node
 
-                # If some variables have not been found, they are certainly declared one level upper
-                if len(varNames) != 0:
-                    newWhere = '/'.join(scopePath.split('/')[:-1])
-                    sortedVarList[nb - 1] = sortedVarList.get(nb - 1, []) + \
-                        [(newWhere, varName) for varName in varNames]
+        # If some variables have not been found, they are certainly declared one level upper
+        upperPath = '/'.join(scope.path.split('/')[:-1])
+        if len(varNames) != 0 and upperPath != '':
+            self.mainScope.getScopeNode(upperPath).removeVar(varNames, simplify=simplify)
 
         if simplify and len(varToRemoveIfUnused) > 0:
-            self.removeVarIfUnused(varToRemoveIfUnused, excludeDummy=True, simplify=True)
+            scope.removeVarIfUnused(varToRemoveIfUnused, excludeDummy=True, simplify=True)
 
     @debugDecor
     @updateVarList
@@ -834,13 +897,14 @@ class Variables():
         """
         Add variables to declarations and argument lists.
 
+        The method must be called on the scope (module, subroutine, function
+        or type) where the variables must be declared.
+
         Parameters
         ----------
         varList : list of list/tuple
             List of variable specifications to insert. Each specification is a list
-            of four elements:
-            - Scope path (str): path to the module, subroutine, function, or type
-              where the variable should be declared (e.g., 'module:MOD/sub:SUB').
+            of three elements:
             - Variable name (str): name of the variable to add.
             - Declaration statement (str): FORTRAN declaration (e.g., 'REAL, INTENT(IN) :: X').
             - Position (int or None): position in dummy argument list for arguments,
@@ -850,28 +914,35 @@ class Variables():
         --------
         Add a local variable:
         >>> pft = PYFT('input.F90')
-        >>> pft.addVar([('module:MOD/sub:SUB', 'LOCAL_VAR', 'INTEGER :: LOCAL_VAR', None)])
+        >>> sub = pft.getScopeNode('module:MOD/sub:SUB')
+        >>> sub.addVar([('LOCAL_VAR', 'INTEGER :: LOCAL_VAR', None)])
 
         Add a dummy argument at position 0:
-        >>> pft.addVar([('module:MOD/sub:SUB', 'ARG', 'REAL, INTENT(IN) :: ARG', 0)])
+        >>> sub.addVar([('ARG', 'REAL, INTENT(IN) :: ARG', 0)])
 
         Add multiple variables:
-        >>> pft.addVar([
-        ...     ('module:MOD/sub:SUB', 'X', 'REAL :: X', None),
-        ...     ('module:MOD/sub:SUB', 'Y', 'INTEGER :: Y', None)
-        ... ])
+        >>> sub.addVar([('X', 'REAL :: X', None), ('Y', 'INTEGER :: Y', None)])
 
         Notes
         -----
         - If adding to an argument list, the declaration is automatically updated
           with the INTENT attribute if specified.
         - Declaration statements are inserted before the first executable statement.
+        - Giving items of the form (scopePath, varName, declStmt, pos) is deprecated.
         """
+        legacy = self._splitLegacyScopePath(varList, 3, 'addVar')
+        if legacy is not None:
+            for scopePath, items in legacy.items():
+                self.mainScope.getScopeNode(scopePath).addVar(items)
+            return
+
         varList = self._normalizeUniqVar(varList)
+        if len(varList) == 0:
+            return
+        scope = self._declScope()
+        scopePath = scope.path
 
-        for (scopePath, name, declStmt, pos) in varList:
-            scope = self.getScopeNode(scopePath)
-
+        for (name, declStmt, pos) in varList:
             # Add variable to the argument list
             if pos is not None:
                 argN = createElem('arg-N')
@@ -952,11 +1023,13 @@ class Variables():
 
         Parameters
         ----------
+        The method must be called on the scope where the USE statement must be added.
+
+        Parameters
+        ----------
         moduleVarList : list of list/tuple
             List of module variable specifications. Each specification is a list
-            of three elements:
-            - Scope path (str): path to the location where USE should be added
-              (e.g., 'module:MOD/sub:SUB').
+            of two elements:
             - Module name (str): name of the module to USE.
             - Variable name(s) (str, list, or None):
               - str: single variable name to import.
@@ -967,33 +1040,43 @@ class Variables():
         --------
         Import single variable Y from MODD_XX into subroutine FOO:
         >>> pft = PYFT('input.F90')
-        >>> pft.addModuleVar([('sub:FOO', 'MODD_XX', 'Y')])
+        >>> foo = pft.getScopeNode('sub:FOO')
+        >>> foo.addModuleVar([('MODD_XX', 'Y')])
         ! Adds: USE MODD_XX, ONLY: Y
 
         Import multiple variables:
-        >>> pft.addModuleVar([('sub:FOO', 'MODD_XX', ['X', 'Y', 'Z'])])
+        >>> foo.addModuleVar([('MODD_XX', ['X', 'Y', 'Z'])])
         ! Adds: USE MODD_XX, ONLY: X, Y, Z
 
         Add USE without ONLY (import all):
-        >>> pft.addModuleVar([('sub:FOO', 'MODD_XX', None)])
+        >>> foo.addModuleVar([('MODD_XX', None)])
         ! Adds: USE MODD_XX
 
         Import into a module:
-        >>> pft.addModuleVar([('module:MOD', 'OTHER_MOD', 'VAR')])
+        >>> pft.getScopeNode('module:MOD').addModuleVar([('OTHER_MOD', 'VAR')])
 
         Notes
         -----
         - Existing USE statements for the same module are updated to include new variables.
         - Duplicate imports are avoided (variables already imported are not re-added).
+        - Giving items of the form (scopePath, moduleName, varName) is deprecated.
         """
-        moduleVarList = self._normalizeScopeVar(moduleVarList)
+        legacy = self._splitLegacyScopePath(moduleVarList, 2, 'addModuleVar')
+        if legacy is not None:
+            for scopePath, items in legacy.items():
+                self.mainScope.getScopeNode(scopePath).addModuleVar(items)
+            return
 
-        for (scopePath, moduleName, varName) in moduleVarList:
+        moduleVarList = self._normalizeUniqVar(moduleVarList)
+        if len(moduleVarList) == 0:
+            return
+        scope = self._declScope()
+
+        for (moduleName, varName) in moduleVarList:
             if varName is None:
                 varName = []
             elif not isinstance(varName, list):
                 varName = [varName]
-            scope = self.getScopeNode(scopePath)
 
             # USE statement already present
             useLst = [node for node in scope if tag(node) == 'use-stmt']
@@ -1051,13 +1134,10 @@ class Variables():
           - LOCAL_VAR
           - UNUSED_ARRAY
         """
-        scopes = self.getScopes(excludeKinds=['type'])
-        varUsed = self.isVarUsed([(scope.path, v['n'])
-                                  for scope in scopes
-                                  for v in self.varList
-                                  if v['scopePath'] == scope.path])
-        for scope in scopes:
-            varList = [k[1].upper() for (k, v) in varUsed.items() if (not v) and k[0] == scope.path]
+        for scope in self.getScopes(excludeKinds=['type']):
+            varUsed = scope.isVarUsed([v['n'] for v in scope.varList
+                                       if v['scopePath'] == scope.path])
+            varList = [name for (name, used) in varUsed.items() if not used]
             if len(varList) != 0:
                 print(f'Some variables declared in {scope.path} are unused:')
                 print('  - ' + ('\n  - '.join(varList)))
@@ -1092,19 +1172,16 @@ class Variables():
             excludeList = []
         else:
             excludeList = [v.upper() for v in excludeList]
-        scopes = self.getScopes(excludeKinds=['type'])
-        # We do not check dummy args, module variables
-        varUsed = self.isVarUsed([(scope.path, v['n'])
-                                  for scope in scopes
-                                  for v in self.varList
-                                  if (v['n'].upper() not in excludeList and
-                                      (not v['arg']) and
-                                      v['scopePath'].split('/')[-1].split(':')[0] != 'module' and
-                                      v['scopePath'] == scope.path)])
         ok = True
-        for scope in scopes:
-            for var in [k[1].upper() for (k, v) in varUsed.items()
-                        if (not v) and k[0] == scope.path]:
+        for scope in self.getScopes(excludeKinds=['type']):
+            # We do not check dummy args, module variables
+            if scope.path.split('/')[-1].split(':')[0] == 'module':
+                continue
+            varUsed = scope.isVarUsed([v['n'] for v in scope.varList
+                                       if (v['n'].upper() not in excludeList and
+                                           (not v['arg']) and
+                                           v['scopePath'] == scope.path)])
+            for var in [name for (name, used) in varUsed.items() if not used]:
                 message = f"The {var} variable is not used in file " + \
                           f"'{scope.getFileName()}' for {scope.path}."
                 ok = False
@@ -1153,11 +1230,11 @@ class Variables():
         else:
             excludeList = [item.upper() for item in excludeList]
 
-        allVar = [(scope.path, v['n'])
-                  for scope in self.getScopes(excludeKinds=['type'])
-                  for v in scope.varList
-                  if v['n'].upper() not in excludeList and v['scopePath'] == scope.path]
-        self.removeVarIfUnused(allVar, excludeDummy=True, excludeModule=True, simplify=simplify)
+        for scope in self.getScopes(excludeKinds=['type']):
+            scope.removeVarIfUnused([v['n'] for v in scope.varList
+                                     if v['n'].upper() not in excludeList and
+                                     v['scopePath'] == scope.path],
+                                    excludeDummy=True, excludeModule=True, simplify=simplify)
 
     @debugDecor
     def addExplicitArrayBounds(self, node=None):
@@ -1552,7 +1629,7 @@ class Variables():
                     index = list(scope).index(decl)
                     if var['n'] in [n2name(nodeN) for nodeN in decl.findall('.//{*}N')]:
                         break
-                scope.removeVar([(scope.path, var['n'])], simplify=False)
+                scope.removeVar([var['n']], simplify=False)
                 for nnn in templ['decl'][::-1]:
                     scope.insert(index, nnn)
 
@@ -1849,76 +1926,119 @@ class Variables():
     @debugDecor
     def removeVarIfUnused(self, varList, excludeDummy=False, excludeModule=False, simplify=False):
         """
-        :param varList: list of variables to remove if unused. Each item is a list or tuple of two
-                        elements.
-                        The first one describes where the variable is used, the second one is
-                        the name of the variable. The first element is a '/'-separated path with
-                        each element having the form 'module:<name of the module>',
-                        'sub:<name of the subroutine>' or 'func:<name of the function>'
-        :param excludeDummy: if True, dummy arguments are always kept untouched
-        :param excludeModule: if True, module variables are always kept untouched
-        :param simplify: try to simplify code (if we delete a declaration statement that used a
-                         variable as kind selector, and if this variable is not used else where,
-                         we also delete it)
-        :return: the varList without the unremovable variables
-        If possible, remove the variable from declaration, and from the argument list if needed
+        Remove variables from declarations (and argument lists) if they are unused.
+
+        The method must be called on the scope where the variables are used.
+
+        Parameters
+        ----------
+        varList : list of str
+            Names of the variables to remove if unused.
+        excludeDummy : bool, optional
+            If True, dummy arguments are always kept untouched.
+        excludeModule : bool, optional
+            If True, module variables (variables of a module scope) are always kept untouched.
+        simplify : bool, optional
+            Try to simplify code (if we delete a declaration statement that used a
+            variable as kind selector, and if this variable is not used else where,
+            we also delete it).
+
+        Returns
+        -------
+        list of str
+            Names of the removed variables.
+
+        Notes
+        -----
+        Giving items of the form (scopePath, varName) is deprecated.
         """
+        legacy = self._splitLegacyScopePath(varList, 1, 'removeVarIfUnused')
+        if legacy is not None:
+            result = []
+            for scopePath, names in legacy.items():
+                result.extend([[scopePath, name]
+                               for name in self.mainScope.getScopeNode(scopePath).
+                               removeVarIfUnused(names, excludeDummy=excludeDummy,
+                                                 excludeModule=excludeModule,
+                                                 simplify=simplify)])
+            return result
+
         varList = self._normalizeUniqVar(varList)
-        if excludeModule:
-            varList = [v for v in varList if v[0].split('/')[-1].split(':')[0] != 'module']
+        kind = self.path.split('/')[-1].split(':')[0]
+        assert kind != 'type', "The removeVarIfUnused cannot be used with type members"
+        if len(varList) == 0 or (excludeModule and kind == 'module'):
+            return []
 
         varUsed = self.isVarUsed(varList, dummyAreAlwaysUsed=excludeDummy)
-        varListToRemove = []
-        for scopePath, varName in varList:
-            assert scopePath.split('/')[-1].split(':')[0] != 'type', \
-              "The removeVarIfUnused cannot be used with type members"
-            if not varUsed[(scopePath, varName)]:
-                varListToRemove.append([scopePath, varName])
+        varListToRemove = [varName for varName in varList if not varUsed[varName]]
         self.removeVar(varListToRemove, simplify=simplify)
         return varListToRemove
 
     @debugDecor
     def isVarUsed(self, varList, exactScope=False, dummyAreAlwaysUsed=False):
         """
-        :param varList: list of variables to test. Each item is a list or tuple of two elements.
-                        The first one describes where the variable is declared, the second one is
-                        the name of the variable. The first element is a '/'-separated path with
-                        each element having the form 'module:<name of the module>',
-                        'sub:<name of the subroutine>' or 'func:<name of the function>'
-        :param exactScope: True to search strictly in scope
-        :param dummyAreAlwaysUsed: Returns True if variable is a dummy argument
-        :return: a dict whose keys are the elements of varList, and values are True when the
-                 variable is used, False otherwise
+        Check whether variables are used.
 
-        If exactScope is True, the function will search for variable usage
-        only in this scope. But this feature has a limited interest.
+        The method must be called on the scope where the variables are used
+        (this is not necessarily the scope where they are declared).
 
-        If exactScope is False:
-          - if scopePath is a subroutine/function in a contains section,
-            and if the variable is not declared in this scope, usages are
-            searched in the module/subroutine/function upper that declared
-            the variable and in all subroutines/functions in the contains section
-          - if scopePath is a module/subroutine/function that has a
-            contains sections, usages are searched in all subroutines/functions
-            in the contains section
+        Parameters
+        ----------
+        varList : list of str
+            Names of the variables to test.
+        exactScope : bool, optional
+            True to search strictly in this scope. This feature has a limited interest.
+            If False (default):
+              - if this scope is a subroutine/function in a contains section,
+                and if the variable is not declared in this scope, usages are
+                searched in the module/subroutine/function upper that declared
+                the variable and in all subroutines/functions in the contains section
+              - if this scope is a module/subroutine/function that has a
+                contains sections, usages are searched in all subroutines/functions
+                in the contains section
+            To know if a variable can be removed, you must use exactScope=False.
+        dummyAreAlwaysUsed : bool, optional
+            If True, a dummy argument is always considered as used.
 
-        To know if a variable can be removed, you must use exactScope=False
+        Returns
+        -------
+        dict
+            Keys are the (uppercase) variable names, values are True when the
+            variable is used, False otherwise.
+
+        Notes
+        -----
+        Giving items of the form (scopePath, varName) is deprecated; in this case the
+        keys of the returned dict are the (scopePath, varName) tuples.
         """
+        legacy = self._splitLegacyScopePath(varList, 1, 'isVarUsed')
+        if legacy is not None:
+            result = {}
+            for scopePath, names in legacy.items():
+                result.update({(scopePath, name): used
+                               for (name, used) in self.mainScope.getScopeNode(scopePath).
+                               isVarUsed(names, exactScope=exactScope,
+                                         dummyAreAlwaysUsed=dummyAreAlwaysUsed).items()})
+            return result
+
         varList = self._normalizeUniqVar(varList)
+        assert self.path.split('/')[-1].split(':')[0] != 'type', \
+            'We cannot check type component usage'
+        if len(varList) == 0:
+            return {}
         # We must not limit to self.getScopes because var can be used upper than self
         allScopes = {scope.path: scope for scope in self.mainScope.getScopes()}
 
         # Computes in which scopes variable must be searched
         if exactScope:
-            locsVar = {(scopePath, varName): [scopePath]
-                       for scopePath, varName in varList}
+            locsVar = {varName: [self.path] for varName in varList}
         else:
             locsVar = {}
-            for scopePath, varName in varList:
+            for varName in varList:
                 # We search everywhere if var declaration is not found
                 # Otherwise, we search from the scope where the variable is declared
-                var = allScopes[scopePath].varList.findVar(varName)
-                path = scopePath.split('/')[0] if var is None else var['scopePath']
+                var = self.varList.findVar(varName)
+                path = self.path.split('/')[0] if var is None else var['scopePath']
 
                 # We start search from here but we must include all routines in contains
                 # that do not declare again the same variable name
@@ -1930,7 +2050,7 @@ class Variables():
                         if sc.varList.findVar(varName, exactScope=True) is None:
                             # There is not another variable with same name declared inside
                             testScopes.append(scPath)  # if variable is used here, it is used
-                locsVar[(scopePath, varName)] = testScopes
+                locsVar[varName] = testScopes
 
         # For each scope to search, list all the variables used
         usedVar = {}
@@ -1964,14 +2084,8 @@ class Variables():
                             if parPar is None or not tag(parPar) == 'dummy-arg-LT':
                                 usedVar[scopePath].append(n2name(nodeN).upper())
 
-        result = {}
-        for scopePath, varName in varList:
-            assert scopePath.split('/')[-1].split(':')[0] != 'type', \
-                'We cannot check type component usage'
-            result[(scopePath, varName)] = any(varName.upper() in usedVar[scopePath]
-                                               for scopePath in locsVar[(scopePath, varName)])
-
-        return result
+        return {varName: any(varName in usedVar[scopePath] for scopePath in locsVar[varName])
+                for varName in varList}
 
     @debugDecor
     @updateVarList
@@ -2032,10 +2146,10 @@ class Variables():
                     renameLT = createElem('rename-LT')
                     useStmt.append(renameLT)
                     rename = None
-                    parent = self.getScopePath(useStmt)
-                    isVarUsed = self.isVarUsed([(parent, symbol.upper()) for symbol in symbols])
+                    parent = self.mainScope.getScopeNode(self.getScopePath(useStmt))
+                    isVarUsed = parent.isVarUsed(symbols)
                     for symbol in symbols:
-                        if isVarUsed[(parent, symbol.upper())]:
+                        if isVarUsed[symbol.upper()]:
                             useN = createElem('use-N', childs=createElem('N',
                                               childs=createElem('n', text=symbol)))
                             rename = createElem('rename', tail=', ', childs=useN)
@@ -2136,11 +2250,10 @@ class Variables():
 
             if var is None:
                 # The variable doesn't exist in this scope, we add it
-                self.addVar([[self.path, varName, declStmt, pos]])
+                self.addVar([[varName, declStmt, pos]])
                 if moduleVarList is not None:
                     # Module variables must be added when var is added
-                    self.addModuleVar([(self.path, moduleName, moduleVarNames)
-                                       for (moduleName, moduleVarNames) in moduleVarList])
+                    self.addModuleVar(moduleVarList)
 
                 # We look for interface declaration if subroutine is directly accessible
                 if len(self.path.split('/')) == 1:
@@ -2160,13 +2273,10 @@ class Variables():
                             scopeInterface = xml.getScopeNode(scopePathInterface)
                             varInterface = scopeInterface.varList.findVar(varName, exactScope=True)
                             if varInterface is None:
-                                scopeInterface.addVar([[scopePathInterface, varName,
-                                                        declStmt, pos]])
+                                scopeInterface.addVar([[varName, declStmt, pos]])
                                 if moduleVarList is not None:
                                     # Module variables must be added when var is added
-                                    xml.addModuleVar(
-                                        [(scopePathInterface, moduleName, moduleVarNames)
-                                         for (moduleName, moduleVarNames) in moduleVarList])
+                                    scopeInterface.addModuleVar(moduleVarList)
                             if pft is not None:
                                 pft.write()
                         finally:
