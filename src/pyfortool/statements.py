@@ -722,8 +722,10 @@ class Statements():
         for parent, elem in toremove:
             parent.remove(elem)
         # And variable creation
-        self.addVar([(v['scopePath'], v['n'], f"INTEGER :: {v['n']}", None)
-                     for v in newVarList])
+        for scopePath in sorted(set(v['scopePath'] for v in newVarList)):
+            self.getScopeNode(scopePath).addVar([(v['n'], f"INTEGER :: {v['n']}", None)
+                                                 for v in newVarList
+                                                 if v['scopePath'] == scopePath])
 
     @debugDecor
     @noParallel
@@ -892,8 +894,7 @@ class Statements():
                                'n': varName, 'i': None, 't': 'INTEGER', 'arg': False,
                                'use': False, 'opt': False, 'allocatable': False,
                                'parameter': False, 'init': None, 'scopePath': mainScope.path}
-                        mainScope.addVar([[mainScope.path, var['n'],
-                                           mainScope.varSpec2stmt(var), None]])
+                        mainScope.addVar([[var['n'], mainScope.varSpec2stmt(var), None]])
 
                 # Create the DO loops
                 inner, outer, _ = mainScope.createDoConstruct(table)
@@ -1249,9 +1250,9 @@ class Statements():
         node.remove(node.find('./{*}end-subroutine-stmt'))
 
         # Add local var and use to main routine
-        mainScope.addVar([[mainScope.path, var['n'], mainScope.varSpec2stmt(var), None]
+        mainScope.addVar([[var['n'], mainScope.varSpec2stmt(var), None]
                           for var in localVarToAdd])
-        mainScope.addModuleVar([[mainScope.path, n2name(useStmt.find('.//{*}module-N//{*}N')),
+        mainScope.addModuleVar([[n2name(useStmt.find('.//{*}module-N//{*}N')),
                                  [n2name(v.find('.//{*}N'))
                                   for v in useStmt.findall('.//{*}use-N')]]
                                 for useStmt in localUseToAdd])
@@ -1551,8 +1552,10 @@ class Statements():
             parent.remove(node)
 
         # Variable simplification
-        self.removeVarIfUnused(varToCheck, excludeDummy=True,
-                               excludeModule=True, simplify=simplifyVar)
+        for scopePath in sorted(set(scopePath for scopePath, _ in varToCheck)):
+            self.getScopeNode(scopePath).removeVarIfUnused(
+                [name for path, name in varToCheck if path == scopePath],
+                excludeDummy=True, excludeModule=True, simplify=simplifyVar)
 
         # List the new nodes to suppress
         newNodesToSuppress = []

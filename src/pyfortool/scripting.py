@@ -776,12 +776,15 @@ def applyTransfoVariables(pft, arg, args, simplify, parserOptions, stopScopes):
     elif arg == '--attachArraySpecToEntity':
         pft.attachArraySpecToEntity()
     elif arg == '--removeVariable':
-        pft.removeVar(args.removeVariable, **simplify)
+        for scopePath, varName in args.removeVariable:
+            pft.getScopeNode(pft.normalizeScope(scopePath)).removeVar([varName], **simplify)
     elif arg == '--addVariable':
-        pft.addVar([[v[0], v[1], v[2], (int(v[3]) if isint(v[3]) else None)]
-                    for v in args.addVariable])
+        for scopePath, varName, declStmt, pos in args.addVariable:
+            pft.getScopeNode(pft.normalizeScope(scopePath)).addVar(
+                [[varName, declStmt, (int(pos) if isint(pos) else None)]])
     elif arg == '--addModuleVariable':
-        pft.addModuleVar([[v[0], v[1], v[2]] for v in args.addModuleVariable])
+        for scopePath, moduleName, varName in args.addModuleVariable:
+            pft.getScopeNode(pft.normalizeScope(scopePath)).addModuleVar([[moduleName, varName]])
     elif arg == '--showUnusedVariables':
         pft.showUnusedVar()
     elif arg == '--removeUnusedLocalVariables':

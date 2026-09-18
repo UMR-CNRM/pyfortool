@@ -207,8 +207,10 @@ class Applications():
             nb = self.removeCall(subroutine, simplify=simplify)
             # Remove use statement
             if nb > 0:
-                self.removeVar([(v['scopePath'], v['n']) for v in self.varList
-                                if v['n'] == subroutine], simplify=simplify)
+                for scope in self.getScopes():
+                    scope.removeVar([v['n'] for v in scope.varList
+                                     if v['n'] == subroutine and v['scopePath'] == scope.path],
+                                    simplify=simplify)
 
     @debugDecor
     def removeExtraDOinMnhDoConcurrent(self):
@@ -464,7 +466,7 @@ class Applications():
                             dimSize = 'SIZE(' + var[1] + ',' + str(i+1) + ')'
                         varArray = ', DIMENSION(' + dimSize + ','
                     varArray = varArray[:-1] + ')'
-                scope.addVar([[scope.path, el, varType + varArray + ' :: ' + el, None]])
+                scope.addVar([[el, varType + varArray + ' :: ' + el, None]])
 
                 # Affectation
                 if isinstance(var[0], list):
@@ -517,10 +519,9 @@ class Applications():
                        scope.path.split('/')[-2].split(':')[0] != 'interface')]:
             name = scope.path.split(':')[-1].upper()
             # Add USE YOMHOOK,    ONLY: LHOOK, DR_HOOK, JPHOOK
-            scope.addModuleVar([[scope.path, 'YOMHOOK', ['LHOOK', 'DR_HOOK', 'JPHOOK']]])
+            scope.addModuleVar([['YOMHOOK', ['LHOOK', 'DR_HOOK', 'JPHOOK']]])
             # REAL(KIND=JPHOOK) :: ZHOOK_HANDLE
-            scope.addVar([[scope.path, 'ZHOOK_HANDLE', 'REAL(KIND=JPHOOK) :: ZHOOK_HANDLE',
-                          None]])
+            scope.addVar([['ZHOOK_HANDLE', 'REAL(KIND=JPHOOK) :: ZHOOK_HANDLE', None]])
             # Insert IF (LHOOK) CALL DR_HOOK('XXnameXX', 0, ZHOOK_HANDLE)
             scope.insertStatement(createExpr(f"IF (LHOOK) CALL DR_HOOK('{name}', " +
                                              "0, ZHOOK_HANDLE)")[0], True)
@@ -833,9 +834,9 @@ class Applications():
 
                 # Add necessary module
                 if not printsMode:
-                    scope.addModuleVar([(scope.path, 'MODE_MPPDB', None)])
+                    scope.addModuleVar([('MODE_MPPDB', None)])
                 else:
-                    scope.addModuleVar([(scope.path, 'MODD_BLANK_n', ['LDUMMY1'])])
+                    scope.addModuleVar([('MODD_BLANK_n', ['LDUMMY1'])])
 
                 # Prepare some FORTRAN comments
                 commentIN = createElem('C', text='!Check all IN arrays', tail='\n')
@@ -984,11 +985,11 @@ class Applications():
                                        otherNames=['YLSTACK'],
                                        parserOptions=parserOptions, wrapH=wrapH)
                     # And we need the SOF subroutine
-                    scope.addModuleVar([(scope.path, 'STACK_MOD', 'SOF')])
+                    scope.addModuleVar([('STACK_MOD', 'SOF')])
 
                     # Copy the stack to a local variable and use it for call statements
                     # this operation must be done after the call to addArgInTree
-                    scope.addVar([[scope.path, 'YLSTACK', 'TYPE (STACK) :: YLSTACK', None]])
+                    scope.addVar([['YLSTACK', 'TYPE (STACK) :: YLSTACK', None]])
                     scope.insertStatement(createExpr('YLSTACK=YDSTACK')[0], True)
                     for argN in scope.findall('.//{*}call-stmt/{*}arg-spec/' +
                                               '{*}arg/{*}arg-N/../{*}named-E/{*}N'):
@@ -1008,9 +1009,9 @@ class Applications():
                     if nb > 0:
                         # Some automatic arrays have been modified
                         # we need to add the stack module,
-                        scope.addModuleVar([(scope.path, 'MODE_MNH_ZWORK',
-                                           ['MNH_MEM_GET', 'MNH_MEM_POSITION_PIN',
-                                            'MNH_MEM_RELEASE'])])
+                        scope.addModuleVar([('MODE_MNH_ZWORK',
+                                             ['MNH_MEM_GET', 'MNH_MEM_POSITION_PIN',
+                                              'MNH_MEM_RELEASE'])])
                         # to pin the memory position,
                         scope.insertStatement(
                             createExpr(f"CALL MNH_MEM_POSITION_PIN('{scope.path}')")[0], True)
@@ -1299,7 +1300,7 @@ class Applications():
                                    0, stopScopes, moduleVarList=[('MODD_DIMPHYEX', ['DIMPHYEX_t'])],
                                    parserOptions=parserOptions, wrapH=wrapH)
             # Check loop index presence at declaration of the scope
-            scope.addVar([[scope.path, loopIndex, 'INTEGER :: ' + loopIndex, None]
+            scope.addVar([[loopIndex, 'INTEGER :: ' + loopIndex, None]
                           for loopIndex in indexRemoved
                           if scope.varList.findVar(loopIndex, exactScope=True) is None])
 
@@ -1481,7 +1482,7 @@ class Applications():
                     parOfopE.insert(index, nodeBRP)
 
                     # Add necessary module in the current scope
-                    scope.addModuleVar([(scope.path, 'MODI_BITREP', None)])
+                    scope.addModuleVar([('MODI_BITREP', None)])
 
             # 2/2 Look for all specific functions LOG, ATAN, EXP,etc
             for nnn in scope.findall('.//{*}named-E/{*}N/{*}n'):
@@ -1491,7 +1492,7 @@ class Applications():
                     else:
                         nnn.text = 'BR_' + nnn.text
                     # Add necessary module in the current scope
-                    scope.addModuleVar([(scope.path, 'MODI_BITREP', None)])
+                    scope.addModuleVar([('MODI_BITREP', None)])
 
     @debugDecor
     @updateVarList
@@ -1590,8 +1591,7 @@ class Applications():
                 computingVarName = 'ZSHUGRADWK'+str(nbzshugradwk)+'_'+str(zshugradwkDim)+'D'
                 # Add the declaration of the new computing var and workingVar if not already present
                 if not scope.varList.findVar(computingVarName):
-                    scope.addVar([[scope.path, computingVarName,
-                                   dimWorkingVar + computingVarName, None]])
+                    scope.addVar([[computingVarName, dimWorkingVar + computingVarName, None]])
                 else:
                     # Case of nested shuman/gradients with a working variable already declared.
                     # dimWorkingVar is only set again for mnhExpandArrayIndexes
@@ -1657,7 +1657,7 @@ class Applications():
 
             # Add the declaration of the shuman-gradient workingVar if not already present
             if not scope.varList.findVar(workingVar):
-                scope.addVar([[scope.path, workingVar, dimWorkingVar + workingVar, None]])
+                scope.addVar([[workingVar, dimWorkingVar + workingVar, None]])
 
             return (callStmt, computeStmt, nbzshugradwk, newFuncName,
                     localVariables, mnhExpandArrayIndexes)
@@ -1912,21 +1912,21 @@ class Applications():
                 moduleVars = []
                 for sub in sorted(subToInclude):
                     if re.match(r'[MD][XYZ][MF](2D)?_PHY', sub):
-                        moduleVars.append((scope.path, 'MODE_SHUMAN_PHY', sub))
+                        moduleVars.append(('MODE_SHUMAN_PHY', sub))
                     if re.match(r'[MD][XYZ][MF](2D)?_DEVICE', sub):
-                        moduleVars.append((scope.path, 'MODI_SHUMAN_DEVICE', sub))
+                        moduleVars.append(('MODI_SHUMAN_DEVICE', sub))
                     else:
                         for kind in ('M', 'U', 'V', 'W'):
                             if re.match(r'G[XYZ]_' + kind + r'_[MUVW]{1,2}_PHY', sub):
-                                moduleVars.append((scope.path, f'MODE_GRADIENT_{kind}_PHY', sub))
+                                moduleVars.append((f'MODE_GRADIENT_{kind}_PHY', sub))
                             elif re.match(r'G[XYZ]_' + kind + r'_[MUVW]{1,2}_DEVICE', sub):
-                                moduleVars.append((scope.path, f'MODI_GRADIENT_{kind}', sub))
+                                moduleVars.append((f'MODI_GRADIENT_{kind}', sub))
                 scope.addModuleVar(moduleVars)
 
                 # Remove the USE of the old function
                 for sub in funcToSuppress:
                     if scope.varList.findVar(sub):
-                        scope.removeVar([(scope.path, sub)])
+                        scope.removeVar([sub])
 
                 # Add the missing local variables
                 for varName in localVariablesToAdd:
@@ -1935,7 +1935,7 @@ class Applications():
                                'n': varName, 'i': None, 't': 'INTEGER', 'arg': False,
                                'use': False, 'opt': False, 'allocatable': False,
                                'parameter': False, 'init': None, 'scopePath': scope.path}
-                        scope.addVar([[scope.path, var['n'], scope.varSpec2stmt(var), None]])
+                        scope.addVar([[var['n'], scope.varSpec2stmt(var), None]])
 
     @debugDecor
     @noParallel
