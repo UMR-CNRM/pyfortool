@@ -1615,13 +1615,11 @@ class Applications():
             if zshugradwkDim == 1:
                 dimSuffRoutine = '2D'
             workingVar = 'Z' + funcName + dimSuffVar + '_WORK' + str(localShumansCount[funcName])
-            if funcName in ('GY_U_UV', 'GX_V_UV'):
-                gpuGradientImplementation = '_DEVICE('
-                newFuncName = funcName + dimSuffRoutine + '_DEVICE'
+            if dimSuffRoutine == '2D' and funcName.endswith('2D'):
+                newFuncName = funcName + '_PHY'
             else:
-                gpuGradientImplementation = '_PHY(D, '
                 newFuncName = funcName + dimSuffRoutine + '_PHY'
-            callStmt = createExpr("CALL " + funcName + dimSuffRoutine + gpuGradientImplementation
+            callStmt = createExpr("CALL " + newFuncName + '(D, '
                                   + alltext(workingItem) + remaningArgsofFunc +
                                   ", " + workingVar + ")")[0]
             parStmt.insert(indexForCall, callStmt)
@@ -1646,6 +1644,8 @@ class Applications():
 
         shumansGradients = {'MZM': 0, 'MXM': 0, 'MYM': 0, 'MZF': 0, 'MXF': 0, 'MYF': 0,
                             'DZM': 0, 'DXM': 0, 'DYM': 0, 'DZF': 0, 'DXF': 0, 'DYF': 0,
+                            'MXM2D': 0, 'MYM2D': 0, 'MXF2D': 0, 'MYF2D': 0,
+                            'DXM2D': 0, 'DYM2D': 0, 'DXF2D': 0, 'DYF2D': 0,
                             'GZ_M_W': 0, 'GZ_W_M': 0, 'GZ_U_UW': 0, 'GZ_V_VW': 0,
                             'GX_M_U': 0, 'GX_U_M': 0, 'GX_W_UW': 0, 'GX_M_M': 0,
                             'GY_V_M': 0, 'GY_M_V': 0, 'GY_W_VW': 0, 'GY_M_M': 0,
