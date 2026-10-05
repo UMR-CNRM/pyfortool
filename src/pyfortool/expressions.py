@@ -104,7 +104,7 @@ def _cachedCreateExprPart(value):
 
 
 @debugDecor
-def createExprPart(value):
+def createExprPart(value, tail=None):
     """
     Create an XML node from a FORTRAN expression part.
 
@@ -112,6 +112,8 @@ def createExprPart(value):
     ----------
     value : str
         Expression part value to convert.
+    tail : str
+        Tail of the new element
 
     Returns
     -------
@@ -130,7 +132,10 @@ def createExprPart(value):
     >>> createExprPart('X')   # Variable
     >>> createExprPart('A%B') # Structure member
     """
-    return copy.deepcopy(_cachedCreateExprPart(value))
+    result = copy.deepcopy(_cachedCreateExprPart(value))
+    if tail is not None:
+        result.tail = tail
+    return result
 
 
 @lru_cache

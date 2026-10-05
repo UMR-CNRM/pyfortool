@@ -653,6 +653,9 @@ def updateParserStatements(parser):
                             help='Inline containted subroutines in main routine')
     gStatement.add_argument('--setFalseIfStmt', default=None,
                             help='Replace this value by .FALSE. in if statements')
+    gStatement.add_argument('--checkEmptyParensInMnhExpand', choices={'Warn', 'Err'}, default=None,
+                            help='Send a warning or raise an error if an empty parens ' +
+                                 'is found in an mnh_expand directive.')
 
 
 def updateParserMisc(parser):
@@ -982,6 +985,8 @@ def applyTransfoChecks(pft, arg, args, stopScopes):
                                    stopScopes=stopScopes)
     elif arg == '--checkTopLevelUSE':
         pft.checkTopLevelUSE(args.checkTopLevelUSE == 'Err')
+    elif arg == '--checkEmptyParensInMnhExpand':
+        pft.checkEmptyParensInMnhExpand(args.checkEmptyParensInMnhExpand == 'Err')
 
 
 def applyTransfoStatements(pft, arg, args, simplify):

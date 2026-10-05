@@ -33,13 +33,7 @@ pip install flake8 pylint
 
 ```bash
 # From project root
-./examples/tests.sh
-
-# Or run linting separately
-flake8 src/pyfortool/ bin/pyfortool_*
-
-pylint -d R0912,C0209,R0915,R1702,C0302,R0913,R0914,W1202,R0904,R0902 \
-    src/pyfortool/ bin/pyfortool_*
+./bin/checks.sh
 ```
 
 ### Generate Documentation
