@@ -337,24 +337,6 @@ class Applications():
                     txt = alltext(elem)
                     elements.append(txt)
                     arrayIndices = arrayIndices + txt
-                allConst = all(t.lstrip('-').isdigit() for t in elements)
-                if not allConst and aStmt is not None:
-                    # Variable index case - try to get shape from LHS
-                    memberShape = _getShapeFromLHS(aStmt, scope)
-                    if memberShape is not None:
-                        # Build name without index suffix
-                        newName = variable[0] + structure + variable[1:]
-                        newName = newName.upper()
-                        # Modify tree: replace name, remove only component-R
-                        namedENn.text = newName
-                        rlt = objType.find('.//{*}R-LT')
-                        compR = rlt.find('.//{*}component-R')
-                        rlt.remove(compR)
-                        # Store as 4-tuple: (memberShape, objTypeStr, structure, variable)
-                        if newName not in newVarList:
-                            newVarList[newName] = (memberShape, objTypeStr,
-                                                   structure, variable)
-                        return
             newName = variable[0] + structure + variable[1:] + arrayIndices
             newName = newName.upper()
 
