@@ -429,6 +429,24 @@ pyfortool input.F90 --upperCase --indent
 pyfortool_parallel --tree /path/to/src ...
 ```
 
+### Parallel processing and the multiprocessing start method
+
+`mainParallel()` explicitly requests the `fork` start method. The parallel
+configuration installed by `PYFT.setParallel()` (shared tree, locks) is held in
+class attributes, and child processes can only receive it by inheriting the
+parent memory. Under `forkserver` or `spawn` the workers re-import a pristine
+`PYFT` class and would run unconfigured.
+
+This matters because Python 3.14 made `forkserver` the default on Linux. Two
+consequences for anyone modifying this module:
+
+- Objects handed to a child process (the manager class, the pool initializer)
+  must stay at module level so they remain picklable. `tests/test_scripting.py`
+  guards this.
+- Supporting `forkserver`/`spawn` (and therefore macOS and Windows, where `fork`
+  is unavailable or unsafe) would require passing the shared tree and the locks
+  through the pool initializer instead of relying on inheritance.
+
 ## Choosing the Right Module
 
 | Task | Module |
