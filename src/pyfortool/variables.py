@@ -1066,7 +1066,7 @@ class Variables():
                 # Statement building
                 stmt = f'USE {moduleName}'
                 if len(varName) > 0:
-                    stmt += ', ONLY:{}'.format(', '.join(varName))
+                    stmt += ', ONLY: {}'.format(', '.join(varName))
                 us = createExpr(stmt)[0]
 
                 # node insertion index

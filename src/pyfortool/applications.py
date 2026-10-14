@@ -1477,7 +1477,7 @@ class Applications():
 
     @debugDecor
     @updateVarList
-    def shumanFUNCtoCALL(self):
+    def shumanFUNCtoCALL(self, useDevice=True):
         """
         Convert all calling of functions and gradient present in shumansGradients
         table into the use of subroutines
@@ -1615,11 +1615,16 @@ class Applications():
             if zshugradwkDim == 1:
                 dimSuffRoutine = '2D'
             workingVar = 'Z' + funcName + dimSuffVar + '_WORK' + str(localShumansCount[funcName])
-            if dimSuffRoutine == '2D' and funcName.endswith('2D'):
+            if useDevice and funcName in ('GY_U_UV', 'GX_V_UV'):
+                gpuGradientImplementation = '_DEVICE('
+                newFuncName = funcName + dimSuffRoutine + '_DEVICE'
+            elif dimSuffRoutine == '2D' and funcName.endswith('2D'):
+                gpuGradientImplementation = '_PHY(D, '
                 newFuncName = funcName + '_PHY'
             else:
+                gpuGradientImplementation = '_PHY(D, '
                 newFuncName = funcName + dimSuffRoutine + '_PHY'
-            callStmt = createExpr("CALL " + newFuncName + '(D, '
+            callStmt = createExpr("CALL " + funcName + dimSuffRoutine + gpuGradientImplementation
                                   + alltext(workingItem) + remaningArgsofFunc +
                                   ", " + workingVar + ")")[0]
             parStmt.insert(indexForCall, callStmt)
@@ -1918,6 +1923,323 @@ class Applications():
                                'use': False, 'opt': False, 'allocatable': False,
                                'parameter': False, 'init': None, 'scopePath': scope.path}
                         scope.addVar([[scope.path, var['n'], scope.varSpec2stmt(var), None]])
+
+    @debugDecor
+    @updateVarList
+    def shugradTransfo(self):
+        """
+        Convert all calling of functions and gradient into subroutines
+        and use mnh_expand_directives to handle intermediate computations
+        """
+
+        # ---- Technical overview ----
+        #
+        # Loop on scopes:
+        #     Loop on statements:
+        #         Add parenthesis and explicit bounds to arrays involved in function computation
+        #         Loop on shuman/gradients functions (from innermost to outermost)
+        #             Pre-compute function arguments if needed (wrapped in mnh_expand/openacc)
+        #             If A=XX(B):
+        #                 CALL XX_PHY(B, A)
+        #             Else:
+        #                 Create temporary array Z
+        #                 CALL XX_PHY(B, Z)
+        #                 Put Z in statement, in replacement of XX(B)
+        #         Wrap remaining computation in mnh_expand/openacc
+        #     Insert USE statements in current scope
+        #     Add local variable declarations in current scope
+        #     Remove useless parenthesis in call statements
+
+        # This method only works with new shuman/gradients style as defined in shugrad.h
+        includeStmts = self.findall('.//{*}include-stmt')
+        includeFound = False
+        for includeStmt in includeStmts:
+            filename = includeStmt.find('./{*}filename/{*}S').text.replace('"', '').replace("'", "")
+            if 'shugrad.h' == filename:
+                includeFound = True
+                self.getParent(includeStmt).remove(includeStmt)
+                self.removeEmptyCONTAINS()
+        if not includeFound:
+            return self.shumanFUNCtoCALL(useDevice=False)
+
+        shuman3D = ('MZM', 'MXM', 'MYM', 'MZF', 'MXF', 'MYF',
+                    'DZM', 'DXM', 'DYM', 'DZF', 'DXF', 'DYF')
+        shuman2D = ('MXM2D', 'MYM2D', 'MXF2D', 'MYF2D',
+                    'DXM2D', 'DYM2D', 'DXF2D', 'DYF2D')
+        gradient = ('GZ_M_M', 'GZ_M_W', 'GZ_W_M', 'GZ_U_UW', 'GZ_V_VW',
+                    'GX_M_U', 'GX_U_M', 'GX_W_UW', 'GX_M_M',
+                    'GY_V_M', 'GY_M_V', 'GY_W_VW', 'GY_M_M',
+                    'GX_V_UV', 'GY_U_UV')
+        shugrad = shuman3D + shuman2D + gradient
+
+        def buildCall(function, result):
+            """
+            Build the call statement equivalent to this function (named-E)
+            """
+            def removeRange(array):
+                """
+                Remove index range selection from a named-E, in place
+                A(I:J, K:, :L, 1) -> A(:, :, :, 1)
+                """
+                for ss in array.findall('./{*}R-LT/{*}array-R/' +
+                                        '{*}section-subscript-LT/{*}section-subscript'):
+                    lb = ss.find('./{*}lower-bound')
+                    ub = ss.find('./{*}upper-bound')
+                    if (ss.text and ':' in ss.text) or (lb and lb.tail and ':' in lb.tail):
+                        if lb:
+                            ss.remove(lb)
+                        if ub:
+                            ss.remove(ub)
+                        ss.text = ':'
+
+            funcName = n2name(function.find('./{*}N'))
+            if isinstance(result, str):
+                result = createExprPart(result)
+            removeRange(result)
+            args = function.findall('./{*}R-LT/{*}parens-R/{*}element-LT/{*}element/{*}named-E')
+            for arg in args:
+                removeRange(arg)
+            result = f'CALL {funcName}_PHY(D, ' + \
+                     ', '.join(alltext(arg) for arg in args + [result]) + ')'
+            return createExpr(result)[0]
+
+        def getFunctions(node):
+            """
+            Returns the list of functions found in node
+            """
+            def getPath(node, stmt):
+                """
+                Return path of node relative to stmt
+                """
+                result = []
+                item = node
+                while item != stmt:
+                    result = [tag(item)] + result
+                    item = scope.getParent(item)
+                return '/'.join(result)
+            functions = [(elem, getPath(elem, node)) for elem in node.findall('.//{*}named-E')
+                         if n2name(elem.find('./{*}N')) in shugrad]
+            return functions
+
+        def replace(old, new):
+            """
+            Replace a node by another one, keeping the tail attribute
+            """
+            if isinstance(new, str):
+                new = createExprPart(new)
+            new.tail = old.tail
+            parent = scope.getParent(old)
+            parent.insert(list(parent).index(old), new)
+            parent.remove(old)
+
+        def getHDims(node):
+            """
+            Extract horizontal computed dimensions
+            """
+            dims = None
+            for sslt in node.findall('.//{*}section-subscript-LT'):
+                thisdims = []
+                for ss in sslt.findall('./{*}section-subscript'):
+                    lb = ss.find('./{*}lower-bound')
+                    ub = ss.find('./{*}upper-bound')
+                    if (ss.text and ':' in ss.text) or (lb and lb.tail and ':' in lb.tail):
+                        onedim = ''.join(alltext(item) for item in lb)
+                        onedim += ':'
+                        onedim += ''.join(alltext(item) for item in ub)
+                        thisdims.append(onedim)
+                if dims is None:
+                    dims = thisdims
+                else:
+                    if len(dims) != len(thisdims):
+                        raise PYFTError('Arrays with different shapes are found in ' +
+                                        'the same shuman/gradient: ' + alltext(node))
+                    for i, _ in enumerate(dims):
+                        if 'MERGE' in dims[i] and 'MERGE' not in thisdims[i]:
+                            thisdims[i] = dims[i]
+                        if 'MERGE' not in dims[i] and 'MERGE' in thisdims[i]:
+                            dims[i] = thisdims[i]
+                    if not dims == thisdims:
+                        raise PYFTError('Arrays with different shapes are found in ' +
+                                        'the same shuman/gradient: ' + alltext(node))
+            return dims
+
+        def getTemp(node, funcName, nb):
+            """
+            Return a temporary array suitable for the given function name
+            """
+            dims = getHDims(node)
+            kind = '2D' if funcName in shuman2D else '3D'
+            nb[kind] += 1
+            temp = f'ZWORKSHUGRAD_{kind}_{nb[kind]}'
+            temp = f'{temp}({", ".join(dims)})'
+            return temp
+
+        def insertBefore(present, new):
+            """
+            Insert 'new' just before present
+            """
+            parent = scope.getParent(present)
+            if tag(parent) == 'action-stmt':
+                scope.changeIfStatementsInIfConstructs(singleItem=scope.getParent(parent))
+                parent = scope.getParent(present)
+            pos = list(parent).index(present)
+            if pos != 0:
+                new.tail = '\n' + parent[pos - 1].tail.split('\n')[-1]
+            parent.insert(pos, new)
+
+        def insertAfter(present, new):
+            """
+            Insert 'new' just after present
+            """
+            parent = scope.getParent(present)
+            if tag(parent) == 'action-stmt':
+                scope.changeIfStatementsInIfConstructs(singleItem=scope.getParent(parent))
+                parent = scope.getParent(present)
+            new.tail = '\n' + present.tail.split('\n')[-1]
+            pos = list(parent).index(present)
+            if pos != 0:
+                present.tail = '\n' + parent[pos - 1].tail.split('\n')[-1]
+            parent.insert(list(parent).index(present) + 1, new)
+
+        def wrapCompute(stmt, dims):
+            """
+            Insert mnhexpand/openacc directives around stmt (using dims)
+            Returns integer variables needed for mnh_expand directive
+            """
+            usedVariables = []
+            mnhExpandArrayIndexes = []
+            for i, dim in enumerate(dims):
+                var = {0: 'JIJ', 1: 'JK'}[i]
+                usedVariables.append(var)
+                mnhExpandArrayIndexes.append(f'{var}={dim}')
+            mnhExpandArrayIndexes = ', '.join(mnhExpandArrayIndexes)
+            mnhOpenDir = "!$mnh_expand_array(" + mnhExpandArrayIndexes + ")"
+            mnhCloseDir = "!$mnh_end_expand_array(" + mnhExpandArrayIndexes + ")"
+            insertBefore(stmt, createElem('C', text="!$acc kernels", tail='\n'))
+            insertBefore(stmt, createElem('C', text=mnhOpenDir, tail='\n'))
+            insertAfter(stmt, createElem('C', text="!$acc end kernels", tail='\n'))
+            insertAfter(stmt, createElem('C', text=mnhCloseDir, tail='\n'))
+            return usedVariables
+
+        # a-stmt, call-stmt, if-then-stmt, else-if-stmt, where-construct-stmt, else-where-stmt
+        # can contain expressions involving shuman and/or gradients
+        # We look for all of them, in each scope
+        for scope in self.getScopes():
+            usedSubroutines = set()  # Subroutines to be added in USE statements
+            usedIntegerVariables = set()
+            callList = []
+            nbmax = {'2D': 0, '3D': 0}  # Number of working arrays used
+            for stmt in [stmt for tag in ('a-stmt', 'call-stmt', 'if-then-stmt', 'else-if-stmt',
+                                          'where-construct-stmt', 'else-where-stmt')
+                         for stmt in scope.findall('.//{*}' + tag)]:
+                nb = {'2D': 0, '3D': 0}
+                # We look for all shuman/gradients
+                functions = getFunctions(stmt)
+
+                # Preparation
+                fastPath = False
+                if len(functions):
+                    # We have shuman/gradients to deal with
+                    # we add bounds to all arrays involved in computation
+                    if tag(stmt) == 'call-stmt':
+                        # Only touch arguments using shuman/gradient functions
+                        for arg in [arg for arg in stmt.find('./{*}arg-spec')
+                                    if getFunctions(arg)]:
+                            scope.addArrayParenthesesInNode(arg)
+                            scope.addExplicitArrayBounds(arg)
+                    else:
+                        scope.addArrayParenthesesInNode(stmt)
+                        scope.addExplicitArrayBounds(stmt)
+
+                # Loop on all shuman/gradients from the innermost to the outermost
+                for function, _ in sorted(functions, key=lambda f: f[1].count('/'), reverse=True):
+                    funcName = n2name(function.find('./{*}N'))
+                    dims = getHDims(function)
+
+                    # Loop on arguments which are operations to compute them before
+                    for arg in function.findall('./{*}R-LT/{*}parens-R/' +
+                                                '{*}element-LT/{*}element/{*}op-E'):
+                        temp = getTemp(function, funcName, nb)
+                        computeStmt = createExpr(f'{temp}={alltext(arg)}')[0]
+                        insertBefore(stmt, computeStmt)
+                        usedIntegerVariables.update(wrapCompute(computeStmt, dims))
+                        replace(arg, temp)
+
+                    # Fast path for A=XX(B)
+                    # XX(B)+... will generate an op-E child tag in E-2 tag
+                    # XX(B+C) has an op-E child in E-2/named-E/R-LT/parens-R/element-LT/element
+                    # XX(YY(A)): YY is not directly in E-2
+                    if tag(stmt) == 'a-stmt' and \
+                       (not stmt.find('./{*}E-2/{*}op-E')) and \
+                       (not stmt.find('./{*}E-2/{*}named-E/{*}R-LT/{*}parens-R/' +
+                                      '{*}element-LT/{*}element/{*}op-E')) and \
+                       (function == stmt.find('./{*}E-2/{*}named-E')):
+                        fastPath = True
+                        # transform function into call
+                        callStmt = buildCall(stmt.find('./{*}E-2/{*}named-E'),
+                                             stmt.find('./{*}E-1/{*}named-E'))
+                        # Replace statement
+                        replace(stmt, callStmt)
+
+                    # Normal path
+                    else:
+                        temp = getTemp(function, funcName, nb)
+                        callStmt = buildCall(function, temp)
+                        insertBefore(stmt, callStmt)
+                        replace(function, temp)
+
+                    callList.append(callStmt)
+                    usedSubroutines.add(funcName + '_PHY')
+
+                if tag(stmt) == 'a-stmt' and len(functions) and not fastPath:
+                    # In case A=MZM(B)+C, Z=MZM(B) is computed above and
+                    # stmt is now A=Z+B, which we must decorate
+                    usedIntegerVariables.update(wrapCompute(stmt, dims))
+
+                # Maximum number of temp array
+                for kind in ('2D', '3D'):
+                    nbmax[kind] = max(nbmax[kind], nb[kind])
+
+            # Add the use statements
+            moduleVars = {}
+            for sub in sorted(usedSubroutines):
+                if re.match(r'[MD][XYZ][MF](2D)?_PHY', sub):
+                    moduleName = 'MODE_SHUMAN_PHY'
+                else:
+                    for kind in ('M', 'U', 'V', 'W'):
+                        if re.match(r'G[XYZ]_' + kind + r'_[MUVW]{1,2}_PHY', sub):
+                            moduleName = f'MODE_GRADIENT_{kind}_PHY'
+                if moduleName not in moduleVars:
+                    moduleVars[moduleName] = []
+                moduleVars[moduleName].append(sub)
+            scope.addModuleVar([(scope.path, k, v) for k, v in moduleVars.items()])
+
+            # Add the missing local variables
+            varDesc = []
+            # Integer loop variables
+            for varName in [varName for varName in sorted(usedIntegerVariables)
+                            if not scope.varList.findVar(varName)]:
+                var = {'as': [], 'asx': [],
+                       'n': varName, 'i': None, 't': 'INTEGER', 'arg': False,
+                       'use': False, 'opt': False, 'allocatable': False,
+                       'parameter': False, 'init': None, 'scopePath': scope.path}
+                varDesc.append([scope.path, var['n'], scope.varSpec2stmt(var), None])
+            # arrays
+            for kind in ('2D', '3D'):
+                for i in range(1, nbmax[kind] + 1):
+                    var = {'as': [(None, 'D%NIJT')] if kind == '2D'
+                           else [(None, 'D%NIJT'), (None, 'D%NKT')],
+                           'n': f'ZWORKSHUGRAD_{kind}_{i}', 'i': None, 't': 'REAL', 'arg': False,
+                           'use': False, 'opt': False, 'allocatable': False,
+                           'parameter': False, 'init': None, 'scopePath': scope.path}
+                    varDesc.append([scope.path, var['n'], scope.varSpec2stmt(var), None])
+            scope.addVar(varDesc)
+
+            # Remove useless parenthesis in call staments
+            # This cannot be done earlier as removeArrayParenthesesInNode
+            # works only on declared variables
+            for callStmt in callList:
+                scope.removeArrayParenthesesInNode(callStmt)
 
     @debugDecor
     @noParallel

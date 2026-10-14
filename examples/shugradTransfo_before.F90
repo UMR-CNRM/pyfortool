@@ -1,0 +1,40 @@
+!#PYFT transfo: --shugradTransfo
+MODULE MODFOO
+  CONTAINS
+  SUBROUTINE SUBFOO
+    REAL, DIMENSION(D%NIJT, D%NKT) :: P1, P2, P3, P4, P5, P6, P8, P9
+    REAL, DIMENSION(D%NIJT) :: P7, P10
+    REAL, DIMENSION(D%NIJT, D%NKT) :: P11, P12, P13, P14, P15, P16, P17, P18, P19, P20, P21, P22
+
+    ! Fast path
+
+    P1=MZM(P2)
+
+    P3(IIB:IIE, :)=MZM(P4(IIB:IIE,:))
+
+    P5(:,IKE+1)=MXM2D(P6(:,IKE+1))
+
+    P7=MXM2D(P8(:,IKE+1))
+
+    P9(:,IKE+1)=MXM2D(P10)
+
+    ! Non fast path
+
+    P11(IIB:IIE, :)=MZM(P12(IIB:IIE, :)+P13(IIB:IIE, :))
+
+    P14=MZM(P15)+MZM(P16)+P17
+
+    P18=MZM(MZF(P19)+P20)
+
+    P21=MZM(MZF(P22))
+
+    ! IF
+
+    IF(.TRUE.) P1=MZM(P2)
+
+    IF(.TRUE.) P21=MZM(MZF(P22))
+
+  CONTAINS
+    INCLUDE "shugrad.h"
+  END SUBROUTINE SUBFOO
+END MODULE MODFOO

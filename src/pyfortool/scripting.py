@@ -558,6 +558,9 @@ def updateParserApplications(parser):
                                help='Add Prints of min/maxval and shape of all in, out, inout ' +
                                     'arguments of all scopes')
     gApplications.add_argument('--shumanFUNCtoCALL', default=False, action='store_true',
+                               help='Transform shuman functions to call statements ' +
+                                    '(legacy version)')
+    gApplications.add_argument('--shugradTransfo', default=False, action='store_true',
                                help='Transform shuman functions to call statements')
     gApplications.add_argument('--mathFunctoBRFunc', default=False, action='store_true',
                                help='Convert intrinsic math functions **, LOG, ATAN, **2, **3, ' +
@@ -873,6 +876,8 @@ def applyTransfoApplications(pft, arg, args, simplify, parserOptions, stopScopes
                         wrapH=args.wrapH, **simplify)
     elif arg == '--shumanFUNCtoCALL':
         pft.shumanFUNCtoCALL()
+    elif arg == '--shugradTransfo':
+        pft.shugradTransfo()
     elif arg == '--buildACCTypeHelpers':
         pft.buildACCTypeHelpers()
     elif arg == '--mathFunctoBRFunc':
