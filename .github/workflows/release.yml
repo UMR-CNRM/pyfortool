@@ -1,0 +1,177 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '*'
+
+permissions:
+  contents: write
+
+jobs:
+  tests:
+    uses: ./.github/workflows/tests-suite.yml
+
+  build:
+    name: Build sdist, wheel and changelog
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build
+          pip install -e .
+
+      - name: Check tag matches package version
+        id: version
+        run: |
+          PKG_VERSION=$(python -c 'import pyfortool; print(pyfortool.__version__)')
+          echo "version=${PKG_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Package version: ${PKG_VERSION}"
+          echo "Tag: ${{ github.ref_name }}"
+          if [ "${PKG_VERSION}" != "${{ github.ref_name }}" ]; then
+            echo "::error::Git tag (${{ github.ref_name }}) does not match package version (${PKG_VERSION})"
+            exit 1
+          fi
+
+      - name: Build sdist and wheel
+        run: |
+          python -m build
+
+      - name: Generate changelog
+        run: |
+          bash .github/scripts/generate_changelog.sh \
+            "${{ github.ref_name }}" > CHANGELOG.md
+          echo "Generated changelog:"
+          cat CHANGELOG.md
+
+      - name: Upload distributions (wheel + sdist)
+        uses: actions/upload-artifact@v4
+        with:
+          name: py-dist
+          path: |
+            dist/*.tar.gz
+            dist/*.whl
+
+      - name: Upload release artifacts (sdist + changelog)
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artifacts
+          path: |
+            dist/*.tar.gz
+            CHANGELOG.md
+
+  pyinstaller:
+    name: PyInstaller one-file binary (${{ matrix.arch }})
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            runner: ubuntu-22.04
+            python-version: '3.9'
+          - arch: aarch64
+            runner: ubuntu-22.04-arm
+            python-version: '3.11'
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies and pyinstaller
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install pyinstaller
+
+      - name: Build pyfortool binary
+        run: |
+          pyinstaller --collect-all pyfxtran --onefile $(which pyfortool) src/pyfortool/scripting.py
+
+      - name: Verify binary version
+        run: |
+          ./dist/pyfortool --version
+          ./dist/pyfortool --version | grep -q "${{ needs.build.outputs.version }}" \
+            || { echo "::error::Binary version mismatch"; exit 1; }
+
+      - name: Rename binary with architecture
+        run: |
+          mv dist/pyfortool "dist/pyfortool-${{ matrix.arch }}"
+          ls -l dist/
+
+      - name: Upload pyfortool binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: pyfortool-${{ matrix.arch }}
+          path: "dist/pyfortool-${{ matrix.arch }}"
+
+  publish-pypi:
+    name: Publish wheel to PyPI
+    needs: [tests, build]
+    runs-on: ubuntu-latest
+    environment: publish
+    steps:
+      - name: Download distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: py-dist
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
+
+  release:
+    name: Create GitHub Release
+    needs: [tests, build, pyinstaller]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-artifacts
+          path: release-artifacts/
+
+      - name: Download x86_64 binary
+        uses: actions/download-artifact@v4
+        with:
+          name: pyfortool-x86_64
+          path: binaries/
+
+      - name: Download aarch64 binary
+        uses: actions/download-artifact@v4
+        with:
+          name: pyfortool-aarch64
+          path: binaries/
+
+      - name: List release assets
+        run: |
+          ls -l release-artifacts/ binaries/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          body_path: release-artifacts/CHANGELOG.md
+          files: |
+            release-artifacts/*.tar.gz
+            binaries/pyfortool-x86_64
+            binaries/pyfortool-aarch64

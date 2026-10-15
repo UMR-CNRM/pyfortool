@@ -49,7 +49,7 @@ if [ "${tests}" == "" -o "$(echo ${tests} | grep -w "version")" != "" ]; then
       result="\e[32mOK\e[0m"
     else
       ret=1
-      result="\e[31mproblem\e[0m"
+      result="\e[31mproblem ($vinit != $vtag)\e[0m"
     fi
   fi
 
