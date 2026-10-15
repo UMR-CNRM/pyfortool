@@ -73,8 +73,8 @@ $(function() {
   <div class="headertitle"><div class="title">Module Organization</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md96"></a> This guide explains what each module in PyForTool contains and when to use it.</p>
-<h1><a class="anchor" id="autotoc_md97"></a>
+<div class="textblock"><p><a class="anchor" id="autotoc_md97"></a> This guide explains what each module in PyForTool contains and when to use it.</p>
+<h1><a class="anchor" id="autotoc_md98"></a>
 Module Overview</h1>
 <div class="fragment"><div class="line">pyfortool/</div>
 <div class="line">├── __init__.py          # Package initialization, exports PYFT</div>
@@ -90,11 +90,11 @@ Module Overview</h1>
 <div class="line">├── util.py              # Utility functions</div>
 <div class="line">├── expressions.py       # Expression helpers</div>
 <div class="line">└── scripting.py         # CLI tools implementation</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md98"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md99"></a>
 pyfortool.py - File Operations</h1>
 <p><b>Main class:</b> <code>PYFT</code></p>
 <p>Entry point for file-level operations.</p>
-<h2><a class="anchor" id="autotoc_md99"></a>
+<h2><a class="anchor" id="autotoc_md100"></a>
 Key Methods</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -114,7 +114,7 @@ Key Methods</h2>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><code>generateEmptyPYFT()</code>   </td><td class="markdownTableBodyNone">Create new file from scratch   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md100"></a>
+<h2><a class="anchor" id="autotoc_md101"></a>
 Usage</h2>
 <div class="fragment"><div class="line"><span class="keyword">from</span> pyfortool <span class="keyword">import</span> PYFT</div>
 <div class="line"> </div>
@@ -131,11 +131,11 @@ Usage</h2>
 <div class="line"><span class="keyword">with</span> PYFT(<span class="stringliteral">&#39;input.F90&#39;</span>) <span class="keyword">as</span> pft:</div>
 <div class="line">    pft.removeComments()</div>
 <div class="line">    pft.write()</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md101"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md102"></a>
 scope.py - Scope Operations</h1>
 <p><b>Main classes:</b> <code>PYFTscope</code>, <code>ElementView</code></p>
 <p>Provides scope-level navigation and XML tree access.</p>
-<h2><a class="anchor" id="autotoc_md102"></a>
+<h2><a class="anchor" id="autotoc_md103"></a>
 PYFTscope</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -153,7 +153,7 @@ PYFTscope</h2>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><code>empty()</code>   </td><td class="markdownTableBodyNone">Remove all statements   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md103"></a>
+<h2><a class="anchor" id="autotoc_md104"></a>
 ElementView (XML Access)</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -173,7 +173,7 @@ ElementView (XML Access)</h2>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><code>insertStatement()</code>   </td><td class="markdownTableBodyNone">Insert FORTRAN statement   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md104"></a>
+<h2><a class="anchor" id="autotoc_md105"></a>
 Usage</h2>
 <div class="fragment"><div class="line"><span class="comment"># Navigate scopes</span></div>
 <div class="line">scopes = pft.getScopes()</div>
@@ -191,10 +191,10 @@ Usage</h2>
 <div class="line">stmt = createExpr(<span class="stringliteral">&#39;X = 42&#39;</span>)[0]</div>
 <div class="line">sub.insertStatement(stmt, first=<span class="keyword">True</span>)</div>
 <div class="ttc" id="anamespacepyfortool_1_1expressions_html"><div class="ttname"><a href="namespacepyfortool_1_1expressions.html">pyfortool.expressions</a></div><div class="ttdef"><b>Definition</b> <a href="expressions_8py_source.html#l00001">expressions.py:1</a></div></div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md105"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md106"></a>
 variables.py - Variable Management</h1>
 <p><b>Main classes:</b> <code>VarList</code>, <code>Variables</code></p>
-<h2><a class="anchor" id="autotoc_md106"></a>
+<h2><a class="anchor" id="autotoc_md107"></a>
 VarList</h2>
 <p>Manages variable declarations for a scope.</p>
 <table class="markdownTable">
@@ -207,7 +207,7 @@ VarList</h2>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><code>showVarList()</code>   </td><td class="markdownTableBodyNone">Display all variables   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md107"></a>
+<h2><a class="anchor" id="autotoc_md108"></a>
 Variables (Mixin)</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -237,7 +237,7 @@ Variables (Mixin)</h2>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><code>modifyAutomaticArrays()</code>   </td><td class="markdownTableBodyNone">Transform automatic arrays   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md108"></a>
+<h2><a class="anchor" id="autotoc_md109"></a>
 Usage</h2>
 <div class="fragment"><div class="line"><span class="comment"># Query variables</span></div>
 <div class="line">vl = pft.varList</div>
@@ -259,10 +259,10 @@ Usage</h2>
 <div class="line">    startTemplate=<span class="stringliteral">&quot;ALLOCATE({name}({shape}))&quot;</span>,</div>
 <div class="line">    endTemplate=<span class="stringliteral">&quot;DEALLOCATE({name})&quot;</span></div>
 <div class="line">)</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md109"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md110"></a>
 statements.py - Statement Manipulation</h1>
 <p><b>Main class:</b> <code>Statements</code></p>
-<h2><a class="anchor" id="autotoc_md110"></a>
+<h2><a class="anchor" id="autotoc_md111"></a>
 Methods</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -278,7 +278,7 @@ Methods</h2>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><code>setFalseIfStmt(flags)</code>   </td><td class="markdownTableBodyNone">Set flags to .FALSE.   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md111"></a>
+<h2><a class="anchor" id="autotoc_md112"></a>
 Usage</h2>
 <div class="fragment"><div class="line"><span class="comment"># Remove calls</span></div>
 <div class="line">pft.removeCall(<span class="stringliteral">&#39;FOO&#39;</span>)  <span class="comment"># All CALL FOO</span></div>
@@ -296,10 +296,10 @@ Usage</h2>
 <div class="line"><span class="comment"># Disable conditional code</span></div>
 <div class="line">pft.setFalseIfStmt(<span class="stringliteral">&#39;LDEBUG&#39;</span>)  <span class="comment"># IF (LDEBUG) becomes .FALSE.</span></div>
 <div class="line">pft.setFalseIfStmt([<span class="stringliteral">&#39;LDEBUG&#39;</span>, <span class="stringliteral">&#39;LVERBOSE&#39;</span>], simplify=<span class="keyword">True</span>)</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md112"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md113"></a>
 cosmetics.py - Code Formatting</h1>
 <p><b>Main class:</b> <code>Cosmetics</code></p>
-<h2><a class="anchor" id="autotoc_md113"></a>
+<h2><a class="anchor" id="autotoc_md114"></a>
 Methods</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -327,7 +327,7 @@ Methods</h2>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><code>formatModuleUse(upper)</code>   </td><td class="markdownTableBodyNone">Order USE statements by module type and alphabetically; uppercase ONLY clause vars   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md114"></a>
+<h2><a class="anchor" id="autotoc_md115"></a>
 Usage</h2>
 <div class="fragment"><div class="line"><span class="comment"># Case</span></div>
 <div class="line">pft.upperCase()</div>
@@ -344,11 +344,11 @@ Usage</h2>
 <div class="line"> </div>
 <div class="line"><span class="comment"># Prettify (all formatting)</span></div>
 <div class="line">pft.prettify()</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md115"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md116"></a>
 applications.py - High-Level Transforms</h1>
 <p><b>Main class:</b> <code>Applications</code></p>
 <p>Model-specific and application-level transformations.</p>
-<h2><a class="anchor" id="autotoc_md116"></a>
+<h2><a class="anchor" id="autotoc_md117"></a>
 Methods</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -374,7 +374,7 @@ Methods</h2>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><code>splitModuleRoutineFile()</code>   </td><td class="markdownTableBodyNone">Split file by scopes   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md117"></a>
+<h2><a class="anchor" id="autotoc_md118"></a>
 Usage</h2>
 <div class="fragment"><div class="line"><span class="comment"># Profiling</span></div>
 <div class="line">pft.addDrHook()    <span class="comment"># Add timing</span></div>
@@ -389,10 +389,10 @@ Usage</h2>
 <div class="line"> </div>
 <div class="line"><span class="comment"># Split file</span></div>
 <div class="line">pft.splitModuleRoutineFile()  <span class="comment"># Creates one file per module/subroutine</span></div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md118"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md119"></a>
 cpp.py - Preprocessor</h1>
 <p><b>Main class:</b> <code>Cpp</code></p>
-<h2><a class="anchor" id="autotoc_md119"></a>
+<h2><a class="anchor" id="autotoc_md120"></a>
 Methods</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -400,16 +400,16 @@ Methods</h2>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><code>applyCPPifdef(keys)</code>   </td><td class="markdownTableBodyNone">Evaluate #ifdef blocks   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md120"></a>
+<h2><a class="anchor" id="autotoc_md121"></a>
 Usage</h2>
 <div class="fragment"><div class="line"><span class="comment"># Evaluate specific keys</span></div>
 <div class="line">pft.applyCPPifdef([<span class="stringliteral">&#39;KEY1&#39;</span>, <span class="stringliteral">&#39;%KEY2&#39;</span>])</div>
 <div class="line"><span class="comment"># - KEY1 is defined (True)</span></div>
 <div class="line"><span class="comment"># - KEY2 is undefined (False, via % prefix)</span></div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md121"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md122"></a>
 openacc.py - GPU Directives</h1>
 <p><b>Main class:</b> <code>Openacc</code></p>
-<h2><a class="anchor" id="autotoc_md122"></a>
+<h2><a class="anchor" id="autotoc_md123"></a>
 Methods</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -427,7 +427,7 @@ Methods</h2>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><code>removebyPassDOCONCURRENT()</code>   </td><td class="markdownTableBodyNone">Remove MNH bypass macros   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md123"></a>
+<h2><a class="anchor" id="autotoc_md124"></a>
 Usage</h2>
 <div class="fragment"><div class="line"><span class="comment"># Add directives</span></div>
 <div class="line">pft.addACCData()  <span class="comment"># !$acc data present() for INTENT arrays</span></div>
@@ -437,10 +437,10 @@ Usage</h2>
 <div class="line"> </div>
 <div class="line"><span class="comment"># AMD GPU preparation</span></div>
 <div class="line">pft.allocatetoHIP()  <span class="comment"># ALLOCATE → CALL MNH_HIPALLOCATE</span></div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md124"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md125"></a>
 tree.py - Cross-File Analysis</h1>
 <p><b>Main class:</b> <code>Tree</code></p>
-<h2><a class="anchor" id="autotoc_md125"></a>
+<h2><a class="anchor" id="autotoc_md126"></a>
 Methods</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -460,7 +460,7 @@ Methods</h2>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><code>plotExecTreeFromFile()</code>   </td><td class="markdownTableBodyNone">Generate call graph   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md126"></a>
+<h2><a class="anchor" id="autotoc_md127"></a>
 Usage</h2>
 <div class="fragment"><div class="line"><span class="keyword">from</span> <a class="code hl_namespace" href="namespacepyfortool_1_1tree.html">pyfortool.tree</a> <span class="keyword">import</span> Tree</div>
 <div class="line"> </div>
@@ -474,10 +474,10 @@ Usage</h2>
 <div class="line">tree.plotCompilTreeFromFile(<span class="stringliteral">&#39;main.F90&#39;</span>, <span class="stringliteral">&#39;deps.dot&#39;</span>)</div>
 <div class="line">tree.plotExecTreeFromFile(<span class="stringliteral">&#39;main.F90&#39;</span>, <span class="stringliteral">&#39;calls.dot&#39;</span>)</div>
 <div class="ttc" id="anamespacepyfortool_1_1tree_html"><div class="ttname"><a href="namespacepyfortool_1_1tree.html">pyfortool.tree</a></div><div class="ttdef"><b>Definition</b> <a href="tree_8py_source.html#l00001">tree.py:1</a></div></div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md127"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md128"></a>
 util.py - Utilities</h1>
 <p>Helper functions and decorators.</p>
-<h2><a class="anchor" id="autotoc_md128"></a>
+<h2><a class="anchor" id="autotoc_md129"></a>
 Functions</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -503,7 +503,7 @@ Functions</h2>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><code>setVerbosity(level)</code>   </td><td class="markdownTableBodyNone">Set logging level   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md129"></a>
+<h2><a class="anchor" id="autotoc_md130"></a>
 Decorators</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -513,10 +513,10 @@ Decorators</h2>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><code>@noParallel</code>   </td><td class="markdownTableBodyNone">Prevent parallel execution   </td></tr>
 </table>
-<h1><a class="anchor" id="autotoc_md130"></a>
+<h1><a class="anchor" id="autotoc_md131"></a>
 expressions.py - Expression Helpers</h1>
 <p>Low-level XML construction.</p>
-<h2><a class="anchor" id="autotoc_md131"></a>
+<h2><a class="anchor" id="autotoc_md132"></a>
 Functions</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -532,7 +532,7 @@ Functions</h2>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><code>createArrayBounds()</code>   </td><td class="markdownTableBodyNone">Create array bounds   </td></tr>
 </table>
-<h2><a class="anchor" id="autotoc_md132"></a>
+<h2><a class="anchor" id="autotoc_md133"></a>
 Usage</h2>
 <div class="fragment"><div class="line"><span class="keyword">from</span> <a class="code hl_namespace" href="namespacepyfortool_1_1expressions.html">pyfortool.expressions</a> <span class="keyword">import</span> createExpr, createElem</div>
 <div class="line"> </div>
@@ -541,10 +541,10 @@ Usage</h2>
 <div class="line"> </div>
 <div class="line"><span class="comment"># Insert into tree</span></div>
 <div class="line">pft.insertStatement(nodes[0], first=<span class="keyword">True</span>)</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md133"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md134"></a>
 scripting.py - CLI Implementation</h1>
 <p>Contains functions for the command-line tools.</p>
-<h2><a class="anchor" id="autotoc_md134"></a>
+<h2><a class="anchor" id="autotoc_md135"></a>
 Functions</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -562,7 +562,7 @@ Functions</h2>
 </table>
 <p><b>Not typically used directly</b> - use via CLI tools: </p><div class="fragment"><div class="line">pyfortool input.F90 --upperCase --indent</div>
 <div class="line">pyfortool_parallel --tree /path/to/src ...</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md135"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md136"></a>
 Choosing the Right Module</h1>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -590,7 +590,7 @@ Choosing the Right Module</h1>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone">Debug/tracing   </td><td class="markdownTableBodyNone"><code><a class="el" href="util_8py_source.html">util.py</a></code>   </td></tr>
 </table>
-<h1><a class="anchor" id="autotoc_md136"></a>
+<h1><a class="anchor" id="autotoc_md137"></a>
 See Also</h1>
 <ul>
 <li>Also in the Developer's Guide<ul>

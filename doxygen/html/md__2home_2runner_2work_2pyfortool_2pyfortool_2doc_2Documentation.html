@@ -342,7 +342,15 @@ Unit Tests</h2>
 </table>
 <p>Run tests with:</p>
 <div class="fragment"><div class="line">PYTHONPATH=src pytest tests/ -v</div>
-</div><!-- fragment --> </div></div><!-- contents -->
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md36"></a>
+Releasing</h1>
+<p>See release.md for the full release process. In short:</p>
+<ul>
+<li>Bump the version in <code><a class="el" href="____init_____8py_source.html">src/pyfortool/__init__.py</a></code>, commit and push.</li>
+<li>Push a tag matching the version (e.g. <code>0.2.21</code>).</li>
+<li>The <code>Release</code> GitHub Action then builds the sdist, wheel and PyInstaller binaries, generates the changelog, creates the GitHub Release, and publishes the wheel to PyPI. </li>
+</ul>
+</div></div><!-- contents -->
 </div><!-- PageDoc -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

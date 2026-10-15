@@ -484,3 +484,13 @@ Run tests with:
 ```bash
 PYTHONPATH=src pytest tests/ -v
 ```
+
+## Releasing
+
+See [release.md](release.md) for the full release process. In short:
+
+- Bump the version in `src/pyfortool/__init__.py`, commit and push.
+- Push a tag matching the version (e.g. `0.2.21`).
+- The `Release` GitHub Action then builds the sdist, wheel and PyInstaller
+  binaries, generates the changelog, creates the GitHub Release, and publishes
+  the wheel to PyPI.

@@ -73,8 +73,8 @@ $(function() {
   <div class="headertitle"><div class="title">Testing Guide</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md137"></a> This guide explains how to run and write tests for PyForTool.</p>
-<h1><a class="anchor" id="autotoc_md138"></a>
+<div class="textblock"><p><a class="anchor" id="autotoc_md138"></a> This guide explains how to run and write tests for PyForTool.</p>
+<h1><a class="anchor" id="autotoc_md139"></a>
 Test Suites</h1>
 <p>PyForTool has two test suites:</p>
 <table class="markdownTable">
@@ -85,9 +85,9 @@ Test Suites</h1>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone">Regression Tests   </td><td class="markdownTableBodyNone"><code>examples/</code>   </td><td class="markdownTableBodyNone">Bash scripts   </td><td class="markdownTableBodyNone">End-to-end transformation validation   </td></tr>
 </table>
-<h1><a class="anchor" id="autotoc_md139"></a>
+<h1><a class="anchor" id="autotoc_md140"></a>
 Running Tests</h1>
-<h2><a class="anchor" id="autotoc_md140"></a>
+<h2><a class="anchor" id="autotoc_md141"></a>
 Unit Tests (pytest)</h2>
 <div class="fragment"><div class="line"># Install pytest if not already installed</div>
 <div class="line">pip install pytest pytest-cov</div>
@@ -109,7 +109,7 @@ Unit Tests (pytest)</h2>
 <div class="line"> </div>
 <div class="line"># Generate coverage report</div>
 <div class="line">PYTHONPATH=src pytest tests/ --cov=pyfortool --cov-report=term-missing</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md141"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md142"></a>
 Regression Tests</h2>
 <div class="fragment"><div class="line"># Run all regression tests</div>
 <div class="line">cd examples &amp;&amp; ./tests.sh</div>
@@ -124,7 +124,7 @@ Regression Tests</h2>
 <li>Runs pyfortool with the transformation command (from the <code>!#PYFT transfo:</code> comment)</li>
 <li>Compares output with corresponding <code>*_after.F90</code> files</li>
 </ol>
-<h1><a class="anchor" id="autotoc_md142"></a>
+<h1><a class="anchor" id="autotoc_md143"></a>
 Test Structure</h1>
 <div class="fragment"><div class="line">tests/</div>
 <div class="line">├── conftest.py                    # Shared pytest fixtures</div>
@@ -247,9 +247,9 @@ Test Structure</h1>
 <div class="line">        ├── TestCreateExpr</div>
 <div class="line">        ├── TestCreateExprPart</div>
 <div class="line">        └── TestSimplifyExpr</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md143"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md144"></a>
 Writing Tests</h1>
-<h2><a class="anchor" id="autotoc_md144"></a>
+<h2><a class="anchor" id="autotoc_md145"></a>
 Test Fixtures</h2>
 <p>Shared test data is defined in <code>conftest.py</code>. Each fixture returns FORTRAN code as a string:</p>
 <div class="fragment"><div class="line"><span class="preprocessor">@pytest.fixture</span></div>
@@ -277,7 +277,7 @@ Test Fixtures</h2>
 <div class="line">        <span class="keyword">with</span> open(fpath, <span class="stringliteral">&#39;w&#39;</span>) <span class="keyword">as</span> f:</div>
 <div class="line">            f.write(fortran_with_subroutine)</div>
 <div class="line">        <span class="keywordflow">return</span> PYFT(fpath)</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md145"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md146"></a>
 Test Example</h2>
 <div class="fragment"><div class="line"><span class="keyword">class </span>TestCosmeticsCase:</div>
 <div class="line">    <span class="stringliteral">&quot;&quot;&quot;Tests for upperCase and lowerCase methods.&quot;&quot;&quot;</span></div>
@@ -309,7 +309,7 @@ Test Example</h2>
 <div class="line">        result = pft_lowercase.fortran</div>
 <div class="line">        <span class="keyword">assert</span> <span class="stringliteral">&#39;MODULE&#39;</span> <span class="keywordflow">in</span> result</div>
 <div class="line">        <span class="keyword">assert</span> <span class="stringliteral">&#39;SUBROUTINE&#39;</span> <span class="keywordflow">in</span> result</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md146"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md147"></a>
 Best Practices</h1>
 <ol type="1">
 <li><b>Use descriptive test names</b>: <code>test_remove_unused_removes_variable</code></li>
@@ -325,7 +325,7 @@ Best Practices</h1>
 <div class="line">        <span class="keyword">assert</span> <span class="stringliteral">&#39;expected&#39;</span> <span class="keywordflow">in</span> result</div>
 <div class="line">    <span class="keywordflow">except</span> (AttributeError, TypeError):</div>
 <div class="line">        pytest.skip(<span class="stringliteral">&quot;Complex feature requires full tree setup&quot;</span>)</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md147"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md148"></a>
 CI/CD</h1>
 <p>Tests run automatically via GitHub Actions (<code>.github/workflows/test.yml</code>):</p>
 <table class="markdownTable">
@@ -340,7 +340,7 @@ CI/CD</h1>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><code>docs</code>   </td><td class="markdownTableBodyNone">Doxygen build   </td><td class="markdownTableBodyNone">3.11   </td></tr>
 </table>
-<h1><a class="anchor" id="autotoc_md148"></a>
+<h1><a class="anchor" id="autotoc_md149"></a>
 See Also</h1>
 <ul>
 <li>Also in the Developer's Guide<ul>
