@@ -317,7 +317,9 @@ for the "AROME" case.
 **--addMPPDB_CHECKS** Add MPPDB\_CHEKS bit-repro checking routines of MesoNH for all in and
 inout arrays in subroutines.
 
-**--shumanFUNCtoCALL** Transform shuman functions to call statements.
+**--shumanFUNCtoCALL** Transform shuman functions to call statements (legacy version).
+
+**--shugradTransfo** Transform shuman and gradient functions to call statements.
 
 **--mathFunctoBRFunc** Convert intrinsic math functions **, LOG, ATAN, **2, **3, **4, EXP,
 COS, SIN, ATAN2 into a self defined function BR_ for MesoNH bit-repro.
