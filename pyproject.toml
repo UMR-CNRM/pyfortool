@@ -12,7 +12,13 @@ description = "Python-fortran-tool"
 readme = "README.md"
 requires-python = ">=3.8"
 keywords = ["fortran", "static-analysis"]
-license = "CECILL-C"
+# Use the PEP 621 dict form (not the SPDX string "CECILL-C") because the                                                                                                                    
+# x86 PyInstaller build runs on Python 3.8 (CentOS 7 SCL rh-python38);                                                                                                                      
+# setuptools that supports the SPDX string form requires Python >= 3.9                                                                                                                      
+# (setuptools >= 77). This keeps the build working on the oldest supported                                                                                                                  
+# Python while remaining valid on modern setuptools, at the cost of a                                                                                                                       
+# deprecation warning on newer setuptools.
+license = { text = "CECILL-C" }
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: POSIX :: Linux",

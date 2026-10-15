@@ -26,7 +26,7 @@ See Also
 fxtran : External FORTRAN parser used by PyForTool
 """
 
-__version__ = "0.2.22"
+__version__ = "0.2.23"
 
 # NAMESPACE should be defined first
 NAMESPACE = 'http://fxtran.net/#syntax'

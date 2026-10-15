@@ -76,40 +76,39 @@ jobs:
   pyinstaller:
     name: PyInstaller one-file binary (${{ matrix.arch }})
     needs: build
+    runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
         include:
           - arch: x86_64
-            runner: ubuntu-22.04
-            python-version: '3.9'
+            runner: ubuntu-latest
+            image: quay.io/pypa/manylinux2014_x86_64
           - arch: aarch64
-            runner: ubuntu-22.04-arm
-            python-version: '3.11'
-    runs-on: ${{ matrix.runner }}
+            runner: ubuntu-26.04-arm
+            image: quay.io/pypa/manylinux_2_28_aarch64
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Install dependencies and pyinstaller
+      - name: Build pyfortool binary in manylinux container
         run: |
-          python -m pip install --upgrade pip
-          pip install -e .
-          pip install pyinstaller
-
-      - name: Build pyfortool binary
-        run: |
-          pyinstaller --collect-all pyfxtran --onefile $(which pyfortool) src/pyfortool/scripting.py
+          docker run --rm \
+            -e _UID="$(id -u)" -e _GID="$(id -g)" \
+            -v "$PWD:/src" -w /src \
+            "${{ matrix.image }}" \
+            bash .github/scripts/build_pyinstaller.sh \
+              "$(id -u)" "$(id -g)" "${{ matrix.arch }}"
 
       - name: Verify binary version
         run: |
           ./dist/pyfortool --version
           ./dist/pyfortool --version | grep -q "${{ needs.build.outputs.version }}" \
             || { echo "::error::Binary version mismatch"; exit 1; }
+
+      - name: Assert glibc target
+        run: |
+          echo "Highest GLIBC symbols required by the binary:"
+          objdump -T dist/pyfortool | grep -o 'GLIBC_[0-9.]*' | sort -Vu | tail -3
 
       - name: Rename binary with architecture
         run: |
