@@ -188,7 +188,7 @@ class Openacc():
                 varsToChange[i] = var.replace(' ', '')
 
             if len(varsToChange) > 0:
-                scope.addModuleVar([(scope.path, 'MODE_MNH_HIPFORT', None)])
+                scope.addModuleVar([('MODE_MNH_HIPFORT', None)])
 
             allocateStmts = scope.findall('.//{*}allocate-stmt')
             allocateStmts.extend(scope.findall('.//{*}deallocate-stmt'))

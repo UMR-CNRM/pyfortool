@@ -126,9 +126,11 @@ Manages variable declarations for a scope.
 
 | Method | Description |
 |--------|-------------|
-| `addVar(varList)` | Add variable declaration |
-| `removeVar(varList)` | Remove variable |
-| `addModuleVar(moduleVarList)` | Add USE statement |
+| `addVar(varList)` | Add variable declaration (call on the declaring scope) |
+| `removeVar(varList)` | Remove variable (call on the scope using it) |
+| `removeVarIfUnused(varList)` | Remove variable if unused (call on the scope using it) |
+| `isVarUsed(varList)` | Check variable usage (call on the scope using it) |
+| `addModuleVar(moduleVarList)` | Add USE statement (call on the declaring scope) |
 | `attachArraySpecToEntity()` | Move DIMENSION to entities |
 | `checkImplicitNone()` | Check for IMPLICIT NONE |
 | `checkIntent()` | Check INTENT attributes |
@@ -146,15 +148,23 @@ Manages variable declarations for a scope.
 vl = pft.varList
 var = vl.findVar('X')
 
-# Add variable
-pft.addVar([('module:MOD/sub:SUB', 'NEW_VAR', 
-             'INTEGER :: NEW_VAR', None)])
+# Variable manipulation methods are called on the scope holding the variables
+sub = pft.getScopeNode('module:MOD/sub:SUB')
 
-# Remove variable
-pft.removeVar([('module:MOD/sub:SUB', 'OLD_VAR')])
+# Add variable: (name, declaration statement, position in the argument list or None)
+sub.addVar([('NEW_VAR', 'INTEGER :: NEW_VAR', None)])
 
-# Add USE statement
-pft.addModuleVar([('module:MOD/sub:SUB', 'MODD_XX', 'VAR')])
+# Remove variable (searched in SUB, then in the enclosing scopes)
+sub.removeVar(['OLD_VAR'])
+
+# Remove variables only if they are unused; returns the names actually removed
+sub.removeVarIfUnused(['A', 'B'], excludeDummy=True)
+
+# Check usage: {'X': True, 'Y': False}
+sub.isVarUsed(['X', 'Y'])
+
+# Add USE statement: (module name, variable name / list of names / None for no ONLY clause)
+sub.addModuleVar([('MODD_XX', 'VAR')])
 
 # Transform automatic arrays
 pft.modifyAutomaticArrays(

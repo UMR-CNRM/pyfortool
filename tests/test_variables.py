@@ -345,16 +345,35 @@ END MODULE MOD_MULTI
         before = pft_multiple_unused.fortran
         assert 'REAL :: A, B, C' in before or 'REAL, DIMENSION(10) :: A, B, C' in before
 
-        scopes = pft_multiple_unused.getScopes()
-        for scope in scopes:
-            if 'sub:MULTI' in scope.path:
-                var_list = [(scope.path, v['n']) for v in scope.varList 
-                           if v['n'] in ['A', 'B', 'C']]
-        
-        pft_multiple_unused.removeVarIfUnused(var_list, excludeDummy=True, excludeModule=True)
+        scope = pft_multiple_unused.getScopeNode('module:MOD_MULTI/sub:MULTI')
+        var_list = [v['n'] for v in scope.varList if v['n'] in ['A', 'B', 'C']]
+
+        removed = scope.removeVarIfUnused(var_list, excludeDummy=True, excludeModule=True)
         after = pft_multiple_unused.fortran
-        
-        assert 'A' not in after or 'REAL :: A' not in after
+
+        assert removed == ['A', 'B', 'C']
+        assert 'REAL :: A, B, C' not in after
+        assert 'REAL :: ' not in after.replace('REAL, INTENT', '')
+
+    def test_remove_var_if_unused_keeps_used(self, pft_multiple_unused):
+        """Test removeVarIfUnused() keeps used variables and returns only removed ones."""
+        scope = pft_multiple_unused.getScopeNode('module:MOD_MULTI/sub:MULTI')
+
+        removed = scope.removeVarIfUnused(['A', 'Z'], excludeDummy=True)
+        after = pft_multiple_unused.fortran
+
+        assert removed == ['A']
+        assert 'Z = X * 3.0' in after
+
+    def test_remove_var_if_unused_exclude_module(self, pft_multiple_unused):
+        """Test removeVarIfUnused() with excludeModule does nothing on a module scope."""
+        before = pft_multiple_unused.fortran
+        scope = pft_multiple_unused.getScopeNode('module:MOD_MULTI')
+
+        removed = scope.removeVarIfUnused(['A'], excludeModule=True)
+
+        assert removed == []
+        assert pft_multiple_unused.fortran == before
 
 
 class TestAddVar:
@@ -386,12 +405,99 @@ END MODULE MOD_ADD
         before = pft_add_var.fortran
         assert 'NEW_VAR' not in before
         
-        pft_add_var.addVar([('module:MOD_ADD/sub:ADD_SUB', 'NEW_VAR', 
-                            'INTEGER :: NEW_VAR', None)])
+        sub = pft_add_var.getScopeNode('module:MOD_ADD/sub:ADD_SUB')
+        sub.addVar([('NEW_VAR', 'INTEGER :: NEW_VAR', None)])
         after = pft_add_var.fortran
-        
-        assert 'NEW_VAR' in after
-        assert 'INTEGER' in after
+
+        assert 'INTEGER :: NEW_VAR' in after
+        # Declared inside the subroutine
+        assert after.index('SUBROUTINE ADD_SUB(X)') < after.index('INTEGER :: NEW_VAR')
+        assert after.index('INTEGER :: NEW_VAR') < after.index('END SUBROUTINE ADD_SUB')
+
+    def test_add_var_adds_dummy_argument(self, pft_add_var):
+        """Test addVar() with a position adds the variable to the argument list."""
+        sub = pft_add_var.getScopeNode('module:MOD_ADD/sub:ADD_SUB')
+        sub.addVar([('Y', 'REAL, INTENT(OUT) :: Y', 1)])
+        after = pft_add_var.fortran
+
+        assert 'SUBROUTINE ADD_SUB(X, Y)' in after
+        assert 'REAL, INTENT(OUT) :: Y' in after
+
+    def test_add_var_in_module(self, pft_add_var):
+        """Test addVar() on a module scope declares the variable before CONTAINS."""
+        mod = pft_add_var.getScopeNode('module:MOD_ADD')
+        mod.addVar([('MOD_VAR', 'INTEGER :: MOD_VAR', None)])
+        after = pft_add_var.fortran
+
+        assert after.index('INTEGER :: MOD_VAR') < after.index('CONTAINS')
+
+    def test_add_var_on_file_scope_raises(self, pft_add_var):
+        """Test addVar() refuses to run on the whole file (not a scope)."""
+        from pyfortool.util import PYFTError
+        with pytest.raises(PYFTError):
+            pft_add_var.addVar([('NEW_VAR', 'INTEGER :: NEW_VAR', None)])
+
+    def test_add_var_legacy_scope_path_is_deprecated(self, pft_add_var):
+        """Test addVar() still accepts (scopePath, ...) items but warns."""
+        with pytest.warns(DeprecationWarning):
+            pft_add_var.addVar([('module:MOD_ADD/sub:ADD_SUB', 'NEW_VAR',
+                                 'INTEGER :: NEW_VAR', None)])
+        assert 'INTEGER :: NEW_VAR' in pft_add_var.fortran
+
+    def test_add_var_mixed_forms_raises(self, pft_add_var):
+        """Test addVar() refuses a varList mixing legacy and new items."""
+        from pyfortool.util import PYFTError
+        with pytest.raises(PYFTError):
+            pft_add_var.addVar([('module:MOD_ADD/sub:ADD_SUB', 'A', 'INTEGER :: A', None),
+                                ('B', 'INTEGER :: B', None)])
+
+
+class TestAddModuleVar:
+    """Tests for addModuleVar() method."""
+
+    @pytest.fixture
+    def pft_use(self):
+        code = """
+MODULE MOD_USE
+    IMPLICIT NONE
+CONTAINS
+    SUBROUTINE USE_SUB(X)
+        USE MODD_A, ONLY: A1
+        REAL, INTENT(IN) :: X
+    END SUBROUTINE USE_SUB
+END MODULE MOD_USE
+"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fpath = os.path.join(tmpdir, 'test.F90')
+            with open(fpath, 'w') as f:
+                f.write(code)
+            return PYFT(fpath)
+
+    def test_add_module_var_adds_use(self, pft_use):
+        """Test addModuleVar() adds a USE ... ONLY statement in the scope."""
+        sub = pft_use.getScopeNode('module:MOD_USE/sub:USE_SUB')
+        sub.addModuleVar([('MODD_B', ['B1', 'B2']), ('MODD_C', None)])
+        after = pft_use.fortran
+
+        assert 'USE MODD_B, ONLY:B1, B2' in after
+        assert 'USE MODD_C' in after
+        assert after.index('USE MODD_A') < after.index('USE MODD_B')
+        assert after.index('USE MODD_B') < after.index('REAL, INTENT(IN) :: X')
+
+    def test_add_module_var_updates_existing_use(self, pft_use):
+        """Test addModuleVar() does not duplicate already imported variables."""
+        sub = pft_use.getScopeNode('module:MOD_USE/sub:USE_SUB')
+        sub.addModuleVar([('MODD_A', ['A1', 'A2'])])
+        after = pft_use.fortran
+
+        assert after.count('USE MODD_A') == 2
+        assert 'USE MODD_A, ONLY:A2' in after
+
+    def test_add_module_var_legacy_scope_path_is_deprecated(self, pft_use):
+        """Test addModuleVar() still accepts (scopePath, ...) items but warns."""
+        with pytest.warns(DeprecationWarning):
+            pft_use.addModuleVar([('module:MOD_USE/sub:USE_SUB', 'MODD_B', 'B1')])
+        assert 'USE MODD_B, ONLY:B1' in pft_use.fortran
 
 
 class TestRemoveVar:
@@ -426,9 +532,9 @@ END MODULE MOD_REMOVE
         before = pft_remove_var.fortran
         assert 'REMOVE_ME' in before
         
-        pft_remove_var.removeVar([('module:MOD_REMOVE', 'REMOVE_ME')])
+        pft_remove_var.getScopeNode('module:MOD_REMOVE').removeVar(['REMOVE_ME'])
         after = pft_remove_var.fortran
-        
+
         assert 'REMOVE_ME' not in after
 
     def test_remove_var_removes_local_variable(self, pft_remove_var):
@@ -436,10 +542,103 @@ END MODULE MOD_REMOVE
         before = pft_remove_var.fortran
         assert 'LOCAL_REMOVE' in before
         
-        pft_remove_var.removeVar([('module:MOD_REMOVE/sub:REMOVE_SUB', 'LOCAL_REMOVE')])
+        sub = pft_remove_var.getScopeNode('module:MOD_REMOVE/sub:REMOVE_SUB')
+        sub.removeVar(['LOCAL_REMOVE'])
         after = pft_remove_var.fortran
-        
+
         assert 'LOCAL_REMOVE' not in after
+        assert 'INTEGER :: REMOVE_ME' in after
+
+    def test_remove_var_searches_upper_scope(self, pft_remove_var):
+        """Test removeVar() called on a subroutine removes a variable of the enclosing module."""
+        sub = pft_remove_var.getScopeNode('module:MOD_REMOVE/sub:REMOVE_SUB')
+        sub.removeVar(['REMOVE_ME'])
+        after = pft_remove_var.fortran
+
+        assert 'REMOVE_ME' not in after
+        assert 'LOCAL_REMOVE' in after
+
+    def test_remove_var_removes_dummy_argument(self, pft_remove_var):
+        """Test removeVar() removes a dummy argument from the argument list too."""
+        sub = pft_remove_var.getScopeNode('module:MOD_REMOVE/sub:REMOVE_SUB')
+        sub.removeVar(['X'])
+        after = pft_remove_var.fortran
+
+        assert 'SUBROUTINE REMOVE_SUB()' in after
+        assert 'INTENT(INOUT)' not in after
+
+    def test_remove_var_is_case_insensitive(self, pft_remove_var):
+        """Test removeVar() with a lowercase name."""
+        sub = pft_remove_var.getScopeNode('module:MOD_REMOVE/sub:REMOVE_SUB')
+        sub.removeVar(['local_remove'])
+
+        assert 'LOCAL_REMOVE' not in pft_remove_var.fortran
+
+    def test_remove_var_legacy_scope_path_is_deprecated(self, pft_remove_var):
+        """Test removeVar() still accepts (scopePath, name) items but warns."""
+        with pytest.warns(DeprecationWarning):
+            pft_remove_var.removeVar([('module:MOD_REMOVE', 'REMOVE_ME'),
+                                      ('module:MOD_REMOVE/sub:REMOVE_SUB', 'LOCAL_REMOVE')])
+        after = pft_remove_var.fortran
+
+        assert 'REMOVE_ME' not in after
+        assert 'LOCAL_REMOVE' not in after
+
+
+class TestIsVarUsed:
+    """Tests for isVarUsed() method."""
+
+    @pytest.fixture
+    def pft_usage(self):
+        code = """
+MODULE MOD_USAGE
+    IMPLICIT NONE
+    INTEGER :: MOD_USED, MOD_UNUSED
+CONTAINS
+    SUBROUTINE USAGE_SUB(X, Y)
+        REAL, INTENT(IN) :: X
+        REAL, INTENT(OUT) :: Y
+        INTEGER :: UNUSED
+        Y = X * MOD_USED
+    END SUBROUTINE USAGE_SUB
+END MODULE MOD_USAGE
+"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fpath = os.path.join(tmpdir, 'test.F90')
+            with open(fpath, 'w') as f:
+                f.write(code)
+            return PYFT(fpath)
+
+    def test_is_var_used_keys_are_names(self, pft_usage):
+        """Test isVarUsed() returns a dict keyed by uppercase variable names."""
+        sub = pft_usage.getScopeNode('module:MOD_USAGE/sub:USAGE_SUB')
+        result = sub.isVarUsed(['x', 'Y', 'UNUSED'])
+
+        assert result == {'X': True, 'Y': True, 'UNUSED': False}
+
+    def test_is_var_used_dummy_are_always_used(self, pft_usage):
+        """Test isVarUsed() dummyAreAlwaysUsed option."""
+        sub = pft_usage.getScopeNode('module:MOD_USAGE/sub:USAGE_SUB')
+
+        assert sub.isVarUsed(['Y'], dummyAreAlwaysUsed=True) == {'Y': True}
+
+    def test_is_var_used_module_variable_from_contained_scope(self, pft_usage):
+        """Test isVarUsed() finds usages of module variables in contained routines."""
+        mod = pft_usage.getScopeNode('module:MOD_USAGE')
+        result = mod.isVarUsed(['MOD_USED', 'MOD_UNUSED'])
+
+        assert result == {'MOD_USED': True, 'MOD_UNUSED': False}
+        # With exactScope, usages in the contained subroutine are ignored
+        assert mod.isVarUsed(['MOD_USED'], exactScope=True) == {'MOD_USED': False}
+
+    def test_is_var_used_legacy_scope_path_is_deprecated(self, pft_usage):
+        """Test isVarUsed() legacy form returns (scopePath, name) keys and warns."""
+        with pytest.warns(DeprecationWarning):
+            result = pft_usage.isVarUsed([('module:MOD_USAGE/sub:USAGE_SUB', 'UNUSED'),
+                                          ('module:MOD_USAGE', 'MOD_USED')])
+
+        assert result == {('module:MOD_USAGE/sub:USAGE_SUB', 'UNUSED'): False,
+                          ('module:MOD_USAGE', 'MOD_USED'): True}
 
 
 class TestRenameVar:
