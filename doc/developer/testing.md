@@ -261,17 +261,32 @@ end module mod_test
 2. **Verify the result, not just execution**: Use `assert 'UNUSED_VAR' not in after`
 3. **Use fixtures for shared data**: Reduces duplication
 4. **Test actual transformation**: Check `pft.fortran` contains expected changes
-5. **Skip complex tests gracefully**: Use `pytest.skip()` when appropriate
+5. **Provide a tree when the transformation needs one**: see below
+
+### Transformations Needing the Tree
+
+Some transformations (e.g. `addStack('AROME', ...)`, `addACCRoutineSeq`,
+`removeIJDim`) only act on scopes listed in `stopScopes` or called, directly
+or not, from them. Answering this question requires the execution tree;
+with the default empty `Tree`, these methods fail.
+
+Use the `pft_with_tree` factory fixture (defined in `conftest.py`). It writes
+the code in a temporary directory, builds a `Tree` over this directory and
+returns a `PYFT` instance attached to it:
 
 ```python
-def test_complex_feature(self):
-    try:
-        pft.complexMethod()
-        result = pft.fortran
-        assert 'expected' in result
-    except (AttributeError, TypeError):
-        pytest.skip("Complex feature requires full tree setup")
+def test_add_acc_routine_seq(self, pft_with_tree, fortran_with_routines):
+    pft = pft_with_tree(fortran_with_routines)
+    pft.addACCRoutineSeq(['module:MOD_ROUTINES/sub:ROUTINE_SEQ'])
+    result = pft.fortran
+    assert '!$acc routine (ROUTINE_SEQ) seq' in result  # stop scope
+    assert '!$acc routine (CALLEE) seq' in result       # called by stop scope
+    assert 'NOT_CALLED) seq' not in result              # outside call tree
 ```
+
+Pass the actual scope path (`module:MOD/sub:SUB`) in `stopScopes`; with an
+empty list, nothing is transformed. Testing both cases, and a routine outside
+the call tree, checks that the tree is really used.
 
 ## CI/CD
 

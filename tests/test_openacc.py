@@ -133,27 +133,39 @@ CONTAINS
     SUBROUTINE ROUTINE_SEQ(A, B)
         REAL, INTENT(INOUT) :: A, B
         A = A + 1.0
-        B = B + 2.0
+        CALL CALLEE(B)
     END SUBROUTINE ROUTINE_SEQ
+
+    SUBROUTINE CALLEE(B)
+        REAL, INTENT(INOUT) :: B
+        B = B + 2.0
+    END SUBROUTINE CALLEE
+
+    SUBROUTINE NOT_CALLED(C)
+        REAL, INTENT(INOUT) :: C
+        C = 0.0
+    END SUBROUTINE NOT_CALLED
 END MODULE MOD_ROUTINES
 """
 
-    @pytest.fixture
-    def pft_routines(self, fortran_with_routines):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            fpath = os.path.join(tmpdir, 'test.F90')
-            with open(fpath, 'w') as f:
-                f.write(fortran_with_routines)
-            return PYFT(fpath)
+    def test_add_acc_routine_seq(self, pft_with_tree, fortran_with_routines):
+        """Test !$acc routine seq is added to stop scope and to routines it calls."""
+        pft = pft_with_tree(fortran_with_routines)
+        assert '!$acc' not in pft.fortran.lower()
 
-    def test_add_acc_routine_seq(self, pft_routines):
-        """Test adding !$acc routine seq directive."""
-        try:
-            pft_routines.addACCRoutineSeq([])
-            result = pft_routines.fortran
-            assert '!$ACC' in result.upper() or 'ROUTINE' in result
-        except (AttributeError, TypeError):
-            pytest.skip("addACCRoutineSeq requires full tree setup")
+        pft.addACCRoutineSeq(['module:MOD_ROUTINES/sub:ROUTINE_SEQ'])
+        result = pft.fortran
+
+        assert '!$acc routine (ROUTINE_SEQ) seq' in result  # stop scope itself
+        assert '!$acc routine (CALLEE) seq' in result  # called by the stop scope
+        assert 'NOT_CALLED) seq' not in result  # not in the call tree
+
+    def test_add_acc_routine_seq_empty_stop_scopes(self, pft_with_tree,
+                                                   fortran_with_routines):
+        """Test addACCRoutineSeq does nothing without stop scopes."""
+        pft = pft_with_tree(fortran_with_routines)
+        pft.addACCRoutineSeq([])
+        assert '!$acc' not in pft.fortran.lower()
 
 
 class TestOpenaccAllocateHIP:

@@ -374,6 +374,33 @@ def tmp_decl_file(fortran_with_declarations):
     return TempFortranFile(fortran_with_declarations)
 
 
+@pytest.fixture
+def pft_with_tree(tmp_path):
+    """
+    Factory building a PYFT instance attached to a real Tree.
+
+    Some transformations (addStack('AROME', ...), addACCRoutineSeq,
+    removeIJDim...) only act on scopes called, directly or not, from
+    stopScopes; they need the execution tree to answer that question.
+    The factory writes the FORTRAN code in a temporary directory, builds
+    a Tree over this directory and returns the PYFT object using it.
+
+    Usage
+    -----
+    >>> pft = pft_with_tree(code)
+    >>> pft.addACCRoutineSeq(['module:MOD/sub:SUB'])
+    """
+    from pyfortool import PYFT
+    from pyfortool.tree import Tree
+
+    def _make(content, filename='test.F90'):
+        fpath = tmp_path / filename
+        fpath.write_text(content)
+        tree = Tree([str(tmp_path)])
+        return PYFT(str(fpath), tree=tree)
+    return _make
+
+
 def pft_from_fixture(fixture_name, tmp_path_factory, request):
     """Helper to create PYFT instance from fixture content."""
     from pyfortool import PYFT

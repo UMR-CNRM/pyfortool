@@ -13,3 +13,5 @@ site/fxtran
 *.egg-info/
 dist/
 build/
+
+venv

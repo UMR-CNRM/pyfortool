@@ -288,14 +288,28 @@ END MODULE MOD_STACK
                 f.write(fortran_with_auto_arrays)
             return PYFT(fpath)
 
-    def test_add_stack_arome(self, pft_stack):
-        """Test adding stack allocation for AROME model."""
-        try:
-            pft_stack.addStack('AROME', [])
-            result = pft_stack.fortran
-            assert result is not None
-        except (AttributeError, TypeError):
-            pytest.skip("AROME stack requires full tree setup")
+    def test_add_stack_arome(self, pft_with_tree, fortran_with_auto_arrays):
+        """Test automatic arrays become CRAY pointers on the AROME stack."""
+        pft = pft_with_tree(fortran_with_auto_arrays)
+        assert 'YDSTACK' not in pft.fortran
+
+        pft.addStack('AROME', ['module:MOD_STACK/sub:STACK_TEST'])
+        result = pft.fortran
+
+        assert 'SUBROUTINE STACK_TEST(N, YDSTACK)' in result  # new argument
+        assert 'TYPE (STACK), INTENT(IN) :: YDSTACK' in result
+        assert 'USE STACK_MOD, ONLY: STACK' in result
+        assert 'POINTER(IP_LOCAL_ARRAY_, LOCAL_ARRAY)' in result
+        assert 'YLSTACK=YDSTACK' in result
+        assert 'IP_LOCAL_ARRAY_=YLSTACK%L(' in result
+
+    def test_add_stack_arome_outside_stop_scopes(self, pft_with_tree,
+                                                 fortran_with_auto_arrays):
+        """Test AROME stack transformation ignores routines outside stopScopes."""
+        pft = pft_with_tree(fortran_with_auto_arrays)
+        before = pft.fortran
+        pft.addStack('AROME', [])
+        assert pft.fortran == before
 
     def test_add_stack_mesonh(self, pft_stack):
         """Test adding stack allocation for MESO-NH model."""
@@ -320,9 +334,9 @@ MODULE MOD_IJ
 CONTAINS
     SUBROUTINE IJ_TEST(D, A, B)
         TYPE(DIM_TYPE), INTENT(IN) :: D
-        REAL, INTENT(IN) :: A(:,:)
-        REAL, INTENT(OUT) :: B(:)
-        INTEGER :: JI, JJ
+        REAL, INTENT(IN) :: A(D%NIT, 2)
+        REAL, INTENT(OUT) :: B(D%NIT)
+        INTEGER :: JI
         DO JI = D%NIB, D%NIT
             B(JI) = A(JI, 1)
         END DO
@@ -330,22 +344,25 @@ CONTAINS
 END MODULE MOD_IJ
 """
 
-    @pytest.fixture
-    def pft_ij(self, fortran_with_ij_loops):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            fpath = os.path.join(tmpdir, 'test.F90')
-            with open(fpath, 'w') as f:
-                f.write(fortran_with_ij_loops)
-            return PYFT(fpath)
+    def test_remove_ij_dim(self, pft_with_tree, fortran_with_ij_loops):
+        """Test the loop on JI is replaced by an initialisation of JI."""
+        pft = pft_with_tree(fortran_with_ij_loops)
+        assert 'DO JI = D%NIB, D%NIT' in pft.fortran
 
-    def test_remove_ij_dim(self, pft_ij):
-        """Test removing I/J dimensions for column computation."""
-        try:
-            pft_ij.removeIJDim([])
-            result = pft_ij.fortran
-            assert result is not None
-        except (AttributeError, TypeError):
-            pytest.skip("removeIJDim requires full tree setup")
+        pft.removeIJDim(['module:MOD_IJ/sub:IJ_TEST'])
+        result = pft.fortran
+
+        assert 'DO JI' not in result
+        assert 'END DO' not in result
+        assert 'JI = D%NIB' in result
+        assert 'B(JI) = A(JI, 1)' in result
+
+    def test_remove_ij_dim_outside_stop_scopes(self, pft_with_tree, fortran_with_ij_loops):
+        """Test removeIJDim leaves routines outside stopScopes unchanged."""
+        pft = pft_with_tree(fortran_with_ij_loops)
+        before = pft.fortran
+        pft.removeIJDim([])
+        assert pft.fortran == before
 
 
 class TestApplicationsModi:
