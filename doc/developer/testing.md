@@ -163,8 +163,9 @@ tests/
 │   ├── TestApplicationsModi
 │   └── TestApplicationsRemoveExtraDO
 │
-├── test_scripting.py              # pyfortool_parallel command (7 tests)
-│   └── TestMainParallel           # In-place, descTree, dryRun, cross-file, optsByEnv, errors
+├── test_scripting.py              # pyfortool_parallel command (10 tests)
+│   ├── TestMainParallel           # In-place, descTree, dryRun, cross-file, optsByEnv, errors
+│   └── TestParallelSetup          # Objects sent to child processes are picklable
 │
 └── test_helpers/
     ├── __init__.py
@@ -298,7 +299,10 @@ the call tree, checks that the tree is really used.
 directly, with `argv` as it would be built from the command line. Each test
 writes a small source tree (several files, in sub-directories) under
 `tmp_path`, changes the working directory to it, runs the command and checks
-the files modified in place.
+the files modified in place. These tests run with the default multiprocessing
+start method of the Python used (`forkserver` on Linux from Python 3.14);
+see [Parallel processing and the multiprocessing start method](modules.md)
+for why `mainParallel` requests `fork` itself.
 
 ## CI/CD
 
