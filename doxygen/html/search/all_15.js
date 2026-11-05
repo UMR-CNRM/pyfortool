@@ -1,8 +1,8 @@
 var searchData=
 [
   ['reference_0',['reference',['../index.html#autotoc_md2',1,'Module Reference'],['../index.html',1,'PyForTool API Reference']]],
-  ['regression_20tests_1',['regression tests',['../md__2home_2runner_2work_2pyfortool_2pyfortool_2doc_2Documentation.html#autotoc_md34',1,'Regression Tests'],['../md__2home_2runner_2work_2pyfortool_2pyfortool_2doc_2developer_2testing.html#autotoc_md142',1,'Regression Tests']]],
-  ['regression_20tests_20examples_2',['1. Regression Tests (examples/)',['../md__2home_2runner_2work_2pyfortool_2pyfortool_2CONTRIBUTING.html#autotoc_md162',1,'']]],
+  ['regression_20tests_1',['regression tests',['../md__2home_2runner_2work_2pyfortool_2pyfortool_2doc_2Documentation.html#autotoc_md34',1,'Regression Tests'],['../md__2home_2runner_2work_2pyfortool_2pyfortool_2doc_2developer_2testing.html#autotoc_md143',1,'Regression Tests']]],
+  ['regression_20tests_20examples_2',['1. Regression Tests (examples/)',['../md__2home_2runner_2work_2pyfortool_2pyfortool_2CONTRIBUTING.html#autotoc_md165',1,'']]],
   ['releasing_3',['Releasing',['../md__2home_2runner_2work_2pyfortool_2pyfortool_2doc_2Documentation.html#autotoc_md36',1,'']]],
   ['remove_4',['remove',['../classpyfortool_1_1scope_1_1ElementView.html#a2f4c700ef1c8793250f74f2525d27816',1,'pyfortool::scope::ElementView']]],
   ['removeacc_5',['removeACC',['../classpyfortool_1_1openacc_1_1Openacc.html#a1cdf72af398eeed47f86998c2b0d325f',1,'pyfortool::openacc::Openacc']]],
@@ -26,9 +26,9 @@ var searchData=
   ['renamelower_23',['renameLower',['../classpyfortool_1_1pyfortool_1_1PYFT.html#a2088997f490ae0b5c1e58e65de1fa6b3',1,'pyfortool::pyfortool::PYFT']]],
   ['renameupper_24',['renameUpper',['../classpyfortool_1_1pyfortool_1_1PYFT.html#a8732d4d8eb31ff40e184bb6bc8f474d7',1,'pyfortool::pyfortool::PYFT']]],
   ['renamevar_25',['renameVar',['../classpyfortool_1_1variables_1_1Variables.html#a04a6e808932339c575a2294183badc26',1,'pyfortool::variables::Variables']]],
-  ['request_20process_26',['Pull Request Process',['../md__2home_2runner_2work_2pyfortool_2pyfortool_2CONTRIBUTING.html#autotoc_md169',1,'']]],
+  ['request_20process_26',['Pull Request Process',['../md__2home_2runner_2work_2pyfortool_2pyfortool_2CONTRIBUTING.html#autotoc_md172',1,'']]],
   ['restrict_27',['restrict',['../classpyfortool_1_1variables_1_1VarList.html#a163a4edd97fb5af4c0bbd7b27462b7e4',1,'pyfortool::variables::VarList']]],
-  ['right_20module_28',['right module',['../md__2home_2runner_2work_2pyfortool_2pyfortool_2doc_2developer_2modules.html#autotoc_md136',1,'Choosing the Right Module'],['../md__2home_2runner_2work_2pyfortool_2pyfortool_2doc_2developer_2architecture.html#autotoc_md52',1,'Step 1: Choose the Right Module'],['../md__2home_2runner_2work_2pyfortool_2pyfortool_2CONTRIBUTING.html#autotoc_md171',1,'Step 1: Choose the Right Module']]],
-  ['run_20tests_29',['Run Tests',['../md__2home_2runner_2work_2pyfortool_2pyfortool_2CONTRIBUTING.html#autotoc_md155',1,'']]],
-  ['running_20tests_30',['running tests',['../md__2home_2runner_2work_2pyfortool_2pyfortool_2doc_2developer_2architecture.html#autotoc_md57',1,'Running Tests'],['../md__2home_2runner_2work_2pyfortool_2pyfortool_2doc_2developer_2testing.html#autotoc_md140',1,'Running Tests']]]
+  ['right_20module_28',['right module',['../md__2home_2runner_2work_2pyfortool_2pyfortool_2doc_2developer_2modules.html#autotoc_md137',1,'Choosing the Right Module'],['../md__2home_2runner_2work_2pyfortool_2pyfortool_2doc_2developer_2architecture.html#autotoc_md52',1,'Step 1: Choose the Right Module'],['../md__2home_2runner_2work_2pyfortool_2pyfortool_2CONTRIBUTING.html#autotoc_md174',1,'Step 1: Choose the Right Module']]],
+  ['run_20tests_29',['Run Tests',['../md__2home_2runner_2work_2pyfortool_2pyfortool_2CONTRIBUTING.html#autotoc_md158',1,'']]],
+  ['running_20tests_30',['running tests',['../md__2home_2runner_2work_2pyfortool_2pyfortool_2doc_2developer_2architecture.html#autotoc_md57',1,'Running Tests'],['../md__2home_2runner_2work_2pyfortool_2pyfortool_2doc_2developer_2testing.html#autotoc_md141',1,'Running Tests']]]
 ];

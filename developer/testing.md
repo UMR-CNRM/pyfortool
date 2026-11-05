@@ -8,8 +8,8 @@ PyForTool has two test suites:
 
 | Suite | Location | Framework | Purpose |
 |-------|----------|----------|---------|
-| Unit Tests | `tests/` | pytest | Test individual methods and classes |
-| Regression Tests | `examples/` | Bash scripts | End-to-end transformation validation |
+| Unit Tests | `tests/` | pytest | Test individual methods and classes, and the `pyfortool_parallel` command |
+| Regression Tests | `examples/` | Bash scripts | End-to-end transformation validation (`pyfortool` command) |
 
 ## Running Tests
 
@@ -68,7 +68,8 @@ tests/
 │   ├── fortran_with_if            # Module with IF statements
 │   ├── fortran_with_loops         # Module with DO loops
 │   ├── TempFortranFile            # Context manager
-│   └── pft_simple, pft_module, pft_calls, pft_arrays, pft_if, pft_loops  # Fixtures
+│   ├── pft_simple, pft_module, pft_calls, pft_arrays, pft_if, pft_loops  # Fixtures
+│   └── pft_with_tree              # Factory: PYFT attached to a real Tree
 │
 ├── test_pyft.py                   # PYFT class (17 tests)
 │   ├── TestPYFTInit               # __init__, file loading
@@ -141,7 +142,7 @@ tests/
 │   ├── TestCppElse                # #else handling
 │   └── TestCppMultipleBlocks
 │
-├── test_openacc.py                # Openacc mixin (6 tests)
+├── test_openacc.py                # Openacc mixin (7 tests)
 │   ├── TestOpenaccRemoveACC
 │   ├── TestOpenaccRemoveBypass
 │   ├── TestOpenaccAddACCData
@@ -149,7 +150,7 @@ tests/
 │   ├── TestOpenaccAllocateHIP
 │   └── TestOpenaccCrayBypass
 │
-├── test_applications.py           # Applications mixin (15 tests)
+├── test_applications.py           # Applications mixin (17 tests)
 │   ├── TestApplicationsDrHook
 │   ├── TestApplicationsDeleteCalls
 │   ├── TestApplicationsBudgetDDH
@@ -161,6 +162,10 @@ tests/
 │   ├── TestApplicationsIJDim
 │   ├── TestApplicationsModi
 │   └── TestApplicationsRemoveExtraDO
+│
+├── test_scripting.py              # pyfortool_parallel command (10 tests)
+│   ├── TestMainParallel           # In-place, descTree, dryRun, cross-file, optsByEnv, errors
+│   └── TestParallelSetup          # Objects sent to child processes are picklable
 │
 └── test_helpers/
     ├── __init__.py
@@ -261,17 +266,43 @@ end module mod_test
 2. **Verify the result, not just execution**: Use `assert 'UNUSED_VAR' not in after`
 3. **Use fixtures for shared data**: Reduces duplication
 4. **Test actual transformation**: Check `pft.fortran` contains expected changes
-5. **Skip complex tests gracefully**: Use `pytest.skip()` when appropriate
+5. **Provide a tree when the transformation needs one**: see below
+
+### Transformations Needing the Tree
+
+Some transformations (e.g. `addStack('AROME', ...)`, `addACCRoutineSeq`,
+`removeIJDim`) only act on scopes listed in `stopScopes` or called, directly
+or not, from them. Answering this question requires the execution tree;
+with the default empty `Tree`, these methods fail.
+
+Use the `pft_with_tree` factory fixture (defined in `conftest.py`). It writes
+the code in a temporary directory, builds a `Tree` over this directory and
+returns a `PYFT` instance attached to it:
 
 ```python
-def test_complex_feature(self):
-    try:
-        pft.complexMethod()
-        result = pft.fortran
-        assert 'expected' in result
-    except (AttributeError, TypeError):
-        pytest.skip("Complex feature requires full tree setup")
+def test_add_acc_routine_seq(self, pft_with_tree, fortran_with_routines):
+    pft = pft_with_tree(fortran_with_routines)
+    pft.addACCRoutineSeq(['module:MOD_ROUTINES/sub:ROUTINE_SEQ'])
+    result = pft.fortran
+    assert '!$acc routine (ROUTINE_SEQ) seq' in result  # stop scope
+    assert '!$acc routine (CALLEE) seq' in result       # called by stop scope
+    assert 'NOT_CALLED) seq' not in result              # outside call tree
 ```
+
+Pass the actual scope path (`module:MOD/sub:SUB`) in `stopScopes`; with an
+empty list, nothing is transformed. Testing both cases, and a routine outside
+the call tree, checks that the tree is really used.
+
+### Testing the pyfortool_parallel Command
+
+`tests/test_scripting.py` calls `pyfortool.scripting.mainParallel(argv)`
+directly, with `argv` as it would be built from the command line. Each test
+writes a small source tree (several files, in sub-directories) under
+`tmp_path`, changes the working directory to it, runs the command and checks
+the files modified in place. These tests run with the default multiprocessing
+start method of the Python used (`forkserver` on Linux from Python 3.14);
+see [Parallel processing and the multiprocessing start method](modules.md)
+for why `mainParallel` requests `fork` itself.
 
 ## CI/CD
 
@@ -279,7 +310,7 @@ Tests run automatically via GitHub Actions (`.github/workflows/test.yml`):
 
 | Job | Tests | Python Version |
 |-----|-------|----------------|
-| `pytest` | Unit tests (pytest) | 3.9, 3.10, 3.11, 3.12 |
+| `pytest` | Unit tests (pytest) | 3.8, 3.9 (ubuntu-24.04); 3.10 to 3.15 (ubuntu-latest) |
 | `regression` | Non-regression tests | 3.11 |
 | `lint` | flake8 | 3.11 |
 | `docs` | Doxygen build | 3.11 |

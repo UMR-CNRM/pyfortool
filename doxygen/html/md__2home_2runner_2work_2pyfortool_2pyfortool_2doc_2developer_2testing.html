@@ -73,21 +73,21 @@ $(function() {
   <div class="headertitle"><div class="title">Testing Guide</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md138"></a> This guide explains how to run and write tests for PyForTool.</p>
-<h1><a class="anchor" id="autotoc_md139"></a>
+<div class="textblock"><p><a class="anchor" id="autotoc_md139"></a> This guide explains how to run and write tests for PyForTool.</p>
+<h1><a class="anchor" id="autotoc_md140"></a>
 Test Suites</h1>
 <p>PyForTool has two test suites:</p>
 <table class="markdownTable">
 <tr class="markdownTableHead">
 <th class="markdownTableHeadNone">Suite   </th><th class="markdownTableHeadNone">Location   </th><th class="markdownTableHeadNone">Framework   </th><th class="markdownTableHeadNone">Purpose    </th></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone">Unit Tests   </td><td class="markdownTableBodyNone"><code>tests/</code>   </td><td class="markdownTableBodyNone">pytest   </td><td class="markdownTableBodyNone">Test individual methods and classes    </td></tr>
+<td class="markdownTableBodyNone">Unit Tests   </td><td class="markdownTableBodyNone"><code>tests/</code>   </td><td class="markdownTableBodyNone">pytest   </td><td class="markdownTableBodyNone">Test individual methods and classes, and the <code>pyfortool_parallel</code> command    </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone">Regression Tests   </td><td class="markdownTableBodyNone"><code>examples/</code>   </td><td class="markdownTableBodyNone">Bash scripts   </td><td class="markdownTableBodyNone">End-to-end transformation validation   </td></tr>
+<td class="markdownTableBodyNone">Regression Tests   </td><td class="markdownTableBodyNone"><code>examples/</code>   </td><td class="markdownTableBodyNone">Bash scripts   </td><td class="markdownTableBodyNone">End-to-end transformation validation (<code>pyfortool</code> command)   </td></tr>
 </table>
-<h1><a class="anchor" id="autotoc_md140"></a>
+<h1><a class="anchor" id="autotoc_md141"></a>
 Running Tests</h1>
-<h2><a class="anchor" id="autotoc_md141"></a>
+<h2><a class="anchor" id="autotoc_md142"></a>
 Unit Tests (pytest)</h2>
 <div class="fragment"><div class="line"># Install pytest if not already installed</div>
 <div class="line">pip install pytest pytest-cov</div>
@@ -109,7 +109,7 @@ Unit Tests (pytest)</h2>
 <div class="line"> </div>
 <div class="line"># Generate coverage report</div>
 <div class="line">PYTHONPATH=src pytest tests/ --cov=pyfortool --cov-report=term-missing</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md142"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md143"></a>
 Regression Tests</h2>
 <div class="fragment"><div class="line"># Run all regression tests</div>
 <div class="line">cd examples &amp;&amp; ./tests.sh</div>
@@ -124,7 +124,7 @@ Regression Tests</h2>
 <li>Runs pyfortool with the transformation command (from the <code>!#PYFT transfo:</code> comment)</li>
 <li>Compares output with corresponding <code>*_after.F90</code> files</li>
 </ol>
-<h1><a class="anchor" id="autotoc_md143"></a>
+<h1><a class="anchor" id="autotoc_md144"></a>
 Test Structure</h1>
 <div class="fragment"><div class="line">tests/</div>
 <div class="line">├── conftest.py                    # Shared pytest fixtures</div>
@@ -135,7 +135,8 @@ Test Structure</h1>
 <div class="line">│   ├── fortran_with_if            # Module with IF statements</div>
 <div class="line">│   ├── fortran_with_loops         # Module with DO loops</div>
 <div class="line">│   ├── TempFortranFile            # Context manager</div>
-<div class="line">│   └── pft_simple, pft_module, pft_calls, pft_arrays, pft_if, pft_loops  # Fixtures</div>
+<div class="line">│   ├── pft_simple, pft_module, pft_calls, pft_arrays, pft_if, pft_loops  # Fixtures</div>
+<div class="line">│   └── pft_with_tree              # Factory: PYFT attached to a real Tree</div>
 <div class="line">│</div>
 <div class="line">├── test_pyft.py                   # PYFT class (17 tests)</div>
 <div class="line">│   ├── TestPYFTInit               # __init__, file loading</div>
@@ -208,7 +209,7 @@ Test Structure</h1>
 <div class="line">│   ├── TestCppElse                # #else handling</div>
 <div class="line">│   └── TestCppMultipleBlocks</div>
 <div class="line">│</div>
-<div class="line">├── test_openacc.py                # Openacc mixin (6 tests)</div>
+<div class="line">├── test_openacc.py                # Openacc mixin (7 tests)</div>
 <div class="line">│   ├── TestOpenaccRemoveACC</div>
 <div class="line">│   ├── TestOpenaccRemoveBypass</div>
 <div class="line">│   ├── TestOpenaccAddACCData</div>
@@ -216,7 +217,7 @@ Test Structure</h1>
 <div class="line">│   ├── TestOpenaccAllocateHIP</div>
 <div class="line">│   └── TestOpenaccCrayBypass</div>
 <div class="line">│</div>
-<div class="line">├── test_applications.py           # Applications mixin (15 tests)</div>
+<div class="line">├── test_applications.py           # Applications mixin (17 tests)</div>
 <div class="line">│   ├── TestApplicationsDrHook</div>
 <div class="line">│   ├── TestApplicationsDeleteCalls</div>
 <div class="line">│   ├── TestApplicationsBudgetDDH</div>
@@ -228,6 +229,10 @@ Test Structure</h1>
 <div class="line">│   ├── TestApplicationsIJDim</div>
 <div class="line">│   ├── TestApplicationsModi</div>
 <div class="line">│   └── TestApplicationsRemoveExtraDO</div>
+<div class="line">│</div>
+<div class="line">├── test_scripting.py              # pyfortool_parallel command (10 tests)</div>
+<div class="line">│   ├── TestMainParallel           # In-place, descTree, dryRun, cross-file, optsByEnv, errors</div>
+<div class="line">│   └── TestParallelSetup          # Objects sent to child processes are picklable</div>
 <div class="line">│</div>
 <div class="line">└── test_helpers/</div>
 <div class="line">    ├── __init__.py</div>
@@ -247,9 +252,9 @@ Test Structure</h1>
 <div class="line">        ├── TestCreateExpr</div>
 <div class="line">        ├── TestCreateExprPart</div>
 <div class="line">        └── TestSimplifyExpr</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md144"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md145"></a>
 Writing Tests</h1>
-<h2><a class="anchor" id="autotoc_md145"></a>
+<h2><a class="anchor" id="autotoc_md146"></a>
 Test Fixtures</h2>
 <p>Shared test data is defined in <code>conftest.py</code>. Each fixture returns FORTRAN code as a string:</p>
 <div class="fragment"><div class="line"><span class="preprocessor">@pytest.fixture</span></div>
@@ -277,7 +282,7 @@ Test Fixtures</h2>
 <div class="line">        <span class="keyword">with</span> open(fpath, <span class="stringliteral">&#39;w&#39;</span>) <span class="keyword">as</span> f:</div>
 <div class="line">            f.write(fortran_with_subroutine)</div>
 <div class="line">        <span class="keywordflow">return</span> PYFT(fpath)</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md146"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md147"></a>
 Test Example</h2>
 <div class="fragment"><div class="line"><span class="keyword">class </span>TestCosmeticsCase:</div>
 <div class="line">    <span class="stringliteral">&quot;&quot;&quot;Tests for upperCase and lowerCase methods.&quot;&quot;&quot;</span></div>
@@ -309,30 +314,38 @@ Test Example</h2>
 <div class="line">        result = pft_lowercase.fortran</div>
 <div class="line">        <span class="keyword">assert</span> <span class="stringliteral">&#39;MODULE&#39;</span> <span class="keywordflow">in</span> result</div>
 <div class="line">        <span class="keyword">assert</span> <span class="stringliteral">&#39;SUBROUTINE&#39;</span> <span class="keywordflow">in</span> result</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md147"></a>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md148"></a>
 Best Practices</h1>
 <ol type="1">
 <li><b>Use descriptive test names</b>: <code>test_remove_unused_removes_variable</code></li>
 <li><b>Verify the result, not just execution</b>: Use &lsquo;assert 'UNUSED_VAR&rsquo; not in after<code></code></li>
 <li><code>**Use fixtures for shared data**: Reduces duplication</code></li>
-<li><code>**Test actual transformation**: Check</code>pft.fortran<code>contains expected changes</code></li>
-<li><code>**Skip complex tests gracefully**: Use</code>pytest.skip()` when appropriate</li>
+<li><code>**Test actual transformation**: Check</code>pft.fortran` contains expected changes</li>
+<li><b>Provide a tree when the transformation needs one</b>: see below</li>
 </ol>
-<div class="fragment"><div class="line"><span class="keyword">def </span>test_complex_feature(self):</div>
-<div class="line">    <span class="keywordflow">try</span>:</div>
-<div class="line">        pft.complexMethod()</div>
-<div class="line">        result = pft.fortran</div>
-<div class="line">        <span class="keyword">assert</span> <span class="stringliteral">&#39;expected&#39;</span> <span class="keywordflow">in</span> result</div>
-<div class="line">    <span class="keywordflow">except</span> (AttributeError, TypeError):</div>
-<div class="line">        pytest.skip(<span class="stringliteral">&quot;Complex feature requires full tree setup&quot;</span>)</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md148"></a>
+<h2><a class="anchor" id="autotoc_md149"></a>
+Transformations Needing the Tree</h2>
+<p>Some transformations (e.g. &lsquo;addStack('AROME&rsquo;, ...)<code>,</code>addACCRoutineSeq<code>, </code>removeIJDim<code>) only act on scopes listed in</code>stopScopes<code>or called, directly or not, from them. Answering this question requires the execution tree; with the default empty</code>Tree`, these methods fail.</p>
+<p>Use the <code>pft_with_tree</code> factory fixture (defined in <code>conftest.py</code>). It writes the code in a temporary directory, builds a <code>Tree</code> over this directory and returns a <code>PYFT</code> instance attached to it:</p>
+<div class="fragment"><div class="line"><span class="keyword">def </span>test_add_acc_routine_seq(self, pft_with_tree, fortran_with_routines):</div>
+<div class="line">    pft = pft_with_tree(fortran_with_routines)</div>
+<div class="line">    pft.addACCRoutineSeq([<span class="stringliteral">&#39;module:MOD_ROUTINES/sub:ROUTINE_SEQ&#39;</span>])</div>
+<div class="line">    result = pft.fortran</div>
+<div class="line">    <span class="keyword">assert</span> <span class="stringliteral">&#39;!$acc routine (ROUTINE_SEQ) seq&#39;</span> <span class="keywordflow">in</span> result  <span class="comment"># stop scope</span></div>
+<div class="line">    <span class="keyword">assert</span> <span class="stringliteral">&#39;!$acc routine (CALLEE) seq&#39;</span> <span class="keywordflow">in</span> result       <span class="comment"># called by stop scope</span></div>
+<div class="line">    <span class="keyword">assert</span> <span class="stringliteral">&#39;NOT_CALLED) seq&#39;</span> <span class="keywordflow">not</span> <span class="keywordflow">in</span> result              <span class="comment"># outside call tree</span></div>
+</div><!-- fragment --><p>Pass the actual scope path (<code>module:MOD/sub:SUB</code>) in <code>stopScopes</code>; with an empty list, nothing is transformed. Testing both cases, and a routine outside the call tree, checks that the tree is really used.</p>
+<h2><a class="anchor" id="autotoc_md150"></a>
+Testing the pyfortool_parallel Command</h2>
+<p><code>tests/test_scripting.py</code> calls <code>pyfortool.scripting.mainParallel(argv)</code> directly, with <code>argv</code> as it would be built from the command line. Each test writes a small source tree (several files, in sub-directories) under <code>tmp_path</code>, changes the working directory to it, runs the command and checks the files modified in place. These tests run with the default multiprocessing start method of the Python used (<code>forkserver</code> on Linux from Python 3.14); see <a class="el" href="md__2home_2runner_2work_2pyfortool_2pyfortool_2doc_2developer_2modules.html">Parallel processing and the multiprocessing start method</a> for why <code>mainParallel</code> requests <code>fork</code> itself.</p>
+<h1><a class="anchor" id="autotoc_md151"></a>
 CI/CD</h1>
 <p>Tests run automatically via GitHub Actions (<code>.github/workflows/test.yml</code>):</p>
 <table class="markdownTable">
 <tr class="markdownTableHead">
 <th class="markdownTableHeadNone">Job   </th><th class="markdownTableHeadNone">Tests   </th><th class="markdownTableHeadNone">Python Version    </th></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><code>pytest</code>   </td><td class="markdownTableBodyNone">Unit tests (pytest)   </td><td class="markdownTableBodyNone">3.9, 3.10, 3.11, 3.12    </td></tr>
+<td class="markdownTableBodyNone"><code>pytest</code>   </td><td class="markdownTableBodyNone">Unit tests (pytest)   </td><td class="markdownTableBodyNone">3.8, 3.9 (ubuntu-24.04); 3.10 to 3.15 (ubuntu-latest)    </td></tr>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><code>regression</code>   </td><td class="markdownTableBodyNone">Non-regression tests   </td><td class="markdownTableBodyNone">3.11    </td></tr>
 <tr class="markdownTableRowOdd">
@@ -340,7 +353,7 @@ CI/CD</h1>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><code>docs</code>   </td><td class="markdownTableBodyNone">Doxygen build   </td><td class="markdownTableBodyNone">3.11   </td></tr>
 </table>
-<h1><a class="anchor" id="autotoc_md149"></a>
+<h1><a class="anchor" id="autotoc_md152"></a>
 See Also</h1>
 <ul>
 <li>Also in the Developer's Guide<ul>

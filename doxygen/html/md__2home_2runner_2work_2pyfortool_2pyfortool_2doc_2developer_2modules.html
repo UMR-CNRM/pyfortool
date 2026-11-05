@@ -562,7 +562,15 @@ Functions</h2>
 </table>
 <p><b>Not typically used directly</b> - use via CLI tools: </p><div class="fragment"><div class="line">pyfortool input.F90 --upperCase --indent</div>
 <div class="line">pyfortool_parallel --tree /path/to/src ...</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md136"></a>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md136"></a>
+Parallel processing and the multiprocessing start method</h2>
+<p><code>mainParallel()</code> explicitly requests the <code>fork</code> start method, through a <code>fork</code> context used for the <code>TreeManager</code>, the worker pool and the file locks given to <code>PYFT.setParallel()</code>. The parallel configuration installed by <code>PYFT.setParallel()</code> (shared tree, locks) is held in class attributes, and child processes can only receive it by inheriting the parent memory. Under <code>forkserver</code> or <code>spawn</code> the workers re-import a pristine <code>PYFT</code> class and would run unconfigured.</p>
+<p>This matters because Python 3.14 made <code>forkserver</code> the default on Linux. Two consequences for anyone modifying this module:</p>
+<ul>
+<li>Objects handed to a child process (<code>TreeManager</code>, the pool initializer <code>poolInit</code>) must stay at module level so they remain picklable. <code>tests/test_scripting.py</code> guards this.</li>
+<li>Supporting <code>forkserver</code>/<code>spawn</code> (and therefore macOS and Windows, where <code>fork</code> is unavailable or unsafe) would require passing the shared tree and the locks through the pool initializer instead of relying on inheritance.</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md137"></a>
 Choosing the Right Module</h1>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -590,7 +598,7 @@ Choosing the Right Module</h1>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone">Debug/tracing   </td><td class="markdownTableBodyNone"><code><a class="el" href="util_8py_source.html">util.py</a></code>   </td></tr>
 </table>
-<h1><a class="anchor" id="autotoc_md137"></a>
+<h1><a class="anchor" id="autotoc_md138"></a>
 See Also</h1>
 <ul>
 <li>Also in the Developer's Guide<ul>
