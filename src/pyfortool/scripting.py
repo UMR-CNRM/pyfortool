@@ -56,13 +56,13 @@ def task(filename):
         return (1, filename)
 
 
-class MyManager(BaseManager):
+class TreeManager(BaseManager):
     """
-    Custom manager to deal with Tree instances
+    Manager sharing a single Tree instance between the pyfortool_parallel processes
     """
 
 
-MyManager.register('Tree', Tree)
+TreeManager.register('Tree', Tree)
 
 
 def poolInit(cls, afa):
@@ -98,12 +98,12 @@ def mainParallel(argv=None):
     ctx = get_context('fork')
 
     # Manager to share the Tree instance
-    with MyManager(ctx=ctx) as manager:
+    with TreeManager(ctx=ctx) as manager:
         # Set-up the Tree instance
         sharedTree = getDescTree(commonArgs, manager.Tree)
 
-        # Prepare PYFT to be used in parallel
-        PYFT.setParallel(sharedTree)
+        # Prepare PYFT to be used in parallel (locks taken from the same 'fork' context)
+        PYFT.setParallel(sharedTree, clsLock=ctx.Lock, clsRLock=ctx.RLock)
         try:
             # Set-up the processes
             allFileArgs = {file: getFileArgs(file) for file in sharedTree.getFiles()}

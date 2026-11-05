@@ -12,7 +12,7 @@ import pickle
 import pytest
 
 from pyfortool import PYFT
-from pyfortool.scripting import mainParallel, MyManager, poolInit
+from pyfortool.scripting import mainParallel, TreeManager, poolInit
 from pyfortool.util import PYFTError
 
 
@@ -165,13 +165,13 @@ class TestParallelSetup:
     """
 
     def test_manager_is_picklable(self):
-        """MyManager must be reachable by qualified name."""
-        assert pickle.loads(pickle.dumps(MyManager)) is MyManager
+        """TreeManager must be reachable by qualified name."""
+        assert pickle.loads(pickle.dumps(TreeManager)) is TreeManager
 
     def test_pool_initializer_is_picklable(self):
         """poolInit must be reachable by qualified name."""
         assert pickle.loads(pickle.dumps(poolInit)) is poolInit
 
     def test_tree_is_registered_on_manager(self):
-        """The Tree type must be registered on MyManager at import time."""
-        assert 'Tree' in MyManager._registry  # pylint: disable=protected-access
+        """The Tree type must be registered on TreeManager at import time."""
+        assert 'Tree' in TreeManager._registry  # pylint: disable=protected-access
