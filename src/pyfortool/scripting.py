@@ -50,7 +50,8 @@ def task(filename):
 
     except Exception as exc:  # pylint: disable=broad-except
         logging.error("The following error has occurred in the file %s", filename)
-        traceback.print_exception(exc, file=sys.stdout)
+        # Three-argument form: the single-argument form needs python >= 3.10
+        traceback.print_exception(type(exc), exc, exc.__traceback__, file=sys.stdout)
         sys.stdout.flush()
         return (1, filename)
 

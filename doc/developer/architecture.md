@@ -427,7 +427,7 @@ Tests run automatically via GitHub Actions:
 
 | Job | Tests | Python |
 |-----|-------|--------|
-| `pytest` | Unit tests | 3.9, 3.10, 3.11, 3.12, 3.13, 3.14 |
+| `pytest` | Unit tests | 3.8, 3.9 (ubuntu-24.04); 3.10 to 3.15 (ubuntu-latest) |
 | `regression` | Non-regression (examples/) | 3.11 |
 | `lint` | flake8 | 3.11 |
 

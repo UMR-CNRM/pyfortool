@@ -163,7 +163,7 @@ tests/
 │   ├── TestApplicationsModi
 │   └── TestApplicationsRemoveExtraDO
 │
-├── test_scripting.py              # pyfortool_parallel command (6 tests)
+├── test_scripting.py              # pyfortool_parallel command (7 tests)
 │   └── TestMainParallel           # In-place, descTree, dryRun, cross-file, optsByEnv, errors
 │
 └── test_helpers/
@@ -306,7 +306,7 @@ Tests run automatically via GitHub Actions (`.github/workflows/test.yml`):
 
 | Job | Tests | Python Version |
 |-----|-------|----------------|
-| `pytest` | Unit tests (pytest) | 3.9, 3.10, 3.11, 3.12, 3.13, 3.14 |
+| `pytest` | Unit tests (pytest) | 3.8, 3.9 (ubuntu-24.04); 3.10 to 3.15 (ubuntu-latest) |
 | `regression` | Non-regression tests | 3.11 |
 | `lint` | flake8 | 3.11 |
 | `docs` | Doxygen build | 3.11 |
