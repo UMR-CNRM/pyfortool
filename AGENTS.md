@@ -194,7 +194,7 @@ GitHub Actions runs four jobs on push and PR:
 
 | Job | Tests | When |
 |-----|-------|------|
-| `pytest` | Unit tests (Python 3.9-3.12) | Every push |
+| `pytest` | Unit tests (Python 3.9-3.14) | Every push |
 | `regression` | Non-regression tests | Every push |
 | `lint` | flake8 | Every push |
 | `docs` | Doxygen build | Every push |

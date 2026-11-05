@@ -94,28 +94,29 @@ def mainParallel(argv=None):
 
         # Prepare PYFT to be used in parallel
         PYFT.setParallel(sharedTree)
+        try:
+            # Set-up the processes
+            allFileArgs = {file: getFileArgs(file) for file in sharedTree.getFiles()}
+            logging.info('Executing in parallel on %i files with a maximum of %i processes',
+                         len(allFileArgs), commonArgs.nbPar)
+            with Pool(commonArgs.nbPar, initializer=init, initargs=(PYFT, allFileArgs)) as pool:
+                result = pool.map(task, sharedTree.getFiles())
 
-        # Set-up the processes
-        allFileArgs = {file: getFileArgs(file) for file in sharedTree.getFiles()}
-        logging.info('Executing in parallel on %i files with a maximum of %i processes',
-                     len(allFileArgs), commonArgs.nbPar)
-        with Pool(commonArgs.nbPar, initializer=init, initargs=(PYFT, allFileArgs)) as pool:
-            result = pool.map(task, sharedTree.getFiles())
+            # Writting the descTree object
+            sharedTree.toJson(commonArgs.descTree)
 
-        # Writting the descTree object
-        sharedTree.toJson(commonArgs.descTree)
-
-        # General error
-        errors = [item[1] for item in result if item[0] != 0]
-        status = len(errors)
-        if status != 0:
-            logging.error('List of files with error:')
-            for error in errors:
-                logging.error('  - %s', error)
-            raise PYFTError(f"Errors have been reported in {status} file(s).")
-
-        # Unset parallel processing
-        PYFT.unsetParallel()
+            # General error
+            errors = [item[1] for item in result if item[0] != 0]
+            status = len(errors)
+            if status != 0:
+                logging.error('List of files with error:')
+                for error in errors:
+                    logging.error('  - %s', error)
+                raise PYFTError(f"Errors have been reported in {status} file(s).")
+        finally:
+            # Unset parallel processing, even on error: the shared tree lives in the
+            # manager process, which is stopped when leaving the 'with' block
+            PYFT.unsetParallel()
 
 
 def main(argv=None):

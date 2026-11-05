@@ -8,8 +8,8 @@ PyForTool has two test suites:
 
 | Suite | Location | Framework | Purpose |
 |-------|----------|----------|---------|
-| Unit Tests | `tests/` | pytest | Test individual methods and classes |
-| Regression Tests | `examples/` | Bash scripts | End-to-end transformation validation |
+| Unit Tests | `tests/` | pytest | Test individual methods and classes, and the `pyfortool_parallel` command |
+| Regression Tests | `examples/` | Bash scripts | End-to-end transformation validation (`pyfortool` command) |
 
 ## Running Tests
 
@@ -68,7 +68,8 @@ tests/
 │   ├── fortran_with_if            # Module with IF statements
 │   ├── fortran_with_loops         # Module with DO loops
 │   ├── TempFortranFile            # Context manager
-│   └── pft_simple, pft_module, pft_calls, pft_arrays, pft_if, pft_loops  # Fixtures
+│   ├── pft_simple, pft_module, pft_calls, pft_arrays, pft_if, pft_loops  # Fixtures
+│   └── pft_with_tree              # Factory: PYFT attached to a real Tree
 │
 ├── test_pyft.py                   # PYFT class (17 tests)
 │   ├── TestPYFTInit               # __init__, file loading
@@ -141,7 +142,7 @@ tests/
 │   ├── TestCppElse                # #else handling
 │   └── TestCppMultipleBlocks
 │
-├── test_openacc.py                # Openacc mixin (6 tests)
+├── test_openacc.py                # Openacc mixin (7 tests)
 │   ├── TestOpenaccRemoveACC
 │   ├── TestOpenaccRemoveBypass
 │   ├── TestOpenaccAddACCData
@@ -149,7 +150,7 @@ tests/
 │   ├── TestOpenaccAllocateHIP
 │   └── TestOpenaccCrayBypass
 │
-├── test_applications.py           # Applications mixin (15 tests)
+├── test_applications.py           # Applications mixin (17 tests)
 │   ├── TestApplicationsDrHook
 │   ├── TestApplicationsDeleteCalls
 │   ├── TestApplicationsBudgetDDH
@@ -161,6 +162,9 @@ tests/
 │   ├── TestApplicationsIJDim
 │   ├── TestApplicationsModi
 │   └── TestApplicationsRemoveExtraDO
+│
+├── test_scripting.py              # pyfortool_parallel command (6 tests)
+│   └── TestMainParallel           # In-place, descTree, dryRun, cross-file, optsByEnv, errors
 │
 └── test_helpers/
     ├── __init__.py
@@ -288,13 +292,21 @@ Pass the actual scope path (`module:MOD/sub:SUB`) in `stopScopes`; with an
 empty list, nothing is transformed. Testing both cases, and a routine outside
 the call tree, checks that the tree is really used.
 
+### Testing the pyfortool_parallel Command
+
+`tests/test_scripting.py` calls `pyfortool.scripting.mainParallel(argv)`
+directly, with `argv` as it would be built from the command line. Each test
+writes a small source tree (several files, in sub-directories) under
+`tmp_path`, changes the working directory to it, runs the command and checks
+the files modified in place.
+
 ## CI/CD
 
 Tests run automatically via GitHub Actions (`.github/workflows/test.yml`):
 
 | Job | Tests | Python Version |
 |-----|-------|----------------|
-| `pytest` | Unit tests (pytest) | 3.9, 3.10, 3.11, 3.12 |
+| `pytest` | Unit tests (pytest) | 3.9, 3.10, 3.11, 3.12, 3.13, 3.14 |
 | `regression` | Non-regression tests | 3.11 |
 | `lint` | flake8 | 3.11 |
 | `docs` | Doxygen build | 3.11 |
