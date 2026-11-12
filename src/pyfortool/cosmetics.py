@@ -28,7 +28,8 @@ Examples
 """
 
 import re
-from pyfortool.util import debugDecor, nonCode, tag
+import logging
+from pyfortool.util import debugDecor, nonCode, tag, tofortran, PYFTError
 from pyfortool.expressions import createElem
 from pyfortool import NAMESPACE
 
@@ -1137,3 +1138,53 @@ class Cosmetics():
                             n.text = n.text.upper()
 
         return self
+
+    @debugDecor
+    def checkLineLength(self, maxLength=132, mustRaise=False):
+        """
+        Check that no line exceeds a maximum length.
+
+        Issue a logging.warning for each line longer than maxLength characters.
+        If mustRaise is True, issue a logging.error instead and raise an error.
+
+        All lines are checked (code, comments, directives...) and the length is
+        computed in characters, trailing spaces included. Because the line length
+        is a property of the file, the whole file is always checked, even if the
+        method is called on a sub-scope; line numbers are those of the file.
+
+        Parameters
+        ----------
+        maxLength : int, optional
+            Maximum allowed line length in characters. Default is 132
+            (limit of the FORTRAN free source form).
+        mustRaise : bool, optional
+            If True, issue a logging.error instead of a logging.warning
+            and raise a PYFTError. Default is False.
+
+        Returns
+        -------
+        bool
+            True if no line exceeds maxLength.
+
+        Raises
+        ------
+        PYFTError
+            If mustRaise is True and at least one line exceeds maxLength.
+
+        Examples
+        --------
+        >>> pft = PYFT('input.F90')
+        >>> pft.checkLineLength()  # Warn for lines longer than 132 characters
+        >>> pft.checkLineLength(maxLength=100, mustRaise=True)  # Raise for lines > 100
+        """
+        ok = True
+        log = logging.error if mustRaise else logging.warning
+        for iline, line in enumerate(tofortran(self.mainScope).split('\n'), start=1):
+            if len(line) > maxLength:
+                log(("The line {} has {} characters (maximum is {}), in file '{}'"
+                     ).format(iline, len(line), maxLength, self.getFileName()))
+                ok = False
+        if not ok and mustRaise:
+            raise PYFTError(("There are lines longer than {} characters in file '{}'"
+                             ).format(maxLength, self.getFileName()))
+        return ok

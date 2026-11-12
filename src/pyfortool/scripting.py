@@ -647,6 +647,12 @@ def updateParserChecks(parser):
                          help='Send a warning or raise an error if an array index '
                               'selection (containing a \':\' or applied to a variable '
                               'declared as an array) is split over several lines.')
+    gChecks.add_argument('--checkLineLength', choices={'Warn', 'Err'}, default=None,
+                         help='Send a warning or raise an error if a line is longer than '
+                              'the limit given by --maxLineLength.')
+    gChecks.add_argument('--maxLineLength', type=int, default=132,
+                         help='Maximum line length used by --checkLineLength '
+                              '(default: 132).')
     gChecks.add_argument('--checkONLY', choices={'Warn', 'Err'}, default=None,
                          help='Send a warning or raise an error if a USE statement is not '
                               'followed by an ONLY clause.')
@@ -1005,6 +1011,8 @@ def applyTransfoChecks(pft, arg, args, stopScopes):
         pft.checkEmptyParensInCall(args.checkEmptyParensInCall == 'Err')
     elif arg == '--checkContinuationInArraySection':
         pft.checkContinuationInArraySection(args.checkContinuationInArraySection == 'Err')
+    elif arg == '--checkLineLength':
+        pft.checkLineLength(args.maxLineLength, args.checkLineLength == 'Err')
     elif arg == '--checkONLY':
         pft.checkONLY(args.checkONLY == 'Err')
     elif arg == '--checkKeyDim':

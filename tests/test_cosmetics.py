@@ -562,3 +562,75 @@ END MODULE MOD_MIXED_ONLY
         # ONLY clause vars ARE uppercased
         assert ', ONLY: JPX, JPY' in result
         assert ', ONLY: BAR_SUB' in result
+
+
+class TestCheckLineLength:
+    """Tests for checkLineLength() method."""
+
+    @staticmethod
+    def _pft(code):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fpath = os.path.join(tmpdir, 'test.F90')
+            with open(fpath, 'w') as f:
+                f.write(code)
+            return PYFT(fpath)
+
+    @staticmethod
+    def _code(line):
+        return ("SUBROUTINE FOO(X)\n"
+                "  REAL, INTENT(OUT) :: X\n" +
+                line + "\n"
+                "END SUBROUTINE FOO\n")
+
+    def test_line_at_limit_accepted(self, caplog):
+        """A line of exactly maxLength characters is accepted."""
+        line = '  X = 1. ! ' + 'A' * (132 - 11)
+        assert len(line) == 132
+        pft = self._pft(self._code(line))
+        assert pft.checkLineLength(mustRaise=True) is True
+        assert len(caplog.records) == 0
+
+    def test_long_line_detected(self, caplog):
+        """A line longer than 132 characters is reported with its number and length."""
+        line = '  X = 1. ! ' + 'A' * (133 - 11)
+        pft = self._pft(self._code(line))
+        assert pft.checkLineLength() is False
+        assert len(caplog.records) == 1
+        msg = caplog.records[0].getMessage()
+        assert 'line 3 ' in msg
+        assert '133 characters' in msg
+
+    def test_long_line_raise(self):
+        """mustRaise=True raises a PYFTError."""
+        from pyfortool.util import PYFTError
+        pft = self._pft(self._code('  X = 1. ! ' + 'A' * 200))
+        with pytest.raises(PYFTError):
+            pft.checkLineLength(mustRaise=True)
+
+    def test_custom_max_length(self, caplog):
+        """The maximum length can be changed."""
+        pft = self._pft(self._code('  X = 1. + 2. + 3.'))
+        assert pft.checkLineLength() is True
+        assert pft.checkLineLength(maxLength=10) is False
+        # All the 4 lines are longer than 10 characters
+        assert len(caplog.records) == 4
+
+    def test_whole_file_checked_from_scope(self, caplog):
+        """Called on a sub-scope, the whole file is checked with file line numbers."""
+        pft = self._pft("""MODULE MODTEST
+CONTAINS
+  SUBROUTINE SUB1(X)
+    REAL, INTENT(OUT) :: X
+    X = 1.
+  END SUBROUTINE SUB1
+  SUBROUTINE SUB2(X)
+    REAL, INTENT(OUT) :: X
+    X = 1. ! """ + 'A' * 140 + """
+  END SUBROUTINE SUB2
+END MODULE MODTEST
+""")
+        scope = pft.getScopeNode('module:MODTEST/sub:SUB1')
+        assert scope.checkLineLength() is False
+        assert len(caplog.records) == 1
+        assert 'line 9 ' in caplog.records[0].getMessage()
+

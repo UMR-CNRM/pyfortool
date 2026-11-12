@@ -134,7 +134,8 @@ tests/
 │   ├── TestCosmeticsSpaces
 │   ├── TestCosmeticsIfStatements
 │   ├── TestCosmeticsContains
-│   └── TestCosmeticsFormatModuleUse  # formatModuleUse
+│   ├── TestCosmeticsFormatModuleUse  # formatModuleUse
+│   └── TestCheckLineLength        # checkLineLength
 │
 ├── test_cpp.py                    # Cpp mixin (12 tests)
 │   ├── TestCppApplyIfdef          # #ifdef evaluation
