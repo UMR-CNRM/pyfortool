@@ -99,7 +99,7 @@ def generateEmptyPYFT(filename, fortran=None, **kwargs):
     Examples
     --------
     >>> pft = generateEmptyPYFT('new.F90', 'MODULE TEST\nEND MODULE')
-    >>> pft.addVar([('module:TEST', 'X', 'INTEGER :: X', None)])
+    >>> pft.getScopeNode('module:TEST').addVar([('X', 'INTEGER :: X', None)])
     >>> pft.write()
     """
     with open(filename, 'w', encoding='utf-8') as fo:
