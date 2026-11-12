@@ -398,21 +398,6 @@ If p is an instance of PYFT, p.getScopes() returns a list of PYFTscope instances
 one representing a specific FORTRAN scope, and p.getScopeNode(scopePath) returns the
 PYFTscope instance corresponding to a scope path.
 
-Methods acting on a whole file (checks, cosmetics, most applications) can be called on
-the PYFT instance. Methods dealing with the variables of a given scope (addVar,
-removeVar, removeVarIfUnused, isVarUsed, addModuleVar) must be called on the PYFTscope
-instance of this scope; the variables are identified by their names only:
-
-```python
-sub = pft.getScopeNode('module:MOD/sub:SUB')
-sub.addVar([('NEW_VAR', 'INTEGER :: NEW_VAR', None)])
-sub.removeVar(['OLD_VAR'])
-```
-
-Until version 0.2.19, these methods accepted items prefixed by the scope path
-(e.g. `pft.removeVar([('module:MOD/sub:SUB', 'OLD_VAR')])`). This form is deprecated:
-it still works but issues a DeprecationWarning.
-
 In order to deal with complex operations involving several source code files, a Tree
 object can be created. This object analizes all the source code files present in the
 specified directories to build a compilation tree and an execution tree. These trees

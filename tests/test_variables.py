@@ -437,20 +437,6 @@ END MODULE MOD_ADD
         with pytest.raises(PYFTError):
             pft_add_var.addVar([('NEW_VAR', 'INTEGER :: NEW_VAR', None)])
 
-    def test_add_var_legacy_scope_path_is_deprecated(self, pft_add_var):
-        """Test addVar() still accepts (scopePath, ...) items but warns."""
-        with pytest.warns(DeprecationWarning):
-            pft_add_var.addVar([('module:MOD_ADD/sub:ADD_SUB', 'NEW_VAR',
-                                 'INTEGER :: NEW_VAR', None)])
-        assert 'INTEGER :: NEW_VAR' in pft_add_var.fortran
-
-    def test_add_var_mixed_forms_raises(self, pft_add_var):
-        """Test addVar() refuses a varList mixing legacy and new items."""
-        from pyfortool.util import PYFTError
-        with pytest.raises(PYFTError):
-            pft_add_var.addVar([('module:MOD_ADD/sub:ADD_SUB', 'A', 'INTEGER :: A', None),
-                                ('B', 'INTEGER :: B', None)])
-
 
 class TestAddModuleVar:
     """Tests for addModuleVar() method."""
@@ -492,12 +478,6 @@ END MODULE MOD_USE
 
         assert after.count('USE MODD_A') == 2
         assert 'USE MODD_A, ONLY: A2' in after
-
-    def test_add_module_var_legacy_scope_path_is_deprecated(self, pft_use):
-        """Test addModuleVar() still accepts (scopePath, ...) items but warns."""
-        with pytest.warns(DeprecationWarning):
-            pft_use.addModuleVar([('module:MOD_USE/sub:USE_SUB', 'MODD_B', 'B1')])
-        assert 'USE MODD_B, ONLY: B1' in pft_use.fortran
 
 
 class TestRemoveVar:
@@ -574,16 +554,6 @@ END MODULE MOD_REMOVE
 
         assert 'LOCAL_REMOVE' not in pft_remove_var.fortran
 
-    def test_remove_var_legacy_scope_path_is_deprecated(self, pft_remove_var):
-        """Test removeVar() still accepts (scopePath, name) items but warns."""
-        with pytest.warns(DeprecationWarning):
-            pft_remove_var.removeVar([('module:MOD_REMOVE', 'REMOVE_ME'),
-                                      ('module:MOD_REMOVE/sub:REMOVE_SUB', 'LOCAL_REMOVE')])
-        after = pft_remove_var.fortran
-
-        assert 'REMOVE_ME' not in after
-        assert 'LOCAL_REMOVE' not in after
-
 
 class TestIsVarUsed:
     """Tests for isVarUsed() method."""
@@ -630,15 +600,6 @@ END MODULE MOD_USAGE
         assert result == {'MOD_USED': True, 'MOD_UNUSED': False}
         # With exactScope, usages in the contained subroutine are ignored
         assert mod.isVarUsed(['MOD_USED'], exactScope=True) == {'MOD_USED': False}
-
-    def test_is_var_used_legacy_scope_path_is_deprecated(self, pft_usage):
-        """Test isVarUsed() legacy form returns (scopePath, name) keys and warns."""
-        with pytest.warns(DeprecationWarning):
-            result = pft_usage.isVarUsed([('module:MOD_USAGE/sub:USAGE_SUB', 'UNUSED'),
-                                          ('module:MOD_USAGE', 'MOD_USED')])
-
-        assert result == {('module:MOD_USAGE/sub:USAGE_SUB', 'UNUSED'): False,
-                          ('module:MOD_USAGE', 'MOD_USED'): True}
 
 
 class TestRenameVar:

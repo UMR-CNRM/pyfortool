@@ -2212,7 +2212,7 @@ class Applications():
                 if moduleName not in moduleVars:
                     moduleVars[moduleName] = []
                 moduleVars[moduleName].append(sub)
-            scope.addModuleVar([(scope.path, k, v) for k, v in moduleVars.items()])
+            scope.addModuleVar(moduleVars.items())
 
             # Add the missing local variables
             varDesc = []
@@ -2223,7 +2223,7 @@ class Applications():
                        'n': varName, 'i': None, 't': 'INTEGER', 'arg': False,
                        'use': False, 'opt': False, 'allocatable': False,
                        'parameter': False, 'init': None, 'scopePath': scope.path}
-                varDesc.append([scope.path, var['n'], scope.varSpec2stmt(var), None])
+                varDesc.append([var['n'], scope.varSpec2stmt(var), None])
             # arrays
             for kind in ('2D', '3D'):
                 for i in range(1, nbmax[kind] + 1):
@@ -2232,7 +2232,7 @@ class Applications():
                            'n': f'ZWORKSHUGRAD_{kind}_{i}', 'i': None, 't': 'REAL', 'arg': False,
                            'use': False, 'opt': False, 'allocatable': False,
                            'parameter': False, 'init': None, 'scopePath': scope.path}
-                    varDesc.append([scope.path, var['n'], scope.varSpec2stmt(var), None])
+                    varDesc.append([var['n'], scope.varSpec2stmt(var), None])
             scope.addVar(varDesc)
 
             # Remove useless parenthesis in call staments

@@ -30,7 +30,6 @@ Examples
 """
 
 import logging
-import warnings
 import copy
 import re
 from functools import wraps
@@ -460,53 +459,6 @@ class Variables():
         return result
 
     # No @debugDecor for this low-level method
-    def _splitLegacyScopePath(self, varList, nbItems, funcName):
-        """
-        Detect the deprecated form of varList whose items were prefixed by a scope path.
-
-        Until version 0.2.19, addVar, removeVar, removeVarIfUnused, addModuleVar and
-        isVarUsed received items of the form (scopePath, name, ...) and could be
-        called on any scope. Now, they must be called on the scope holding the
-        variables and items no longer contain the scope path.
-
-        Parameters
-        ----------
-        varList : list
-            List given to the calling method.
-        nbItems : int
-            Number of elements of an item in the new form (1 when the item is a bare
-            variable name).
-        funcName : str
-            Name of the calling method (for the warning message).
-
-        Returns
-        -------
-        dict or None
-            None if varList is in the new form. Otherwise, a dict whose keys are the
-            normalized scope paths and values the lists of items (in the new form)
-            belonging to this scope.
-
-        Raises
-        ------
-        PYFTError
-            If varList mixes both forms.
-        """
-        legacy = [item for item in varList
-                  if not isinstance(item, str) and len(item) == nbItems + 1]
-        if len(legacy) == 0:
-            return None
-        if len(legacy) != len(varList):
-            raise PYFTError(f"{funcName}: varList mixes items with and without scope path")
-        warnings.warn(f"{funcName}: giving the scope path in the varList items is deprecated, "
-                      f"call {funcName} on the scope holding the variables instead",
-                      DeprecationWarning, stacklevel=3)
-        result = {}
-        for scopePath, *item in varList:
-            scopePath = self.normalizeScope(scopePath)
-            result.setdefault(scopePath, []).append(item[0] if nbItems == 1 else tuple(item))
-        return result
-
-    # No @debugDecor for this low-level method
     def _declScope(self):
         """
         Return the scope to use to look for declarations.
@@ -832,12 +784,6 @@ class Variables():
           itself is deleted (unless simplify=True, which may delete additional unused variables).
         - Giving items of the form (scopePath, varName) is deprecated.
         """
-        legacy = self._splitLegacyScopePath(varList, 1, 'removeVar')
-        if legacy is not None:
-            for scopePath, names in legacy.items():
-                self.mainScope.getScopeNode(scopePath).removeVar(names, simplify=simplify)
-            return
-
         # Variables searched in this scope
         varNames = self._normalizeUniqVar(varList)
         if len(varNames) == 0:
@@ -977,12 +923,6 @@ class Variables():
         - Declaration statements are inserted before the first executable statement.
         - Giving items of the form (scopePath, varName, declStmt, pos) is deprecated.
         """
-        legacy = self._splitLegacyScopePath(varList, 3, 'addVar')
-        if legacy is not None:
-            for scopePath, items in legacy.items():
-                self.mainScope.getScopeNode(scopePath).addVar(items)
-            return
-
         varList = self._normalizeUniqVar(varList)
         if len(varList) == 0:
             return
@@ -1108,12 +1048,6 @@ class Variables():
         - Duplicate imports are avoided (variables already imported are not re-added).
         - Giving items of the form (scopePath, moduleName, varName) is deprecated.
         """
-        legacy = self._splitLegacyScopePath(moduleVarList, 2, 'addModuleVar')
-        if legacy is not None:
-            for scopePath, items in legacy.items():
-                self.mainScope.getScopeNode(scopePath).addModuleVar(items)
-            return
-
         moduleVarList = self._normalizeUniqVar(moduleVarList)
         if len(moduleVarList) == 0:
             return
@@ -1999,17 +1933,6 @@ class Variables():
         -----
         Giving items of the form (scopePath, varName) is deprecated.
         """
-        legacy = self._splitLegacyScopePath(varList, 1, 'removeVarIfUnused')
-        if legacy is not None:
-            result = []
-            for scopePath, names in legacy.items():
-                result.extend([[scopePath, name]
-                               for name in self.mainScope.getScopeNode(scopePath).
-                               removeVarIfUnused(names, excludeDummy=excludeDummy,
-                                                 excludeModule=excludeModule,
-                                                 simplify=simplify)])
-            return result
-
         varList = self._normalizeUniqVar(varList)
         kind = self.path.split('/')[-1].split(':')[0]
         assert kind != 'type', "The removeVarIfUnused cannot be used with type members"
@@ -2058,16 +1981,6 @@ class Variables():
         Giving items of the form (scopePath, varName) is deprecated; in this case the
         keys of the returned dict are the (scopePath, varName) tuples.
         """
-        legacy = self._splitLegacyScopePath(varList, 1, 'isVarUsed')
-        if legacy is not None:
-            result = {}
-            for scopePath, names in legacy.items():
-                result.update({(scopePath, name): used
-                               for (name, used) in self.mainScope.getScopeNode(scopePath).
-                               isVarUsed(names, exactScope=exactScope,
-                                         dummyAreAlwaysUsed=dummyAreAlwaysUsed).items()})
-            return result
-
         varList = self._normalizeUniqVar(varList)
         assert self.path.split('/')[-1].split(':')[0] != 'type', \
             'We cannot check type component usage'
