@@ -1430,6 +1430,49 @@ class Statements():
                              "with empty parens in file '{}'").format(self.getFileName()))
         return ok
 
+    @staticmethod
+    def isArrayIndexSelection(node, getParent, getScope):
+        """
+        Tell if an array-R or parens-R node is an array index selection.
+
+        Because, syntactically, it is not possible to distinguish between an array
+        element and a function call (e.g. 'F(1, 2)'), a node is considered as an
+        array index selection:
+
+        - if it is an array-R node (index selection containing at least one ':'), or
+        - if it is a parens-R node directly following a name declared as an array
+          in the varList (for structure components, e.g. 'X%Y(1, 2)', the
+          declaration is not available and the node is not considered as an array
+          index selection).
+
+        Parameters
+        ----------
+        node : xml element
+            array-R or parens-R node.
+        getParent : callable
+            Function returning the parent of an xml node.
+        getScope : callable
+            Function returning the scope (PYFTscope) containing an xml node.
+
+        Returns
+        -------
+        bool
+            True if node is an array index selection.
+        """
+        if tag(node) == 'array-R':
+            # Subscripts with at least one ':'
+            return True
+        if tag(node) != 'parens-R':
+            return False
+        # parens-R: array element or function call
+        rlt = getParent(node)
+        if rlt[0] is not node:
+            # parens-R after a component-R (or another parens-R): we cannot
+            # retrieve the declaration
+            return False
+        name = n2name(getParent(rlt).find('./{*}N'))
+        return getScope(node).varList.findVar(name, array=True) is not None
+
     @debugDecor
     def checkContinuationInArraySection(self, mustRaise=False):
         """
@@ -1477,31 +1520,17 @@ class Statements():
         log = logging.error if mustRaise else logging.warning
         scopes = None  # dictionary of scopes, built only if needed
 
-        def isArray(node):
-            """
-            :param node: array-R or parens-R node
-            :return: True if node is an array index selection
-            """
+        def getScope(node):
             nonlocal scopes
-            if tag(node) == 'array-R':
-                # Subscripts with at least one ':'
-                return True
-            # parens-R: array element or function call
-            rlt = self.getParent(node)
-            if rlt[0] is not node:
-                # parens-R after a component-R (or another parens-R): we cannot
-                # retrieve the declaration
-                return False
             if scopes is None:
                 scopes = {scope.path: scope for scope in self.getScopes()}
-            scope = scopes[self.getScopePath(node)]
-            name = n2name(self.getParent(rlt).find('./{*}N'))
-            return scope.varList.findVar(name, array=True) is not None
+            return scopes[self.getScopePath(node)]
 
         # Array index selections containing a continuation
         parens = [node for node in self.findall('.//{*}R-LT/*')
                   if tag(node) in ('array-R', 'parens-R') and
-                  node.find('.//{*}cnt') is not None and isArray(node)]
+                  node.find('.//{*}cnt') is not None and
+                  self.isArrayIndexSelection(node, self.getParent, getScope)]
         # Report only the outermost ones (nested selections would be reported twice)
         nested = {id(sub) for node in parens for sub in node.iter() if sub is not node}
         for node in [node for node in parens if id(node) not in nested]:

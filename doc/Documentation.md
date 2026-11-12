@@ -228,6 +228,16 @@ surrounded by spaces...
 MODI_, MODN_) and alphabetically within each group. Variable names in
 ONLY clauses are converted to uppercase; module names are preserved as-is.
 
+**--splitLongLines** splits the lines longer than the limit given by **--maxLineLength=N**
+(default: 132 characters). Code is split with continuation lines only after a comma, after '::',
+after the '=' of an assignment or before an operator, and never inside strings, preprocessor lines
+or array index selections (index selections containing a ':' or applied to a variable declared as
+an array). Long comments are split on several comment lines at spaces (words are never cut); a
+trailing comment is moved to its own line if needed; blanks or decorations (e.g. '!!!!!' or
+'-----') beyond the limit are removed. Directives ('!$...', '!DIR$', '!DEC$') are never
+modified. The whole file is processed, even when **--restrictScope** is used. Lines that cannot be
+split are reported with a warning. Only free source form is supported.
+
 ### Checks
 
 **--checkIMPLICIT=Warn\|Err** if the 'IMPLICIT NONE' statment is missing,

@@ -634,3 +634,180 @@ END MODULE MODTEST
         assert len(caplog.records) == 1
         assert 'line 9 ' in caplog.records[0].getMessage()
 
+
+
+class TestSplitLongLines:
+    """Tests for splitLongLines() method."""
+
+    @staticmethod
+    def _pft(code):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fpath = os.path.join(tmpdir, 'test.F90')
+            with open(fpath, 'w', encoding='utf-8') as f:
+                f.write(code)
+            return PYFT(fpath)
+
+    @staticmethod
+    def _code(text):
+        """Code without comments, continuations and blanks"""
+        text = re.sub(r'!.*', '', text)
+        text = re.sub(r'&[ \t]*\n[ \t]*&', '', text)
+        return re.sub(r'\s+', '', text)
+
+    def test_split_code(self):
+        """A long statement is split and the code is unchanged."""
+        pft = self._pft("""
+SUBROUTINE FOO(PA, PB, PC, PD, PE, PF, PG, PH, PI, PJ, PK, PL, PM, PN)
+  REAL, INTENT(IN) :: PA, PB, PC, PD, PE, PF, PG, PH, PI, PJ, PK, PL, PM
+  REAL, INTENT(OUT) :: PN
+  PN = PA + PB + PC + PD + PE + PF + PG + PH + PI + PJ + PK + PL + PM
+END SUBROUTINE FOO
+""")
+        before = pft.fortran
+        assert pft.splitLongLines(40) is True
+        after = pft.fortran
+        assert '&' in after
+        assert all(len(line) <= 40 for line in after.split('\n'))
+        assert self._code(before) == self._code(after)
+        assert pft.checkLineLength(40) is True
+
+    def test_short_lines_unchanged(self):
+        """Nothing is changed when all lines are short enough."""
+        pft = self._pft("""
+SUBROUTINE FOO(PA, PB)
+  REAL :: PA, PB ! comment
+  PA = PB + 1.
+END SUBROUTINE FOO
+""")
+        before = pft.fortran
+        assert pft.splitLongLines() is True
+        assert pft.fortran == before
+
+    def test_array_selection_not_split(self):
+        """Array sections and elements of declared arrays are never split."""
+        pft = self._pft("""
+SUBROUTINE FOO(PA, PB, PC)
+  REAL, DIMENSION(:, :), INTENT(IN) :: PB, PC
+  REAL, DIMENSION(:, :), INTENT(OUT) :: PA
+  PA(:, :) = PB(:, :) + PC(:, :) + PB(:, :) * PC(:, :) + PB(1, 1) * PC(1, 2)
+END SUBROUTINE FOO
+""")
+        pft.splitLongLines(30)
+        after = pft.fortran
+        assert pft.checkContinuationInArraySection(mustRaise=True) is True
+        for sel in ('PA(:, :)', 'PB(:, :)', 'PC(:, :)', 'PB(1, 1)', 'PC(1, 2)'):
+            assert sel in after
+        assert all(len(line) <= 30 for line in after.split('\n'))
+
+    def test_function_call_split(self):
+        """A function call (name not declared as an array) can be split."""
+        pft = self._pft("""
+SUBROUTINE FOO(PA, PB)
+  REAL, INTENT(IN) :: PB
+  REAL, INTENT(OUT) :: PA
+  PA = FUNC(PB, PB, PB, PB, PB, PB, PB, PB)
+END SUBROUTINE FOO
+""")
+        assert pft.splitLongLines(30) is True
+        assert re.search(r'FUNC\(PB,[^)]*&\n *& PB', pft.fortran) is not None
+
+    def test_string_not_split(self):
+        """Strings are never split, even if they contain commas."""
+        pft = self._pft("""
+SUBROUTINE FOO
+  PRINT*, 'abc, def, ghi, jkl, mno, pqr, stu', 'vwx'
+END SUBROUTINE FOO
+""")
+        pft.splitLongLines(50)
+        after = pft.fortran
+        assert "'abc, def, ghi, jkl, mno, pqr, stu'" in after
+        assert all(len(line) <= 50 for line in after.split('\n'))
+
+    def test_comment_split(self):
+        """A long comment line is split on several comment lines at spaces."""
+        pft = self._pft("""
+SUBROUTINE FOO
+  ! word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 é
+END SUBROUTINE FOO
+""")
+        assert pft.splitLongLines(30) is True
+        after = pft.fortran
+        comments = [line for line in after.split('\n') if '!' in line]
+        assert len(comments) > 1
+        assert all(line.startswith('  ! ') and len(line) <= 30 for line in comments)
+        words = ' '.join(line[4:] for line in comments).split()
+        assert words == 'word1 word2 word3 word4 word5 word6 word7 word8 word9 word10 é'.split()
+
+    def test_trailing_comment(self):
+        """A trailing comment is split under itself, or moved if there is no room."""
+        pft = self._pft("""
+SUBROUTINE FOO(PA)
+  REAL, INTENT(OUT) :: PA
+  PA = 1. ! this comment is split in two
+  PA = 1. + 2. + 3. + 4. + 5. ! this one is moved
+END SUBROUTINE FOO
+""")
+        assert pft.splitLongLines(36) is True
+        lines = pft.fortran.split('\n')
+        assert '  PA = 1. ! this comment is split in' in lines
+        assert '          ! two' in lines
+        assert '  PA = 1. + 2. + 3. + 4. + 5.' in lines
+        assert '  ! this one is moved' in lines
+
+    def test_directive_not_split(self, caplog):
+        """Directives are not modified and are reported."""
+        line = '!$acc kernels present(PA, PB, PC, PD, PE, PF, PG, PH)'
+        pft = self._pft("SUBROUTINE FOO\n" + line + "\n!$acc end kernels\nEND SUBROUTINE FOO\n")
+        assert pft.splitLongLines(40) is False
+        assert line in pft.fortran.split('\n')
+        assert len(caplog.records) == 1
+        assert 'line 2 ' in caplog.records[0].getMessage()
+
+    def test_trailing_blanks(self):
+        """Trailing blanks are removed when they make the line too long."""
+        pft = self._pft("SUBROUTINE FOO(PA)\n  PA = 1." + ' ' * 50 + "\nEND SUBROUTINE FOO\n")
+        assert pft.splitLongLines(40) is True
+        assert '  PA = 1.' in pft.fortran.split('\n')
+
+    def test_idempotent(self):
+        """Applying the transformation twice gives the same result."""
+        code = """
+SUBROUTINE FOO(PA, PB, PC, PD, PE, PF, PG, PH, PI, PJ, PK, PL, PM, PN)
+  REAL, INTENT(IN) :: PA, PB, PC, PD, PE, PF, PG, PH, PI, PJ, PK, PL, PM
+  REAL, INTENT(OUT) :: PN ! a long comment that will be split on several lines
+  PN = PA + PB + PC + PD + PE + PF + PG + PH + PI + PJ + PK + PL + PM
+END SUBROUTINE FOO
+"""
+        pft = self._pft(code)
+        pft.splitLongLines(40)
+        first = pft.fortran
+        pft2 = self._pft(first)
+        pft2.splitLongLines(40)
+        assert pft2.fortran == first
+
+    def test_words_not_cut(self, caplog):
+        """Words (e.g. URLs) in comments are never cut."""
+        url = 'https://www.example.com/a/very/long/path/to/a/document.pdf'
+        pft = self._pft("SUBROUTINE FOO(PA)\n"
+                        "  REAL, INTENT(OUT) :: PA ! see " + url + "\n"
+                        "  ! " + url + url + " end\n"
+                        "END SUBROUTINE FOO\n")
+        assert pft.splitLongLines(70) is False
+        lines = pft.fortran.split('\n')
+        assert '  REAL, INTENT(OUT) :: PA ! see' in lines
+        assert '  ! ' + url in lines  # moved back to the indentation to fit
+        assert '  ! ' + url + url in lines  # too long but not cut
+        assert '  ! end' in lines
+        assert len(caplog.records) == 1
+
+    def test_decoration_truncated(self):
+        """Decorations beyond the limit are truncated instead of being split."""
+        pft = self._pft("SUBROUTINE FOO\n"
+                        "!!!!! TITLE " + '!' * 80 + "\n"
+                        "  !" + '-' * 80 + "\n"
+                        "END SUBROUTINE FOO\n")
+        assert pft.splitLongLines(50) is True
+        lines = pft.fortran.split('\n')
+        assert lines[1] == ('!!!!! TITLE ' + '!' * 80)[:50]
+        assert lines[2] == ('  !' + '-' * 80)[:50]
+        assert len(lines) == 5

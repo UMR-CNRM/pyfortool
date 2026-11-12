@@ -31,6 +31,7 @@ import re
 import logging
 from pyfortool.util import debugDecor, nonCode, tag, tofortran, PYFTError
 from pyfortool.expressions import createElem
+from pyfortool.variables import updateVarList
 from pyfortool import NAMESPACE
 
 
@@ -1187,4 +1188,293 @@ class Cosmetics():
         if not ok and mustRaise:
             raise PYFTError(("There are lines longer than {} characters in file '{}'"
                              ).format(maxLength, self.getFileName()))
+        return ok
+
+    @debugDecor
+    @updateVarList
+    def splitLongLines(self, maxLength=132):
+        """
+        Split the lines longer than a maximum length.
+
+        The transformation is done on the XML tree:
+
+        - code lines are split by inserting continuation characters ('&' at the end
+          of the line and '&' at the beginning of the next line). Splitting is only
+          done after a comma, after '::', after the '=' of an assignment or before an
+          operator. It is never done inside strings, comments, preprocessor lines,
+          or inside an array index selection (index selection containing a ':' or
+          applied to a variable declared as an array, see isArrayIndexSelection);
+        - comments are split on several comment lines, at spaces (words, e.g. URLs,
+          are never cut). A trailing comment that cannot be shortened enough is
+          moved to its own line. Blanks or decorations (a repeated punctuation
+          character, e.g. '!!!!!' or '-----') beyond the limit are removed.
+          Directives (comments beginning with '!$', '!DIR$' or '!DEC$') are never
+          modified;
+        - trailing blanks are removed from the lines that are too long only
+          because of them.
+
+        Because the line length is a property of the file, the whole file is always
+        processed, even if the method is called on a sub-scope. The length is
+        computed in characters. Lines that cannot be split are reported with a
+        logging.warning.
+
+        Parameters
+        ----------
+        maxLength : int, optional
+            Maximum allowed line length in characters. Default is 132
+            (limit of the FORTRAN free source form).
+
+        Returns
+        -------
+        bool
+            True if, after the transformation, no line exceeds maxLength.
+
+        Raises
+        ------
+        PYFTError
+            If the file is written in fixed source form.
+
+        Examples
+        --------
+        >>> pft = PYFT('input.F90')
+        >>> pft.splitLongLines()  # Split lines longer than 132 characters
+        >>> pft.splitLongLines(maxLength=100)  # Split lines longer than 100 characters
+        """
+        # pylint: disable=protected-access
+        root = self.mainScope._xml
+        if root.get('source-form', 'FREE') != 'FREE':
+            raise PYFTError("splitLongLines is only implemented for the free source form " +
+                            "(file '{}')".format(self.getFileName()))
+
+        def dec(text):
+            """
+            fxtran stores each byte of a UTF-8 character as a separate character
+            :return: (decoded text, True if decoding was done)
+            """
+            try:
+                decoded = text.encode('latin-1').decode('UTF-8')
+                return decoded, decoded != text
+            except (UnicodeEncodeError, UnicodeDecodeError):
+                return text, False
+
+        def enc(text, decoded):
+            """Inverse of dec"""
+            return text.encode('UTF-8').decode('latin-1') if decoded else text
+
+        parentOf = {id(child): node for node in root.iter() for child in node}
+        scopeOf = {id(scope._xml): scope for scope in self.mainScope.getScopes()}
+        forbiddenCache = {}
+
+        def getParent(node):
+            return parentOf.get(id(node))
+
+        def getScope(node):
+            while id(node) not in scopeOf:
+                node = parentOf[id(node)]
+            return scopeOf[id(node)]
+
+        def isForbidden(node):
+            """
+            :param node: xml node containing a text
+            :return: True if no continuation can be inserted in this node
+            """
+            chain = []
+            result = False
+            while node is not None:
+                if id(node) in forbiddenCache:
+                    result = forbiddenCache[id(node)]
+                    break
+                chain.append(node)
+                if tag(node) in ('C', 'S', 'cpp', 'cnt', 'l', 'label') or \
+                   self.isArrayIndexSelection(node, getParent, getScope):
+                    result = True
+                    break
+                node = getParent(node)
+            for item in chain:
+                forbiddenCache[id(item)] = result
+            return result
+
+        # List of the pieces of text in document order. Each piece is a list:
+        # [node, 'text' or 'tail', decoded text, True if decoding was done]
+        pieces = []
+
+        def walk(node):
+            pieces.append([node, 'text', *dec(node.text or '')])
+            for child in node:
+                walk(child)
+                pieces.append([child, 'tail', *dec(child.tail or '')])
+        walk(root)
+
+        def setText(ipiece, text):
+            piece = pieces[ipiece]
+            piece[2] = text
+            if piece[1] == 'text':
+                piece[0].text = enc(text, piece[3])
+            else:
+                piece[0].tail = enc(text, piece[3])
+
+        def insertNodes(ipiece, nodes, newPieces):
+            """
+            Insert nodes at the position of the piece ipiece in the xml tree,
+            and the corresponding newPieces after ipiece in the list of pieces
+            """
+            node, kind = pieces[ipiece][:2]
+            if kind == 'text':
+                parent, index = node, 0
+            else:
+                parent = parentOf[id(node)]
+                index = list(parent).index(node) + 1
+            for i, item in enumerate(nodes):
+                parent.insert(index + i, item)
+                parentOf[id(item)] = parent
+            pieces[ipiece + 1:ipiece + 1] = newPieces
+
+        def getLine(ipiece, offset):
+            """
+            :param ipiece, offset: index of the piece and offset in this piece of the
+                                   beginning of the line
+            :return: (line, linePieces, ipiece, offset) with linePieces the list of
+                     (index of piece, column, start offset, end offset) of the pieces
+                     composing the line, and (ipiece, offset) the beginning of the next
+                     line (ipiece is None for the last line)
+            """
+            line = ''
+            linePieces = []
+            while ipiece < len(pieces):
+                text = pieces[ipiece][2]
+                end = text.find('\n', offset)
+                if end == -1:
+                    linePieces.append((ipiece, len(line), offset, len(text)))
+                    line += text[offset:]
+                    ipiece, offset = ipiece + 1, 0
+                else:
+                    linePieces.append((ipiece, len(line), offset, end))
+                    line += text[offset:end]
+                    return line, linePieces, ipiece, end + 1
+            return line, linePieces, None, 0
+
+        def isDirective(comment):
+            return re.match(r'!(\$|dir\$|dec\$)', comment, re.IGNORECASE) is not None
+
+        ok = True
+        iline = 0
+        lineStart = (0, 0)  # (index of piece, offset in piece) of the current line
+        while lineStart[0] is not None:
+            line, linePieces, *nextLine = getLine(*lineStart)
+            if len(line) <= maxLength:
+                lineStart = tuple(nextLine)
+                iline += 1
+                continue
+            indent = len(line) - len(line.lstrip(' '))
+
+            # Comment on the line
+            comment = [(ipiece, column) for ipiece, column, _, _ in linePieces
+                       if tag(pieces[ipiece][0]) == 'C' and pieces[ipiece][1] == 'text']
+            comment = comment[0] if len(comment) > 0 else None
+            codeEnd = len(line) if comment is None else comment[1]
+            codeLength = len(line[:codeEnd].rstrip(' '))
+
+            modified = False
+            if codeLength > maxLength:
+                # The code must be split, we look for the best candidate
+                candidates = []  # list of (column, index of piece, offset in piece)
+                for ipiece, column, segStart, segEnd in linePieces:
+                    if column > codeEnd:
+                        break
+                    node, kind, text = pieces[ipiece][:3]
+                    if kind == 'text' and tag(node) in ('op', 'a'):
+                        if not isForbidden(parentOf[id(node)]):
+                            if tag(node) == 'op':
+                                # Before an operator
+                                candidates.append((column, ipiece - 1, len(pieces[ipiece - 1][2])))
+                            else:
+                                # After '=', in the tail of the 'a' node
+                                candidates.append((column + len(text), ipiece + 1, 0))
+                    elif not isForbidden(node if kind == 'text' else parentOf[id(node)]):
+                        # After a comma or after '::'
+                        for match in re.finditer(r',|::', text[segStart:segEnd]):
+                            candidates.append((column + match.end(), ipiece,
+                                               segStart + match.end()))
+                candidates = [cand for cand in candidates
+                              if 0 <= cand[0] <= codeEnd and
+                              len(line[:cand[0]].rstrip(' ')) + 2 <= maxLength and
+                              line[:cand[0]].strip(' ') not in ('', '&') and
+                              line[cand[0]:codeEnd].strip(' ') != '']
+                if len(candidates) > 0:
+                    _, ipiece, offset = max(candidates, key=lambda cand: cand[0])
+                    contIndent = indent + (0 if line.lstrip(' ').startswith('&') else 2)
+                    if contIndent + 22 > maxLength:
+                        contIndent = 0
+                    text, decoded = pieces[ipiece][2:4]
+                    after = ' ' + text[offset:].lstrip(' ')
+                    setText(ipiece, text[:offset].rstrip(' ') + ' ')
+                    cnt1 = createElem('cnt', text='&', tail='\n' + ' ' * contIndent)
+                    cnt2 = createElem('cnt', text='&', tail=enc(after, decoded))
+                    insertNodes(ipiece, [cnt1, cnt2],
+                                [[cnt1, 'text', '&', False], [cnt1, 'tail', cnt1.tail, False],
+                                 [cnt2, 'text', '&', False], [cnt2, 'tail', after, decoded]])
+                    modified = True
+            elif comment is not None and not isDirective(pieces[comment[0]][2]):
+                # The code part is short enough, the comment must be modified
+                icomment, column = comment
+                text, decoded = pieces[icomment][2:4]
+                prefix = re.match(r'!+ *', text).group(0)
+                width = maxLength - column
+                # Position where to split the comment (last space before the limit)
+                cut = text.rfind(' ', len(prefix), width + 1) if width > len(prefix) else -1
+                if width > len(prefix) and \
+                   re.fullmatch(r' *(([^\w ])\2*)? *', text[width:]) is not None:
+                    # Only blanks or a decoration (e.g. '!!!!!' or '-----') beyond the limit:
+                    # the comment is truncated
+                    setText(icomment, text[:width].rstrip(' '))
+                    modified = True
+                elif codeLength > 0 and (width < len(prefix) + 20 or cut == -1):
+                    # Trailing comment without enough room: we move it on its own line
+                    # Last piece ending at the comment position (comment is not at column 0)
+                    ipiece, pcolumn, segStart, _ = [item for item in linePieces
+                                                    if item[1] < column][-1]
+                    offset = segStart + column - pcolumn
+                    text = pieces[ipiece][2]
+                    setText(ipiece, text[:offset].rstrip(' ') + '\n' + ' ' * indent +
+                            text[offset:])
+                    modified = True
+                else:
+                    if cut == -1:
+                        # No space before the limit, words are not cut: we split at the
+                        # first space after the limit (the line remains too long)
+                        cut = text.find(' ', max(width, len(prefix)))
+                    rest = text[cut:].lstrip(' ') if cut != -1 else ''
+                    if rest != '':
+                        # New comment line aligned with the comment if there is enough room
+                        # (for at least 20 characters and the first word), otherwise indented
+                        # as the line
+                        room = len(prefix) + max(20, len(rest.split(' ')[0]))
+                        newColumn = column if column + room <= maxLength else indent
+                        # The comment node has no child, its tail is the next piece
+                        tail = pieces[icomment + 1][2]
+                        newComment = createElem('C', text=enc(prefix + rest, decoded),
+                                                tail=enc(tail, pieces[icomment + 1][3]))
+                        setText(icomment, text[:cut].rstrip(' '))
+                        setText(icomment + 1, '\n' + ' ' * newColumn)
+                        # Insertion after the comment node (using its 'tail' piece)
+                        insertNodes(icomment + 1, [newComment],
+                                    [[newComment, 'text', prefix + rest, decoded],
+                                     [newComment, 'tail', tail, pieces[icomment + 1][3]]])
+                        modified = True
+            elif len(line.rstrip(' ')) <= maxLength:
+                # Only trailing blanks
+                length = len(line.rstrip(' '))
+                for ipiece, column, segStart, segEnd in linePieces:
+                    if column + segEnd - segStart > length:
+                        start = segStart + max(length - column, 0)
+                        text = pieces[ipiece][2]
+                        setText(ipiece, text[:start] + text[segEnd:])
+                modified = True
+
+            if not modified:
+                logging.warning("The line %i (%i characters) cannot be split, in file '%s'",
+                                iline + 1, len(line), self.getFileName())
+                ok = False
+                lineStart = tuple(nextLine)
+                iline += 1
         return ok

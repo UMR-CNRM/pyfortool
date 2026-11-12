@@ -474,6 +474,8 @@ def updateParserCosmetics(parser):
     Updates an argparse parser with cosmetics arguments
     """
     gCosmetics = parser.add_argument_group('Cosmetics options')
+    gCosmetics.add_argument('--splitLongLines', default=False, action='store_true',
+                            help='Split lines longer than the limit given by --maxLineLength')
     gCosmetics.add_argument('--upperCase', default=False, action='store_true',
                             help='Put FORTRAN code in upper case letters')
     gCosmetics.add_argument('--lowerCase', default=False, action='store_true',
@@ -651,8 +653,8 @@ def updateParserChecks(parser):
                          help='Send a warning or raise an error if a line is longer than '
                               'the limit given by --maxLineLength.')
     gChecks.add_argument('--maxLineLength', type=int, default=132,
-                         help='Maximum line length used by --checkLineLength '
-                              '(default: 132).')
+                         help='Maximum line length used by --checkLineLength and '
+                              '--splitLongLines (default: 132).')
     gChecks.add_argument('--checkONLY', choices={'Warn', 'Err'}, default=None,
                          help='Send a warning or raise an error if a USE statement is not '
                               'followed by an ONLY clause.')
@@ -949,7 +951,9 @@ def applyTransfoCosmetics(pft, arg, args):
     :param arg: argument to deal with
     :param args: parsed argparsed arguments
     """
-    if arg == '--upperCase':
+    if arg == '--splitLongLines':
+        pft.splitLongLines(args.maxLineLength)
+    elif arg == '--upperCase':
         pft.upperCase()
     elif arg == '--lowerCase':
         pft.lowerCase()

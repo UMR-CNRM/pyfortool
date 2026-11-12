@@ -135,7 +135,8 @@ tests/
 │   ├── TestCosmeticsIfStatements
 │   ├── TestCosmeticsContains
 │   ├── TestCosmeticsFormatModuleUse  # formatModuleUse
-│   └── TestCheckLineLength        # checkLineLength
+│   ├── TestCheckLineLength        # checkLineLength
+│   └── TestSplitLongLines         # splitLongLines
 │
 ├── test_cpp.py                    # Cpp mixin (12 tests)
 │   ├── TestCppApplyIfdef          # #ifdef evaluation

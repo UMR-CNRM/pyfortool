@@ -188,6 +188,7 @@ pft.modifyAutomaticArrays(
 | `inlineContainedSubroutines()` | Inline helper subroutines |
 | `setFalseIfStmt(flags)` | Set flags to .FALSE. |
 | `checkContinuationInArraySection()` | Check array index selections are not split over lines |
+| `isArrayIndexSelection(node, getParent, getScope)` | Tell if an array-R/parens-R node is an array index selection |
 
 ### Usage
 
@@ -228,6 +229,7 @@ pft.setFalseIfStmt(['LDEBUG', 'LVERBOSE'], simplify=True)
 | `updateContinuation()` | Handle line continuations |
 | `prettify()` | Full formatting |
 | `minify()` | Compact formatting |
+| `splitLongLines(maxLength)` | Split lines longer than a maximum length (code and comments) |
 | `checkLineLength(maxLength, mustRaise)` | Check that no line exceeds a maximum length |
 | `formatModuleUse(upper)` | Order USE statements by module type and alphabetically; uppercase ONLY clause vars |
 
