@@ -2032,6 +2032,24 @@ class Applications():
             parent.insert(list(parent).index(old), new)
             parent.remove(old)
 
+        def removeUselessParens(stmt):
+            """
+            Remove, in place, the useless parenthesis around the arguments of
+            the shuman/gradient functions: MXM((A+B)) -> MXM(A+B), MXM(((A))) -> MXM(A)
+            """
+            for function in [elem for elem in stmt.findall('.//{*}named-E')
+                             if n2name(elem.find('./{*}N')) in shugrad]:
+                for element in function.findall('./{*}R-LT/{*}parens-R/' +
+                                                '{*}element-LT/{*}element'):
+                    # element contains only a parens-E which contains only an expression
+                    while len(element) == 1 and tag(element[0]) == 'parens-E' and \
+                          len(element[0]) == 1:
+                        parens = element[0]
+                        expr = parens[0]
+                        expr.tail = parens.tail
+                        element.remove(parens)
+                        element.append(expr)
+
         def getHDims(node):
             """
             Extract horizontal computed dimensions
@@ -2134,6 +2152,8 @@ class Applications():
                          for stmt in scope.findall('.//{*}' + tag)]:
                 nb = {'2D': 0, '3D': 0}
                 # We look for all shuman/gradients
+                # Arguments must be directly an array or an operation
+                removeUselessParens(stmt)
                 functions = getFunctions(stmt)
 
                 # Preparation

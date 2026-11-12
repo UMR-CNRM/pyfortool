@@ -164,7 +164,8 @@ tests/
 │   ├── TestApplicationsStack
 │   ├── TestApplicationsIJDim
 │   ├── TestApplicationsModi
-│   └── TestApplicationsRemoveExtraDO
+│   ├── TestApplicationsRemoveExtraDO
+│   └── TestShugradTransfoUselessParens  # shugradTransfo, issue #55
 │
 ├── test_scripting.py              # pyfortool_parallel command (10 tests)
 │   ├── TestMainParallel           # In-place, descTree, dryRun, cross-file, optsByEnv, errors

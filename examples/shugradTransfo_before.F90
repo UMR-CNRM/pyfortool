@@ -28,6 +28,12 @@ MODULE MODFOO
 
     P21=MZM(MZF(P22))
 
+    ! Useless parenthesis (issue #55)
+
+    P7=MXM2D((P8(:,IKB+1)+P8(:,IKB)))
+
+    P1=MZM(((P2)))
+
     ! IF
 
     IF(.TRUE.) P1=MZM(P2)

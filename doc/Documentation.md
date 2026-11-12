@@ -342,6 +342,7 @@ inout arrays in subroutines.
 **--shumanFUNCtoCALL** Transform shuman functions to call statements (legacy version).
 
 **--shugradTransfo** Transform shuman and gradient functions to call statements.
+Useless parenthesis around the arguments (e.g. MXM2D((A+B))) are removed.
 
 **--mathFunctoBRFunc** Convert intrinsic math functions **, LOG, ATAN, **2, **3, **4, EXP,
 COS, SIN, ATAN2 into a self defined function BR_ for MesoNH bit-repro.

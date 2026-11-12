@@ -433,3 +433,44 @@ END MODULE MOD_DOCONCURRENT
         pft_doconcurrent.removeExtraDOinMnhDoConcurrent()
         result = pft_doconcurrent.fortran
         assert result is not None
+
+
+class TestShugradTransfoUselessParens:
+    """Tests for shugradTransfo() with useless parenthesis (issue #55)."""
+
+    @staticmethod
+    def _transform(args):
+        code = f"""
+MODULE MODFOO
+  CONTAINS
+  SUBROUTINE SUBFOO
+    REAL, DIMENSION(D%NIJT, D%NKT) :: P1, P2, P3, P4
+    REAL, DIMENSION(D%NIJT) :: P7
+    P7=MXM2D({args[0]})
+    P1=MZM({args[1]})
+    P1=MZM({args[2]})
+    P1=MZM({args[3]})
+  CONTAINS
+    INCLUDE "shugrad.h"
+  END SUBROUTINE SUBFOO
+END MODULE MODFOO
+"""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fpath = os.path.join(tmpdir, 'test.F90')
+            with open(fpath, 'w') as f:
+                f.write(code)
+            pft = PYFT(fpath)
+            pft.shugradTransfo()
+            return pft.fortran
+
+    def test_useless_parens_removed(self):
+        """Useless parenthesis around arguments give the same result as without them."""
+        withParens = self._transform(['((P1(:,IKB+1)+P1(:,IKB)))', '(((P2)))',
+                                      '((MZF((P4))))', '((P2+P3)*P4)'])
+        withoutParens = self._transform(['P1(:,IKB+1)+P1(:,IKB)', 'P2',
+                                         'MZF(P4)', '(P2+P3)*P4'])
+        assert withParens == withoutParens
+        assert 'CALL MXM2D_PHY(D, ZWORKSHUGRAD_2D_1, P7)' in withParens
+        assert 'CALL MZM_PHY(D, P2, P1)' in withParens
+        # Necessary parenthesis are kept
+        assert '=(P2(1:D%NIJT, 1:D%NKT)+P3(1:D%NIJT, 1:D%NKT))*P4' in withParens
