@@ -187,6 +187,7 @@ pft.modifyAutomaticArrays(
 | `removeArraySyntax()` | Convert A(:) = B(:) to DO loops |
 | `inlineContainedSubroutines()` | Inline helper subroutines |
 | `setFalseIfStmt(flags)` | Set flags to .FALSE. |
+| `checkContinuationInArraySection()` | Check array index selections are not split over lines |
 
 ### Usage
 

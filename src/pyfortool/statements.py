@@ -1431,6 +1431,90 @@ class Statements():
         return ok
 
     @debugDecor
+    def checkContinuationInArraySection(self, mustRaise=False):
+        """
+        Check that array index selections are not split over several lines.
+
+        Issue a logging.warning if a continuation line ('&') is found inside the
+        parentheses of an array index selection. Example of invalid code:
+
+            A(:, :) = B(:, &
+                       &:)
+
+        Because, syntactically, it is not possible to distinguish between an array
+        element and a function call (e.g. 'F(1, 2)'), the parentheses are checked only:
+
+        - if they contain at least one ':' (array section), or
+        - if the name is declared as an array in the varList (for structure
+          components, e.g. 'X%Y(1, 2)', the declaration is not available and the
+          parentheses are checked only if they contain a ':').
+
+        Function calls and arguments of CALL statements are not concerned.
+
+        Parameters
+        ----------
+        mustRaise : bool, optional
+            If True, issue a logging.error instead of a logging.warning
+            and raise a PYFTError. Default is False.
+
+        Returns
+        -------
+        bool
+            True if no continuation line was found inside an index selection.
+
+        Raises
+        ------
+        PYFTError
+            If mustRaise is True and a continuation line is found.
+
+        Examples
+        --------
+        >>> pft = PYFT('input.F90')
+        >>> pft.checkContinuationInArraySection()  # Only warn
+        >>> pft.checkContinuationInArraySection(mustRaise=True)  # Raise on error
+        """
+        ok = True
+        log = logging.error if mustRaise else logging.warning
+        scopes = None  # dictionary of scopes, built only if needed
+
+        def isArray(node):
+            """
+            :param node: array-R or parens-R node
+            :return: True if node is an array index selection
+            """
+            nonlocal scopes
+            if tag(node) == 'array-R':
+                # Subscripts with at least one ':'
+                return True
+            # parens-R: array element or function call
+            rlt = self.getParent(node)
+            if rlt[0] is not node:
+                # parens-R after a component-R (or another parens-R): we cannot
+                # retrieve the declaration
+                return False
+            if scopes is None:
+                scopes = {scope.path: scope for scope in self.getScopes()}
+            scope = scopes[self.getScopePath(node)]
+            name = n2name(self.getParent(rlt).find('./{*}N'))
+            return scope.varList.findVar(name, array=True) is not None
+
+        # Array index selections containing a continuation
+        parens = [node for node in self.findall('.//{*}R-LT/*')
+                  if tag(node) in ('array-R', 'parens-R') and
+                  node.find('.//{*}cnt') is not None and isArray(node)]
+        # Report only the outermost ones (nested selections would be reported twice)
+        nested = {id(sub) for node in parens for sub in node.iter() if sub is not node}
+        for node in [node for node in parens if id(node) not in nested]:
+            arg = self.getParent(node, 2)  # named-E/R-LT/(array-R|parens-R)
+            log(("The index selection {} is split over several lines, in file '{}'"
+                 ).format(alltext(arg).replace('\n', ' \\n '), self.getFileName()))
+            ok = False
+        if not ok and mustRaise:
+            raise PYFTError(("There are index selections split over several lines " +
+                             "in file '{}'").format(self.getFileName()))
+        return ok
+
+    @debugDecor
     def insertStatement(self, stmt, first):
         """
         Insert a statement to be executed first (or last)

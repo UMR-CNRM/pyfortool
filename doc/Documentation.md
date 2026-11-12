@@ -244,6 +244,13 @@ if option is 'Warn'; otherwise issue an error message and raise an exception.
 **--checkEmptyParensInCall=Warn\|Err** if a call argument is an array with empty parens,
  issue a warning if option is 'Warn'; otherwise issue an error message and raise an exception.
 
+**--checkContinuationInArraySection=Warn\|Err** if an array index selection is split over
+several lines (e.g. 'B(:, &' followed by '&:)'), issue a warning if option is 'Warn'; otherwise
+issue an error message and raise an exception. Because an array element cannot be syntactically
+distinguished from a function call, an index selection is checked only if it contains a ':' or
+if the variable is declared as an array (for structure components, only if it contains a ':').
+Function calls and arguments of CALL statements are not concerned.
+
 **--checkUnusedLocalVar=Warn\|Err** if a local variable is unused, issue a warning
 if option is 'Warn'; otherwise issue an error message and raise an exception.
 

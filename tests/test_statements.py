@@ -126,3 +126,140 @@ class TestIsNodeInCall:
         if nodes:
             result = scope.isNodeInCall(nodes[0])
             assert isinstance(result, bool)
+
+
+class TestCheckContinuationInArraySection:
+    """Tests for checkContinuationInArraySection() method."""
+
+    @staticmethod
+    def _pft(code):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fpath = os.path.join(tmpdir, 'test.F90')
+            with open(fpath, 'w') as f:
+                f.write(code)
+            return PYFT(fpath)
+
+    def test_continuation_in_section_detected(self, caplog):
+        """A continuation line inside an array section is reported."""
+        pft = self._pft("""
+SUBROUTINE FOO(A, B)
+  REAL, DIMENSION(:,:,:) :: A, B
+  A(:,:,:)=B(:, &
+  &:,:)
+END SUBROUTINE FOO
+""")
+        assert pft.checkContinuationInArraySection() is False
+        assert len(caplog.records) == 1
+        assert 'B(:,' in caplog.records[0].getMessage()
+
+    def test_continuation_in_section_raise(self):
+        """mustRaise=True raises a PYFTError."""
+        from pyfortool.util import PYFTError
+        pft = self._pft("""
+SUBROUTINE FOO(A, B)
+  REAL, DIMENSION(:,:) :: A, B
+  A(:,:)=B(1:&
+  &2, :)
+END SUBROUTINE FOO
+""")
+        with pytest.raises(PYFTError):
+            pft.checkContinuationInArraySection(mustRaise=True)
+
+    def test_nested_section_reported_once(self, caplog):
+        """Nested array sections are reported only once (outermost)."""
+        pft = self._pft("""
+SUBROUTINE FOO(A, B, C)
+  REAL, DIMENSION(:,:) :: A, B, C
+  A(:,:)=B(:, C(:, &
+  &1))
+END SUBROUTINE FOO
+""")
+        assert pft.checkContinuationInArraySection() is False
+        assert len(caplog.records) == 1
+
+    def test_continuation_in_element_detected(self, caplog):
+        """A continuation line inside an array element selection is reported."""
+        pft = self._pft("""
+SUBROUTINE FOO(A)
+  REAL, DIMENSION(:,:,:) :: A
+  A(1, &
+   &2, 3)=1.
+END SUBROUTINE FOO
+""")
+        assert pft.checkContinuationInArraySection() is False
+        assert len(caplog.records) == 1
+        assert 'A(1,' in caplog.records[0].getMessage()
+
+    def test_continuation_in_function_ignored(self, caplog):
+        """A function call (name not declared as an array) is not reported."""
+        pft = self._pft("""
+SUBROUTINE FOO(A)
+  REAL, DIMENSION(:,:,:) :: A
+  A(1,1,1)=F(1, &
+            &2)
+END SUBROUTINE FOO
+""")
+        assert pft.checkContinuationInArraySection(mustRaise=True) is True
+        assert len(caplog.records) == 0
+
+    def test_array_declared_in_host_scope(self, caplog):
+        """Arrays declared in a parent scope are found, function names are not."""
+        pft = self._pft("""
+MODULE MODTEST
+  REAL, DIMENSION(10, 10) :: XA
+CONTAINS
+  SUBROUTINE SUB1(P)
+    REAL :: P
+    P=XA(1, &
+        &2)
+  END SUBROUTINE SUB1
+  SUBROUTINE SUB2(P)
+    REAL :: P
+    REAL, DIMENSION(10, 10) :: G
+    P=G(1, &
+       &2)
+  END SUBROUTINE SUB2
+  SUBROUTINE SUB3(P)
+    REAL :: P
+    P=G(1, &
+       &2)
+  END SUBROUTINE SUB3
+END MODULE MODTEST
+""")
+        assert pft.checkContinuationInArraySection() is False
+        messages = [rec.getMessage() for rec in caplog.records]
+        assert len(messages) == 2
+        assert any('XA(1,' in msg for msg in messages)
+        assert any('G(1,' in msg for msg in messages)
+
+    def test_structure_component(self, caplog):
+        """Component selections are reported only when they contain a ':'."""
+        pft = self._pft("""
+SUBROUTINE FOO(X, P, Q)
+  USE MODD_TYPE, ONLY: TYP
+  TYPE(TYP) :: X
+  REAL :: P
+  REAL, DIMENSION(:) :: Q
+  P=X%Y(1, &
+       &2)
+  Q(:)=X%Z(:, &
+          &2)
+END SUBROUTINE FOO
+""")
+        assert pft.checkContinuationInArraySection() is False
+        assert len(caplog.records) == 1
+        assert 'X%Z(:,' in caplog.records[0].getMessage()
+
+    def test_valid_code(self, caplog):
+        """Continuations between operands or in CALL arguments are accepted."""
+        pft = self._pft("""
+SUBROUTINE FOO(A, B)
+  REAL, DIMENSION(:,:,:) :: A, B
+  A(:,:,:)=B(:,:,:) + &
+          &B(:,:,:)
+  CALL F(A, &
+        &B)
+END SUBROUTINE FOO
+""")
+        assert pft.checkContinuationInArraySection(mustRaise=True) is True
+        assert len(caplog.records) == 0

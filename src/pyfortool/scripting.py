@@ -642,6 +642,11 @@ def updateParserChecks(parser):
     gChecks.add_argument('--checkEmptyParensInCall', choices={'Warn', 'Err'}, default=None,
                          help='Send a warning or raise an error if a call argument is an '
                               'array with empty parens.')
+    gChecks.add_argument('--checkContinuationInArraySection', choices={'Warn', 'Err'},
+                         default=None,
+                         help='Send a warning or raise an error if an array index '
+                              'selection (containing a \':\' or applied to a variable '
+                              'declared as an array) is split over several lines.')
     gChecks.add_argument('--checkONLY', choices={'Warn', 'Err'}, default=None,
                          help='Send a warning or raise an error if a USE statement is not '
                               'followed by an ONLY clause.')
@@ -998,6 +1003,8 @@ def applyTransfoChecks(pft, arg, args, stopScopes):
         pft.checkPHYEXUnusedLocalVar(args.checkPHYEXUnusedLocalVar == 'Err')
     elif arg == '--checkEmptyParensInCall':
         pft.checkEmptyParensInCall(args.checkEmptyParensInCall == 'Err')
+    elif arg == '--checkContinuationInArraySection':
+        pft.checkContinuationInArraySection(args.checkContinuationInArraySection == 'Err')
     elif arg == '--checkONLY':
         pft.checkONLY(args.checkONLY == 'Err')
     elif arg == '--checkKeyDim':

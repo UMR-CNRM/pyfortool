@@ -122,7 +122,8 @@ tests/
 │   ├── TestChangeIfStatementsInIfConstructs
 │   ├── TestEmpty
 │   ├── TestIsNodeInProcedure
-│   └── TestIsNodeInCall
+│   ├── TestIsNodeInCall
+│   └── TestCheckContinuationInArraySection  # Continuation in index selection
 │
 ├── test_cosmetics.py              # Cosmetics mixin (23 tests)
 │   ├── TestCosmeticsCase          # upperCase, lowerCase
