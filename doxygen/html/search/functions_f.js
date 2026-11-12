@@ -12,5 +12,6 @@ var searchData=
   ['shumanfunctocall_9',['shumanFUNCtoCALL',['../classpyfortool_1_1applications_1_1Applications.html#adf1a7957779888201afb90c4a253e66a',1,'pyfortool::applications::Applications']]],
   ['signal_10',['signal',['../classpyfortool_1_1tree_1_1Tree.html#addd96752fcbb7966f27d1b5f574604bc',1,'pyfortool::tree::Tree']]],
   ['simplifyexpr_11',['simplifyExpr',['../namespacepyfortool_1_1expressions.html#a4d7ed0c1a9dcbc34efadb5b57c746461',1,'pyfortool::expressions']]],
-  ['splitmoduleroutinefile_12',['splitModuleRoutineFile',['../classpyfortool_1_1applications_1_1Applications.html#aed1e6014a93d11b793e7020a0cf07a43',1,'pyfortool::applications::Applications']]]
+  ['splitlonglines_12',['splitLongLines',['../classpyfortool_1_1cosmetics_1_1Cosmetics.html#abd18bd915d89e2fd186b7f8ab2087cf6',1,'pyfortool::cosmetics::Cosmetics']]],
+  ['splitmoduleroutinefile_13',['splitModuleRoutineFile',['../classpyfortool_1_1applications_1_1Applications.html#aed1e6014a93d11b793e7020a0cf07a43',1,'pyfortool::applications::Applications']]]
 ];

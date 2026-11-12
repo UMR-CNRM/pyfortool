@@ -228,6 +228,16 @@ surrounded by spaces...
 MODI_, MODN_) and alphabetically within each group. Variable names in
 ONLY clauses are converted to uppercase; module names are preserved as-is.
 
+**--splitLongLines** splits the lines longer than the limit given by **--maxLineLength=N**
+(default: 132 characters). Code is split with continuation lines only after a comma, after '::',
+after the '=' of an assignment or before an operator, and never inside strings, preprocessor lines
+or array index selections (index selections containing a ':' or applied to a variable declared as
+an array). Long comments are split on several comment lines at spaces (words are never cut); a
+trailing comment is moved to its own line if needed; blanks or decorations (e.g. '!!!!!' or
+'-----') beyond the limit are removed. Directives ('!$...', '!DIR$', '!DEC$') are never
+modified. The whole file is processed, even when **--restrictScope** is used. Lines that cannot be
+split are reported with a warning. Only free source form is supported.
+
 ### Checks
 
 **--checkIMPLICIT=Warn\|Err** if the 'IMPLICIT NONE' statment is missing,
@@ -244,12 +254,24 @@ if option is 'Warn'; otherwise issue an error message and raise an exception.
 **--checkEmptyParensInCall=Warn\|Err** if a call argument is an array with empty parens,
  issue a warning if option is 'Warn'; otherwise issue an error message and raise an exception.
 
+**--checkContinuationInArraySection=Warn\|Err** if an array index selection is split over
+several lines (e.g. 'B(:, &' followed by '&:)'), issue a warning if option is 'Warn'; otherwise
+issue an error message and raise an exception. Because an array element cannot be syntactically
+distinguished from a function call, an index selection is checked only if it contains a ':' or
+if the variable is declared as an array (for structure components, only if it contains a ':').
+Function calls and arguments of CALL statements are not concerned.
+
 **--checkUnusedLocalVar=Warn\|Err** if a local variable is unused, issue a warning
 if option is 'Warn'; otherwise issue an error message and raise an exception.
 
 **--checkPHYEXUnusedLocalVar=Warn\|Err** if a local variable is unused (excluding
 variables needed for mnh_expand directives, issue a warning if option is 'Warn';
 otherwise issue an error message and raise an exception.
+
+**--checkLineLength=Warn\|Err** if a line is longer than the limit given by
+**--maxLineLength=N** (default: 132 characters), issue a warning if option is 'Warn'; otherwise
+issue an error message and raise an exception. All lines of the file are checked (code,
+comments, directives...), even when **--restrictScope** is used.
 
 **--checkONLY=Warn\|Err* if a USE statement is not followed by an ONLY clause,
 issue a warning if option is 'Warn'; otherwise issue an error message and raise an exception.
@@ -320,6 +342,7 @@ inout arrays in subroutines.
 **--shumanFUNCtoCALL** Transform shuman functions to call statements (legacy version).
 
 **--shugradTransfo** Transform shuman and gradient functions to call statements.
+Useless parenthesis around the arguments (e.g. MXM2D((A+B))) are removed.
 
 **--mathFunctoBRFunc** Convert intrinsic math functions **, LOG, ATAN, **2, **3, **4, EXP,
 COS, SIN, ATAN2 into a self defined function BR_ for MesoNH bit-repro.
@@ -395,7 +418,8 @@ And so, PYFT is the class publicly exposed.
 
 An instance of PYFT represents the entire file and can contain several FORTRAN scopes.
 If p is an instance of PYFT, p.getScopes() returns a list of PYFTscope instances, each
-one representing a specific FORTRAN scope.
+one representing a specific FORTRAN scope, and p.getScopeNode(scopePath) returns the
+PYFTscope instance corresponding to a scope path.
 
 In order to deal with complex operations involving several source code files, a Tree
 object can be created. This object analizes all the source code files present in the

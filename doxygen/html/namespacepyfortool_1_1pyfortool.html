@@ -267,7 +267,7 @@ PYFT
 Examples
 --------
 &gt;&gt;&gt; pft = generateEmptyPYFT('new.F90', 'MODULE TEST\nEND MODULE')
-&gt;&gt;&gt; pft.addVar([('module:TEST', 'X', 'INTEGER :: X', None)])
+&gt;&gt;&gt; pft.getScopeNode('module:TEST').addVar([('X', 'INTEGER :: X', None)])
 &gt;&gt;&gt; pft.write()
 </pre> 
 <p class="definition">Definition at line <a class="el" href="pyfortool_8py_source.html#l00080">80</a> of file <a class="el" href="pyfortool_8py_source.html">pyfortool.py</a>.</p>

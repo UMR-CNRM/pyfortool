@@ -80,6 +80,7 @@ $(function() {
 <li>_analyseFile()&#160;:&#160;<a class="el" href="classpyfortool_1_1tree_1_1Tree.html#a429892e9b0cead0831a06c32e79a4a73">pyfortool.tree.Tree</a></li>
 <li>_build()&#160;:&#160;<a class="el" href="classpyfortool_1_1tree_1_1Tree.html#a5ba131c4e2da8b46cc8dccb687aae7f0">pyfortool.tree.Tree</a></li>
 <li>_compilationTree()&#160;:&#160;<a class="el" href="classpyfortool_1_1tree_1_1Tree.html#a797e59dd6fba1fdbc571cec38607a321">pyfortool.tree.Tree</a></li>
+<li>_declScope()&#160;:&#160;<a class="el" href="classpyfortool_1_1variables_1_1Variables.html#a654f36cc001f5dd5eb1ac05fcac770b4">pyfortool.variables.Variables</a></li>
 <li>_emptyCache()&#160;:&#160;<a class="el" href="classpyfortool_1_1tree_1_1Tree.html#ae144f14db5b0c687b36614fbecb2af7c">pyfortool.tree.Tree</a></li>
 <li>_executionTree()&#160;:&#160;<a class="el" href="classpyfortool_1_1tree_1_1Tree.html#a30dc2ad067ecd42aacf1a674d566a762">pyfortool.tree.Tree</a></li>
 <li>_fromScope()&#160;:&#160;<a class="el" href="classpyfortool_1_1variables_1_1VarList.html#a36b74012af9344dd144684fa16adeee7">pyfortool.variables.VarList</a></li>
@@ -88,8 +89,7 @@ $(function() {
 <li>_getNodePath()&#160;:&#160;<a class="el" href="classpyfortool_1_1scope_1_1PYFTscope.html#ac3277b30653d4e1636a745dcc588c41e">pyfortool.scope.PYFTscope</a></li>
 <li>_incInScope()&#160;:&#160;<a class="el" href="classpyfortool_1_1tree_1_1Tree.html#a7e5b81259f2fa180cbadf4a9eaaf079e">pyfortool.tree.Tree</a></li>
 <li>_mnh_expand_var()&#160;:&#160;<a class="el" href="classpyfortool_1_1applications_1_1Applications.html#afd21fd68864bcfad99cba32f6cdc6dff">pyfortool.applications.Applications</a></li>
-<li>_normalizeScopeVar()&#160;:&#160;<a class="el" href="classpyfortool_1_1variables_1_1Variables.html#a52cb671d5fe7c0218a6e819a0b383bf5">pyfortool.variables.Variables</a></li>
-<li>_normalizeUniqVar()&#160;:&#160;<a class="el" href="classpyfortool_1_1variables_1_1Variables.html#adb598123892010ce83555ca4dd02ad2c">pyfortool.variables.Variables</a></li>
+<li>_normalizeUniqVar()&#160;:&#160;<a class="el" href="classpyfortool_1_1variables_1_1Variables.html#abcb8e30c07e89bacf84c8d36d69f0cc9">pyfortool.variables.Variables</a></li>
 <li>_recurList()&#160;:&#160;<a class="el" href="classpyfortool_1_1tree_1_1Tree.html#a7b316c264655487133f41491c1a9da62">pyfortool.tree.Tree</a></li>
 <li>_rename()&#160;:&#160;<a class="el" href="classpyfortool_1_1pyfortool_1_1PYFT.html#adadda2836473595449d2ce499c7723cb">pyfortool.pyfortool.PYFT</a></li>
 <li>_virtual()&#160;:&#160;<a class="el" href="classpyfortool_1_1scope_1_1ElementView.html#a7a1db7bc1c5100e0e9b813edf25d9239">pyfortool.scope.ElementView</a></li>
@@ -128,11 +128,13 @@ $(function() {
 <li>calledByScope()&#160;:&#160;<a class="el" href="classpyfortool_1_1tree_1_1Tree.html#a4f23e2ac18e7cb53b39d7eb35bc8a122">pyfortool.tree.Tree</a></li>
 <li>callsScopes()&#160;:&#160;<a class="el" href="classpyfortool_1_1tree_1_1Tree.html#a39e4fa3c26a4bdeda416e7080a62c7b6">pyfortool.tree.Tree</a></li>
 <li>changeIfStatementsInIfConstructs()&#160;:&#160;<a class="el" href="classpyfortool_1_1cosmetics_1_1Cosmetics.html#af4c2bda1341d71046b8859458a11d4f8">pyfortool.cosmetics.Cosmetics</a></li>
+<li>checkContinuationInArraySection()&#160;:&#160;<a class="el" href="classpyfortool_1_1statements_1_1Statements.html#ae4ec4853f9b7563c4e8d100691aeb28d">pyfortool.statements.Statements</a></li>
 <li>checkEmptyParensInCall()&#160;:&#160;<a class="el" href="classpyfortool_1_1statements_1_1Statements.html#a7055c2fee34f05895b5207767586e4e1">pyfortool.statements.Statements</a></li>
 <li>checkEmptyParensInMnhExpand()&#160;:&#160;<a class="el" href="classpyfortool_1_1statements_1_1Statements.html#ab9de59a793fc482a0522dff333a6fdc6">pyfortool.statements.Statements</a></li>
 <li>checkImplicitNone()&#160;:&#160;<a class="el" href="classpyfortool_1_1variables_1_1Variables.html#af24344c278e49ee1188872d61acc7406">pyfortool.variables.Variables</a></li>
 <li>checkIntent()&#160;:&#160;<a class="el" href="classpyfortool_1_1variables_1_1Variables.html#abe004a6d18daaeb4e1ee522fb6106a5f">pyfortool.variables.Variables</a></li>
 <li>checkKeyDimConsistency()&#160;:&#160;<a class="el" href="classpyfortool_1_1variables_1_1Variables.html#a70ccbec508193dbcd9f314b676d15757">pyfortool.variables.Variables</a></li>
+<li>checkLineLength()&#160;:&#160;<a class="el" href="classpyfortool_1_1cosmetics_1_1Cosmetics.html#a1c2e1b7f9a54628aaf77a638a1221925">pyfortool.cosmetics.Cosmetics</a></li>
 <li>checkONLY()&#160;:&#160;<a class="el" href="classpyfortool_1_1variables_1_1Variables.html#ac2086f93aa5c550bc7c76a0f1005e177">pyfortool.variables.Variables</a></li>
 <li>checkOpInCall()&#160;:&#160;<a class="el" href="classpyfortool_1_1statements_1_1Statements.html#ab8862eec599ba78ad8968d42e7ef4af3">pyfortool.statements.Statements</a></li>
 <li>checkPHYEXUnusedLocalVar()&#160;:&#160;<a class="el" href="classpyfortool_1_1applications_1_1Applications.html#ae6e8cc9fcd22e744043a2c6ea61e7928">pyfortool.applications.Applications</a></li>
@@ -202,6 +204,7 @@ $(function() {
 <li>insert()&#160;:&#160;<a class="el" href="classpyfortool_1_1scope_1_1ElementView.html#ad33dd2769af5ef63e58cb80d9fb047e2">pyfortool.scope.ElementView</a></li>
 <li>insertInList()&#160;:&#160;<a class="el" href="classpyfortool_1_1statements_1_1Statements.html#a97b77c8dbe7db4a15969168489115c6d">pyfortool.statements.Statements</a></li>
 <li>insertStatement()&#160;:&#160;<a class="el" href="classpyfortool_1_1statements_1_1Statements.html#a776cb9f9c9ddcd5bd7939396068c02ab">pyfortool.statements.Statements</a></li>
+<li>isArrayIndexSelection()&#160;:&#160;<a class="el" href="classpyfortool_1_1statements_1_1Statements.html#aa5452f82fef0518499cc9bb5afad6ae9">pyfortool.statements.Statements</a></li>
 <li>isNodeInCall()&#160;:&#160;<a class="el" href="classpyfortool_1_1statements_1_1Statements.html#ac4f0397dc915a86820bbb76bf66e4b2c">pyfortool.statements.Statements</a></li>
 <li>isNodeInProcedure()&#160;:&#160;<a class="el" href="classpyfortool_1_1statements_1_1Statements.html#a52b5eeb79fcf388b71065593a715f7a6">pyfortool.statements.Statements</a></li>
 <li>isScopeNode()&#160;:&#160;<a class="el" href="classpyfortool_1_1scope_1_1PYFTscope.html#a7bcc71141d6087f697b942f104c842b2">pyfortool.scope.PYFTscope</a></li>
@@ -290,6 +293,7 @@ $(function() {
 <li>shugradTransfo()&#160;:&#160;<a class="el" href="classpyfortool_1_1applications_1_1Applications.html#a8c9e491fc3e47ca8c0f5be4e7593828a">pyfortool.applications.Applications</a></li>
 <li>shumanFUNCtoCALL()&#160;:&#160;<a class="el" href="classpyfortool_1_1applications_1_1Applications.html#adf1a7957779888201afb90c4a253e66a">pyfortool.applications.Applications</a></li>
 <li>signal()&#160;:&#160;<a class="el" href="classpyfortool_1_1tree_1_1Tree.html#addd96752fcbb7966f27d1b5f574604bc">pyfortool.tree.Tree</a></li>
+<li>splitLongLines()&#160;:&#160;<a class="el" href="classpyfortool_1_1cosmetics_1_1Cosmetics.html#abd18bd915d89e2fd186b7f8ab2087cf6">pyfortool.cosmetics.Cosmetics</a></li>
 <li>splitModuleRoutineFile()&#160;:&#160;<a class="el" href="classpyfortool_1_1applications_1_1Applications.html#aed1e6014a93d11b793e7020a0cf07a43">pyfortool.applications.Applications</a></li>
 </ul>
 

@@ -122,7 +122,8 @@ tests/
 │   ├── TestChangeIfStatementsInIfConstructs
 │   ├── TestEmpty
 │   ├── TestIsNodeInProcedure
-│   └── TestIsNodeInCall
+│   ├── TestIsNodeInCall
+│   └── TestCheckContinuationInArraySection  # Continuation in index selection
 │
 ├── test_cosmetics.py              # Cosmetics mixin (23 tests)
 │   ├── TestCosmeticsCase          # upperCase, lowerCase
@@ -133,7 +134,9 @@ tests/
 │   ├── TestCosmeticsSpaces
 │   ├── TestCosmeticsIfStatements
 │   ├── TestCosmeticsContains
-│   └── TestCosmeticsFormatModuleUse  # formatModuleUse
+│   ├── TestCosmeticsFormatModuleUse  # formatModuleUse
+│   ├── TestCheckLineLength        # checkLineLength
+│   └── TestSplitLongLines         # splitLongLines
 │
 ├── test_cpp.py                    # Cpp mixin (12 tests)
 │   ├── TestCppApplyIfdef          # #ifdef evaluation
@@ -161,7 +164,8 @@ tests/
 │   ├── TestApplicationsStack
 │   ├── TestApplicationsIJDim
 │   ├── TestApplicationsModi
-│   └── TestApplicationsRemoveExtraDO
+│   ├── TestApplicationsRemoveExtraDO
+│   └── TestShugradTransfoUselessParens  # shugradTransfo, issue #55
 │
 ├── test_scripting.py              # pyfortool_parallel command (10 tests)
 │   ├── TestMainParallel           # In-place, descTree, dryRun, cross-file, optsByEnv, errors

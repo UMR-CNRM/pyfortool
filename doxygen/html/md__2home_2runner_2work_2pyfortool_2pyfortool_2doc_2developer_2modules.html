@@ -213,11 +213,15 @@ Variables (Mixin)</h2>
 <tr class="markdownTableHead">
 <th class="markdownTableHeadNone">Method   </th><th class="markdownTableHeadNone">Description    </th></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><code>addVar(varList)</code>   </td><td class="markdownTableBodyNone">Add variable declaration    </td></tr>
+<td class="markdownTableBodyNone"><code>addVar(varList)</code>   </td><td class="markdownTableBodyNone">Add variable declaration (call on the declaring scope)    </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><code>removeVar(varList)</code>   </td><td class="markdownTableBodyNone">Remove variable    </td></tr>
+<td class="markdownTableBodyNone"><code>removeVar(varList)</code>   </td><td class="markdownTableBodyNone">Remove variable (call on the scope using it)    </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><code>addModuleVar(moduleVarList)</code>   </td><td class="markdownTableBodyNone">Add USE statement    </td></tr>
+<td class="markdownTableBodyNone"><code>removeVarIfUnused(varList)</code>   </td><td class="markdownTableBodyNone">Remove variable if unused (call on the scope using it)    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><code>isVarUsed(varList)</code>   </td><td class="markdownTableBodyNone">Check variable usage (call on the scope using it)    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><code>addModuleVar(moduleVarList)</code>   </td><td class="markdownTableBodyNone">Add USE statement (call on the declaring scope)    </td></tr>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><code>attachArraySpecToEntity()</code>   </td><td class="markdownTableBodyNone">Move DIMENSION to entities    </td></tr>
 <tr class="markdownTableRowOdd">
@@ -243,15 +247,23 @@ Usage</h2>
 <div class="line">vl = pft.varList</div>
 <div class="line">var = vl.findVar(<span class="stringliteral">&#39;X&#39;</span>)</div>
 <div class="line"> </div>
-<div class="line"><span class="comment"># Add variable</span></div>
-<div class="line">pft.addVar([(<span class="stringliteral">&#39;module:MOD/sub:SUB&#39;</span>, <span class="stringliteral">&#39;NEW_VAR&#39;</span>, </div>
-<div class="line">             <span class="stringliteral">&#39;INTEGER :: NEW_VAR&#39;</span>, <span class="keywordtype">None</span>)])</div>
+<div class="line"><span class="comment"># Variable manipulation methods are called on the scope holding the variables</span></div>
+<div class="line">sub = pft.getScopeNode(<span class="stringliteral">&#39;module:MOD/sub:SUB&#39;</span>)</div>
 <div class="line"> </div>
-<div class="line"><span class="comment"># Remove variable</span></div>
-<div class="line">pft.removeVar([(<span class="stringliteral">&#39;module:MOD/sub:SUB&#39;</span>, <span class="stringliteral">&#39;OLD_VAR&#39;</span>)])</div>
+<div class="line"><span class="comment"># Add variable: (name, declaration statement, position in the argument list or None)</span></div>
+<div class="line">sub.addVar([(<span class="stringliteral">&#39;NEW_VAR&#39;</span>, <span class="stringliteral">&#39;INTEGER :: NEW_VAR&#39;</span>, <span class="keywordtype">None</span>)])</div>
 <div class="line"> </div>
-<div class="line"><span class="comment"># Add USE statement</span></div>
-<div class="line">pft.addModuleVar([(<span class="stringliteral">&#39;module:MOD/sub:SUB&#39;</span>, <span class="stringliteral">&#39;MODD_XX&#39;</span>, <span class="stringliteral">&#39;VAR&#39;</span>)])</div>
+<div class="line"><span class="comment"># Remove variable (searched in SUB, then in the enclosing scopes)</span></div>
+<div class="line">sub.removeVar([<span class="stringliteral">&#39;OLD_VAR&#39;</span>])</div>
+<div class="line"> </div>
+<div class="line"><span class="comment"># Remove variables only if they are unused; returns the names actually removed</span></div>
+<div class="line">sub.removeVarIfUnused([<span class="stringliteral">&#39;A&#39;</span>, <span class="stringliteral">&#39;B&#39;</span>], excludeDummy=<span class="keyword">True</span>)</div>
+<div class="line"> </div>
+<div class="line"><span class="comment"># Check usage: {&#39;X&#39;: True, &#39;Y&#39;: False}</span></div>
+<div class="line">sub.isVarUsed([<span class="stringliteral">&#39;X&#39;</span>, <span class="stringliteral">&#39;Y&#39;</span>])</div>
+<div class="line"> </div>
+<div class="line"><span class="comment"># Add USE statement: (module name, variable name / list of names / None for no ONLY clause)</span></div>
+<div class="line">sub.addModuleVar([(<span class="stringliteral">&#39;MODD_XX&#39;</span>, <span class="stringliteral">&#39;VAR&#39;</span>)])</div>
 <div class="line"> </div>
 <div class="line"><span class="comment"># Transform automatic arrays</span></div>
 <div class="line">pft.modifyAutomaticArrays(</div>
@@ -276,7 +288,11 @@ Methods</h2>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><code>inlineContainedSubroutines()</code>   </td><td class="markdownTableBodyNone">Inline helper subroutines    </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><code>setFalseIfStmt(flags)</code>   </td><td class="markdownTableBodyNone">Set flags to .FALSE.   </td></tr>
+<td class="markdownTableBodyNone"><code>setFalseIfStmt(flags)</code>   </td><td class="markdownTableBodyNone">Set flags to .FALSE.    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><code>checkContinuationInArraySection()</code>   </td><td class="markdownTableBodyNone">Check array index selections are not split over lines    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><code>isArrayIndexSelection(node, getParent, getScope)</code>   </td><td class="markdownTableBodyNone">Tell if an array-R/parens-R node is an array index selection   </td></tr>
 </table>
 <h2><a class="anchor" id="autotoc_md112"></a>
 Usage</h2>
@@ -324,6 +340,10 @@ Methods</h2>
 <td class="markdownTableBodyNone"><code>prettify()</code>   </td><td class="markdownTableBodyNone">Full formatting    </td></tr>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><code>minify()</code>   </td><td class="markdownTableBodyNone">Compact formatting    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><code>splitLongLines(maxLength)</code>   </td><td class="markdownTableBodyNone">Split lines longer than a maximum length (code and comments)    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><code>checkLineLength(maxLength, mustRaise)</code>   </td><td class="markdownTableBodyNone">Check that no line exceeds a maximum length    </td></tr>
 <tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><code>formatModuleUse(upper)</code>   </td><td class="markdownTableBodyNone">Order USE statements by module type and alphabetically; uppercase ONLY clause vars   </td></tr>
 </table>
