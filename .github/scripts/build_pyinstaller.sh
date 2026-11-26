@@ -33,7 +33,8 @@ if [ -x /usr/bin/dnf ]; then
     if command -v dnf >/dev/null 2>&1; then
         DNF_CMD="$(command -v dnf)"
     fi
-    "$DNF_CMD" -y install python39 python39-pip
+    # -devel: the headers to compile the fxtran binding (installed from git)
+    "$DNF_CMD" -y install python39 python39-pip python39-devel
     PYEXE=/usr/bin/python3.9
 else
     # CentOS 7 based (glibc 2.17). CentOS 7 is EOL, so the default SCLo
@@ -48,7 +49,8 @@ else
         "enabled=1" \
         "gpgcheck=0" \
         > /etc/yum.repos.d/vault-sclo-rh.repo
-    yum -y install rh-python38 rh-python38-python-pip
+    # -devel: the headers to compile the fxtran binding (installed from git)
+    yum -y install rh-python38 rh-python38-python-pip rh-python38-python-devel
     # shellcheck disable=SC1091
     . /opt/rh/rh-python38/enable
     PYEXE=python
@@ -58,7 +60,7 @@ fi
 "$PYEXE" -m pip --version
 "$PYEXE" -m pip install --upgrade pip
 "$PYEXE" -m pip install -e . pyinstaller
-"$PYEXE" -m PyInstaller --collect-all pyfxtran --onefile "$(command -v pyfortool)" src/pyfortool/scripting.py
+"$PYEXE" -m PyInstaller --collect-all fxtran --onefile "$(command -v pyfortool)" src/pyfortool/scripting.py
 
 # The container runs as root; hand the build output back to the host runner
 # user so it can be renamed/uploaded by the workflow.

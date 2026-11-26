@@ -2023,10 +2023,10 @@ class Variables():
     @debugDecor
     @updateVarList
     @updateTree('signal')
-    def addONLY(self, parserOptions=None, wrapH=False):
+    def addONLY(self, wrapH=False):
         """
         Adds missing ONLY clause to USE statements
-        :param parserOptions, wrapH: see the PYFT class
+        :param wrapH: see the PYFT class
         """
         for useStmt in self.findall('.//{*}use-stmt'):
             module = useStmt.find('.//{*}module-N')
@@ -2047,7 +2047,7 @@ class Variables():
                         pft = None
                     else:
                         pft = pyfortool.pyfortool.conservativePYFT(
-                                  modulefile[0], parserOptions, wrapH, tree=self.tree,
+                                  modulefile[0], wrapH, tree=self.tree,
                                   clsPYFT=self._mainScope.__class__)
                         xml = pft
 
@@ -2108,7 +2108,7 @@ class Variables():
     @updateVarList
     def addArgInTree(self, varName, declStmt, pos, stopScopes, moduleVarList=None,
                      otherNames=None,
-                     parserOptions=None, wrapH=False):
+                     wrapH=False):
         """
         Adds an argument to the routine and propagates it upward until we encounter a scope
         where the variable exists or a scope in stopScopes
@@ -2124,7 +2124,7 @@ class Variables():
                               use moduleVarList to not add module variables
         :param otherNames: None or list of other variable names that can be used
                            These variables are used first
-        :param parserOptions, wrapH: see the PYFT class
+        :param wrapH: see the PYFT class
 
         Argument is inserted only on paths leading to one of scopes listed in stopScopes
         """
@@ -2201,7 +2201,7 @@ class Variables():
                                 pft = None
                             else:
                                 pft = pyfortool.pyfortool.conservativePYFT(
-                                          filename, parserOptions, wrapH, tree=self.tree,
+                                          filename, wrapH, tree=self.tree,
                                           clsPYFT=self._mainScope.__class__)
                                 xml = pft
                             scopeInterface = xml.getScopeNode(scopePathInterface)
@@ -2238,7 +2238,7 @@ class Variables():
                                     pft = None
                                 else:
                                     pft = pyfortool.pyfortool.conservativePYFT(
-                                              filename, parserOptions, wrapH,
+                                              filename, wrapH,
                                               tree=self.tree,
                                               clsPYFT=self._mainScope.__class__)
                                     xml = pft
@@ -2247,7 +2247,6 @@ class Variables():
                                 scopeUp.addArgInTree(
                                     varName, declStmt, pos,
                                     stopScopes, moduleVarList, otherNames,
-                                    parserOptions=parserOptions,
                                     wrapH=wrapH)
                                 # Add the argument to calls (subroutine or function)
                                 name = self.path.split('/')[-1].split(':')[1].upper()

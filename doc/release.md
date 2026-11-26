@@ -64,7 +64,7 @@ bash .github/scripts/generate_changelog.sh 0.2.21
 ### PyInstaller binaries
 
 Both binaries follow the same recipe
-(`--collect-all pyfxtran --onefile $(which pyfortool) src/pyfortool/scripting.py`),
+(`--collect-all fxtran --onefile $(which pyfortool) src/pyfortool/scripting.py`),
 but are built **inside Docker containers** that pin the target glibc, so the
 binaries run on older systems than the runner itself:
 
@@ -87,9 +87,10 @@ script installs the **distribution's shared CPython** instead
 SCL `rh-python38` on the CentOS 7 / glibc-2.17 x86 image). Because CentOS 7 is
 EOL, the script first disables the leftover SCLo repositories and provides a
 fresh repository pointing at the archived `vault.centos.org` mirrors before
-installing. It then installs `pyfxtran` (`pyfortool`) and PyInstaller from
-that interpreter, uses the C build toolchain (`gcc`/`make`/`git`) already
-present, and `chown`s the build output back to the runner user so it can be
+installing, together with the headers of that interpreter (`-devel`
+packages). It then installs `pyfortool` (with the fxtran binding, compiled from
+its git repository) and PyInstaller from that interpreter, uses the C build
+toolchain (`gcc`/`git`) already present, and `chown`s the build output back to the runner user so it can be
 picked up on the host. Each job also verifies the binary's version and logs
 the highest required GLIBC symbol (an `objdump`-based check) to confirm the
 glibc bound.

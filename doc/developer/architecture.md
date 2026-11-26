@@ -4,7 +4,7 @@ This document describes the architecture of PyForTool to help developers underst
 
 ## Overview
 
-PyForTool is a Python package for source-to-source transformation of FORTRAN code. It uses [pyfxtran](ihttps://github.com/SebastienRietteMTO/pyfxtran) to parse FORTRAN into XML, then manipulates the XML tree, and finally converts back to FORTRAN.
+PyForTool is a Python package for source-to-source transformation of FORTRAN code. It uses the Python binding of [fxtran](https://github.com/pmarguinaud/fxtran) to parse FORTRAN into XML, in the same process, then manipulates the XML tree, and finally converts back to FORTRAN.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐

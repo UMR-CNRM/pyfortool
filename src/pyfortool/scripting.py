@@ -30,7 +30,7 @@ def task(filename):
     try:
         # Opening and reading of the FORTRAN file
         with PYFT(filename, filename,
-                  parserOptions=getParserOptions(allArgs), verbosity=allArgs.logLevel,
+                  addIncludes=allArgs.addIncludes, verbosity=allArgs.logLevel,
                   wrapH=allArgs.wrapH,
                   enableCache=allArgs.enableCache) as pft:
 
@@ -143,12 +143,11 @@ def main(argv=None):
                  treeIsOptional=True, nbPar=False, restrictScope=True)
     args, orderedOptions = getArgs(parser, argv)[1]()
 
-    parserOptions = getParserOptions(args)
     descTree = getDescTree(args)
 
     try:
         # Opening and reading of the FORTRAN file
-        pft = PYFT(args.INPUT, args.OUTPUT, parserOptions=parserOptions,
+        pft = PYFT(args.INPUT, args.OUTPUT, addIncludes=args.addIncludes,
                    verbosity=args.logLevel, wrapH=args.wrapH, tree=descTree,
                    enableCache=args.enableCache)
         if args.restrictScope != '':
@@ -235,20 +234,6 @@ def getArgs(parser, argv):
     return args, getFileArgs
 
 
-def getParserOptions(args):
-    """
-    Get the options to use for the fxtran parser
-    :param args: arguments parsed by the argparse parser
-    """
-    if args.parserOption is None:
-        parserOptions = PYFT.DEFAULT_FXTRAN_OPTIONS.copy()
-    else:
-        parserOptions = [el for elements in args.parserOption for el in elements]
-    if args.addIncludes:
-        parserOptions = [opt for opt in parserOptions if opt not in ('-no-include', '-noinclude')]
-    return parserOptions
-
-
 def getDescTree(args, cls=Tree):
     """
     get the Tree object built with the parsed arguments
@@ -256,10 +241,8 @@ def getDescTree(args, cls=Tree):
     :param cls: class to use (usefull for manager)
     :return: a Tree instance
     """
-    parserOptions = getParserOptions(args)
     if args.descTree:
         descTree = cls(tree=args.tree, descTreeFile=args.descTree,
-                       parserOptions=parserOptions,
                        wrapH=args.wrapH, verbosity=args.logLevel)
     else:
         descTree = None
@@ -387,9 +370,6 @@ def updateParserFxtran(parser):
     Updates an argparse parser with fxtran arguments
     """
     gParser = parser.add_argument_group('fxtran parser relative options')
-    gParser.add_argument('--parserOption', nargs='*', action='append',
-                         help='Option to pass to fxtran, defaults ' +
-                              f'to {PYFT.DEFAULT_FXTRAN_OPTIONS}')
     gParser.add_argument('--wrapH', default=False, action='store_true',
                          help='Wrap .h file content into a MODULE to enable the reading')
 
@@ -733,17 +713,16 @@ def applyTransfo(pft, arg, args, plotCentralFile):
     :param plotCentralFile: central file for plots
     """
     simplify = {'simplify': args.simplify}
-    parserOptions = getParserOptions(args)
     stopScopes = args.stopScopes.split('#') if args.stopScopes is not None else None
 
     # File name manipulations
     applyTransfoFileName(pft, arg)
 
     # Variables
-    applyTransfoVariables(pft, arg, args, simplify, parserOptions, stopScopes)
+    applyTransfoVariables(pft, arg, args, simplify, stopScopes)
 
     # Applications
-    applyTransfoApplications(pft, arg, args, simplify, parserOptions, stopScopes)
+    applyTransfoApplications(pft, arg, args, simplify, stopScopes)
 
     # OpenACC
     applyTransfoOpenACC(pft, arg, args, stopScopes)
@@ -782,14 +761,13 @@ def applyTransfoFileName(pft, arg):
         pft.renameLower()
 
 
-def applyTransfoVariables(pft, arg, args, simplify, parserOptions, stopScopes):
+def applyTransfoVariables(pft, arg, args, simplify, stopScopes):
     """
     Apply variables transformations on a PYFT instance
     :param pft: PYFT instance
     :param arg: argument to deal with
     :param args: parsed argparsed arguments
     :param simplify: kwargs to simplify
-    :param parserOptions: fxtran parser options
     :param stopScopes: upper limit in call tree for some transformations
     """
     if arg == '--showVariables':
@@ -826,25 +804,22 @@ def applyTransfoVariables(pft, arg, args, simplify, parserOptions, stopScopes):
     elif arg == '--addArgInTree':
         for varName, declStmt, pos in args.addArgInTree:
             pft.addArgInTree(varName, declStmt, int(pos), stopScopes,
-                             parserOptions=parserOptions,
                              wrapH=args.wrapH)
     elif arg == '--addONLY':
-        pft.addONLY(parserOptions=parserOptions, wrapH=args.wrapH)
+        pft.addONLY(wrapH=args.wrapH)
 
 
-def applyTransfoApplications(pft, arg, args, simplify, parserOptions, stopScopes):
+def applyTransfoApplications(pft, arg, args, simplify, stopScopes):
     """
     Apply applications transformations on a PYFT instance
     :param pft: PYFT instance
     :param arg: argument to deal with
     :param args: parsed argparsed arguments
     :param simplify: kwargs to simplify
-    :param parserOptions: fxtran parser options
     :param stopScopes: upper limit in call tree for some transformations
     """
     if arg == '--addStack':
         pft.addStack(args.addStack, stopScopes,
-                     parserOptions=parserOptions,
                      wrapH=args.wrapH)
     elif arg == '--deleteDrHook':
         pft.deleteDrHook(**simplify)
@@ -884,7 +859,6 @@ def applyTransfoApplications(pft, arg, args, simplify, parserOptions, stopScopes
         pft.expandAllArraysPHYEX(concurrent=True)
     elif arg == '--removeIJDim':
         pft.removeIJDim(stopScopes,
-                        parserOptions=parserOptions,
                         wrapH=args.wrapH, **simplify)
     elif arg == '--shumanFUNCtoCALL':
         pft.shumanFUNCtoCALL()

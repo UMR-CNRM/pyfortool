@@ -3,7 +3,7 @@
 ## Introduction
 
 PyForTool is a Python package for source-to-source transformation of FORTRAN code.
-It reads FORTRAN files, parses them to XML using [pyfxtran](https://github.com/SebastienRietteMTO/pyfxtran),
+It reads FORTRAN files, parses them to XML using the Python binding of [fxtran](https://github.com/pmarguinaud/fxtran),
 applies transformations, and writes the result back.
 
 **Two command-line tools are provided:**
@@ -40,7 +40,8 @@ pft.write()
 
 ## Dependencies
 
-- [pyfxtran](https://github.com/SebastienRietteMTO/pyfxtran) must be installed (with pip)
+- the Python binding of [fxtran](https://github.com/pmarguinaud/fxtran): pip installs it from its git repository and
+  compiles it, which needs a C compiler, the Python headers and git
 - Python 3.8 or higher
 
 ## Limitations
@@ -82,12 +83,12 @@ The order of the arguments matters: transformation are done in that specific ord
 
 ### Parser options
 
-**--parserOption=OPTIONS** the list of available options can be found in the fxtran
-documentation. If no option is provided, the defaults one will be used (the
-list of default options can be seen with "pyfortool -h"). In case this option
-is used, the default options will be replaced by the ones specified.
+The fxtran options cannot be changed: the source code is parsed without being
+preprocessed (cpp directives are kept as they are), its form (free or fixed) is given
+by the file extension, and the line length is not limited. Included files are added
+only with the **--addIncludes** option.
 
-**--wrapH** Wrap .h file content into a MODULE to enable the parsing by (py)fxtran.
+**--wrapH** Wrap .h file content into a MODULE to enable the parsing by fxtran.
 
 ### Input and output
 

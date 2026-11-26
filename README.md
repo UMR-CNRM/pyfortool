@@ -10,9 +10,11 @@ examples directory.
 Prerequisites:
   - python > 3.8 (but only tested with version 3.10)
 
-Other prerequisites are linked to the pyfxtran installation:
+Other prerequisites are linked to the installation of the fxtran Python binding, which pip
+compiles from its git repository:
   - a C compiler (tested with cc 11.4.0)
-  - make and git to compile fxtran (on the first use only)
+  - the Python headers (python3-dev or python3-devel package)
+  - git
 
 There are two installation methods, depending on your use.
 On some systems, you may need to create a python virtual environment to use these methods.

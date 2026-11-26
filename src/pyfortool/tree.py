@@ -84,18 +84,17 @@ class Tree():
     >>> tree.plotExecTreeFromScope('module:MOD/sub:SUB', 'deps.png', 2, 2)
     """
     def __init__(self, tree=None, descTreeFile=None,
-                 parserOptions=None, wrapH=False,
+                 wrapH=False,
                  verbosity=None):
         """
         :param tree: list of directories composing the tree or None
         :param descTreeFile: filename where the description of the tree will be stored
-        :param parserOptions, wrapH: see the PYFT class
+        :param wrapH: see the PYFT class
         :param verbosity: if not None, sets the verbosity level
         """
         # Options
         self._tree = [] if tree is None else tree
         self._descTreeFile = descTreeFile
-        self._parserOptions = parserOptions
         self._wrapH = wrapH
         self._verbosity = verbosity
 
@@ -126,7 +125,6 @@ class Tree():
         """
         return {'tree': self._tree,
                 'descTreeFile': self._descTreeFile,
-                'parserOptions': self._parserOptions,
                 'wrapH': self._wrapH,
                 'verbosity': self._verbosity,
                 'cwd': self._cwd,
@@ -146,7 +144,6 @@ class Tree():
         """
         self._tree = content['tree']
         self._descTreeFile = content['descTreeFile']
-        self._parserOptions = content['parserOptions']
         self._wrapH = content['wrapH']
         self._verbosity = content['verbosity']
         self._cwd = content['cwd']
@@ -490,8 +487,8 @@ class Tree():
                 filename = pft.getFileName()
                 mustClose = False
             else:
-                pft = pyfortool.pyfortool.conservativePYFT(file, self._parserOptions,
-                                                           self._wrapH, verbosity=self._verbosity)
+                pft = pyfortool.pyfortool.conservativePYFT(file, self._wrapH,
+                                                           verbosity=self._verbosity)
                 filename = file
                 mustClose = True
             filename = filename[2:] if filename.startswith('./') else filename

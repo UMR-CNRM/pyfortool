@@ -281,3 +281,75 @@ class TestIsExecutable:
         from pyfortool.expressions import createElem
         elem = createElem('use-stmt')
         assert isExecutable(elem) is False
+
+
+class TestFortran2xml:
+    """Tests for fortran2xml(), which runs the fxtran binding."""
+
+    def test_string_without_final_newline(self):
+        """A string is parsed without file, even without final newline."""
+        from pyfortool.util import fortran2xml, tofortran
+        source = "SUBROUTINE T; X=A(1:3)+B%C*2; END"
+        _, xml = fortran2xml(source)
+        assert xml.find('.//{*}file') is not None
+        assert tofortran(xml) == source + '\n'
+        assert [tag(e) for e in xml.find('.//{*}E-2')] == ['op-E']
+
+    def test_file_keeps_name_and_form(self, tmp_path):
+        """A file is parsed as the fxtran command: name kept, form from the extension."""
+        from pyfortool.util import fortran2xml, tofortran
+        source = "      SUBROUTINE T\n      X = 1.0\n     &  + 2.0\n      END\n"
+        filename = tmp_path / 'fixed.f'
+        filename.write_text(source)
+        _, xml = fortran2xml(str(filename))
+        assert xml.find('./{*}file').attrib['name'] == str(filename)
+        assert xml.attrib['source-form'] == 'FIXED'
+        assert tofortran(xml) == source
+
+    def test_file_not_preprocessed(self, tmp_path):
+        """The file is not preprocessed: both branches of #ifdef are parsed."""
+        from pyfortool.util import fortran2xml, tofortran
+        source = ("SUBROUTINE T\n#ifdef KEY\nX = 1\n#else\nY = 1\n#endif\n"
+                  "END SUBROUTINE T\n")
+        filename = tmp_path / 'cpp.F90'
+        filename.write_text(source)
+        _, xml = fortran2xml(str(filename))
+        assigned = [n2name(stmt.find('.//{*}N')) for stmt in xml.findall('.//{*}a-stmt')]
+        assert assigned == ['X', 'Y']
+        assert tofortran(xml) == source
+
+    def test_includes(self, tmp_path):
+        """With addIncludes, the included file is searched in includeDirs and put in place."""
+        from pyfortool.util import fortran2xml, tofortran
+        incDir = tmp_path / 'inc'
+        incDir.mkdir()
+        (incDir / 'decl.h').write_text("REAL :: X\n")
+        filename = tmp_path / 'main.F90'
+        filename.write_text('SUBROUTINE T\nINCLUDE "decl.h"\nX = 1\nEND SUBROUTINE T\n')
+        includesRemoved, xml = fortran2xml(str(filename))
+        assert not includesRemoved
+        assert 'INCLUDE "decl.h"' in tofortran(xml)
+        includesRemoved, xml = fortran2xml(str(filename), addIncludes=True,
+                                           includeDirs=[str(incDir)])
+        assert includesRemoved
+        assert tofortran(xml) == "SUBROUTINE T\nREAL :: X\nX = 1\nEND SUBROUTINE T\n"
+
+    def test_wrapH_fragment(self, tmp_path):
+        """With wrapH, a .h file holding a code fragment is parsed."""
+        from pyfortool.util import fortran2xml, tofortran
+        source = "REAL :: X\nX = 1.\n"
+        filename = tmp_path / 'frag.h'
+        filename.write_text(source)
+        _, xml = fortran2xml(str(filename), wrapH=True)
+        assert xml.find('./{*}file').attrib['name'] == str(filename)
+        assert tofortran(xml) == source
+
+    def test_parse_error(self, tmp_path):
+        """A parse error raises PYFTError, for a string and for a file."""
+        from pyfortool.util import fortran2xml, PYFTError
+        with pytest.raises(PYFTError):
+            fortran2xml("SUBROUTINE T\nX = (\nEND SUBROUTINE T\n")
+        filename = tmp_path / 'bad.F90'
+        filename.write_text("SUBROUTINE T\nX = (\nEND SUBROUTINE T\n")
+        with pytest.raises(PYFTError):
+            fortran2xml(str(filename))

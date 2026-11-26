@@ -33,20 +33,18 @@ from pyfortool.util import (debugDecor, tostring, tofortran, fortran2xml,
 
 
 @debugDecor
-def conservativePYFT(filename, parserOptions, wrapH,
+def conservativePYFT(filename, wrapH,
                      tree=None, verbosity=None, clsPYFT=None):
     """
     Create a PYFT object with conservative parsing options.
 
-    Similar to PYFT constructor but forces the '-no-include' option
-    to prevent automatic inclusion of header files.
+    Similar to PYFT constructor but the included files are never added
+    (addIncludes is False).
 
     Parameters
     ----------
     filename : str
         Path to the FORTRAN source file.
-    parserOptions : list or None
-        Parser options passed to PYFT. If None, uses default options.
     wrapH : bool
         Whether to wrap .h file content. See PYFT class.
     tree : Tree, optional
@@ -65,14 +63,10 @@ def conservativePYFT(filename, parserOptions, wrapH,
     --------
     PYFT : The main PYFT class.
     """
-    options = PYFT.DEFAULT_FXTRAN_OPTIONS if parserOptions is None else parserOptions
-    options = options.copy()
-    if len(set(options).intersection(('-no-include', '-noinclude'))) == 0:
-        # We add the option to not include 'include files' when analysing the tree
-        options.append('-no-include')
     if clsPYFT is None:
         clsPYFT = PYFT
-    pft = clsPYFT(filename, parserOptions=options, wrapH=wrapH,
+    # Included files are not added when analysing the tree
+    pft = clsPYFT(filename, addIncludes=False, wrapH=wrapH,
                   tree=tree, verbosity=verbosity)
     return pft
 
@@ -117,14 +111,6 @@ class PYFT(PYFTscope):
     PYFT extends PYFTscope with file-level operations (read/write) and
     integrates with the fxtran parser for FORTRAN source code analysis.
 
-    Class Attributes
-    ----------------
-    DEFAULT_FXTRAN_OPTIONS : list
-        Default options for fxtran parser: ['-construct-tag', '-no-include',
-        '-no-cpp', '-line-length', '9999']
-    MANDATORY_FXTRAN_OPTIONS : list
-        Required options: ['-construct-tag']
-
     Examples
     --------
     Basic usage:
@@ -141,14 +127,12 @@ class PYFT(PYFTscope):
     >>> tree = Tree(['/path/to/src'])
     >>> PYFT.setParallel(tree)
     """
-    DEFAULT_FXTRAN_OPTIONS = ['-construct-tag', '-no-include', '-no-cpp', '-line-length', '9999']
-    MANDATORY_FXTRAN_OPTIONS = ['-construct-tag']
     SHARED_TREE = None  # Can be updated by setParallel
     NO_PARALLEL_LOCK = None  # Can be updated by setParallel
     PARALLEL_FILE_LOCKS = None  # Can be updated by setParallel
 
     @updateTree('signal')
-    def __init__(self, filename, output=None, parserOptions=None, verbosity=None,
+    def __init__(self, filename, output=None, addIncludes=False, verbosity=None,
                  wrapH=False, tree=None, enableCache=False):
         """
         Initialize a PYFT instance from a FORTRAN source file.
@@ -159,8 +143,10 @@ class PYFT(PYFTscope):
             Path to the input FORTRAN file.
         output : str, optional
             Path for output file. If None, overwrites the input file.
-        parserOptions : list, optional
-            Options for the fxtran parser. See DEFAULT_FXTRAN_OPTIONS.
+        addIncludes : bool, optional
+            If True, the files included with the INCLUDE statement are put in
+            place of the INCLUDE statement (they are searched for in the current
+            directory and in the directories of the tree).
         verbosity : str or int, optional
             Logging level (e.g., 'DEBUG', 'INFO', 'WARNING').
         wrapH : bool, optional
@@ -195,16 +181,7 @@ class PYFT(PYFTscope):
         if self.SHARED_TREE is not None:
             assert tree is not None, 'tree must be None if setParallel has been called'
             tree.copyFromOtherTree(self.SHARED_TREE)
-        if parserOptions is None:
-            self._parserOptions = self.DEFAULT_FXTRAN_OPTIONS.copy()
-        else:
-            self._parserOptions = parserOptions.copy()
-        for tDir in tree.getDirs():
-            self._parserOptions.extend(['-I', tDir])
-        for option in self.MANDATORY_FXTRAN_OPTIONS:
-            if option not in self._parserOptions:
-                self._parserOptions.append(option)
-        includesRemoved, xml = fortran2xml(self._filename, self._parserOptions, wrapH)
+        includesRemoved, xml = fortran2xml(self._filename, addIncludes, tree.getDirs(), wrapH)
         super().__init__(xml, enableCache=enableCache, tree=tree)
         if includesRemoved:
             self.tree.signal(self)
