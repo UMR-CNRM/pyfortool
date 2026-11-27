@@ -17,7 +17,8 @@ This guide covers how to set up a development environment, coding standards, tes
 ### Prerequisites
 
 - Python 3.8+
-- [pyfxtran](https://github.com/SebastienRietteMTO/pyfxtran)
+- the Python binding of [fxtran](https://github.com/pmarguinaud/fxtran), installed by `pip install -e .`
+  (needs a C compiler and the Python headers)
 - Git
 
 ### Clone and Install

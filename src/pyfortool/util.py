@@ -8,11 +8,10 @@ FORTRAN source code represented as XML.
 import xml.etree.ElementTree as ET
 from functools import wraps
 import logging
-import tempfile
 import os
 import time
 import re
-import pyfxtran
+import fxtran
 
 from pyfortool import NAMESPACE
 
@@ -143,16 +142,29 @@ class PYFTError(Exception):
 # Conversions
 
 
-def fortran2xml(fortranSource, parserOptions=None, wrapH=False):
+# Options of fxtran; they cannot be changed as the parser is run on the content
+# of the file, which is not preprocessed
+FXTRAN_OPTIONS = ['-construct-tag', '-no-cpp', '-line-length', '9999']
+
+
+def fortran2xml(fortranSource, addIncludes=False, includeDirs=None, wrapH=False):
     """
     Convert FORTRAN source code to XML using fxtran parser.
+
+    fxtran runs in this process (Python binding of fxtran), with the FXTRAN_OPTIONS
+    options; the source code is not preprocessed.
 
     Parameters
     ----------
     fortranSource : str
-        FORTRAN source code string or path to a file.
-    parserOptions : list, optional
-        Options passed to fxtran parser.
+        FORTRAN source code string or path to a file. The source form (free or
+        fixed) is given by the file extension; a string is in free form.
+    addIncludes : bool, optional
+        If True, the files included with the INCLUDE statement are put in place
+        of the INCLUDE statement.
+    includeDirs : list of str, optional
+        Directories where the included files are searched for (in addition to the
+        current directory), if addIncludes is True.
     wrapH : bool, optional
         If True, wrap .h file content in a MODULE for free-form parsing.
 
@@ -163,6 +175,11 @@ def fortran2xml(fortranSource, parserOptions=None, wrapH=False):
         - includesRemoved (bool): True if include statements were processed.
         - xml (Element): XML document tree.
 
+    Raises
+    ------
+    PYFTError
+        If fxtran cannot parse the source code.
+
     Examples
     --------
     >>> includesRemoved, xml = fortran2xml("REAL :: X\nX = 1.0")
@@ -170,56 +187,57 @@ def fortran2xml(fortranSource, parserOptions=None, wrapH=False):
     # Namespace registration
     ET.register_namespace('f', NAMESPACE)
 
-    # Default options
-    if parserOptions is None:
-        import pyfortool
-        parserOptions = pyfortool.PYFT.DEFAULT_FXTRAN_OPTIONS
+    options = FXTRAN_OPTIONS.copy()
+    if addIncludes:
+        for includeDir in [] if includeDirs is None else includeDirs:
+            options.extend(['-I', includeDir])
+    else:
+        options.append('-no-include')
 
     # Call to fxtran
-    renamed = False
     moduleAdded = False
-    with tempfile.NamedTemporaryFile(buffering=0, suffix='.F90') as file:
-        if os.path.exists(fortranSource):
-            # tempfile not needed in this case if wrapH is False but I found easier to write code
-            # like this to have only one pyfxtran use and automatic
-            # deletion of the temporary file
-            filename = fortranSource
-            if wrapH and filename.endswith('.h'):
-                renamed = True
-                filename = file.name
-                with open(fortranSource, 'r', encoding='utf-8') as src:
-                    content = src.read()
-                # renaming is enough for .h files containing SUBROUTINE or FUNCTION
-                # but if the file contains a code fragment, it must be included in a
-                # program-unit
-                firstLine = [line for line in content.split('\n')
-                             if not (re.search(r'^[\t ]*!', line) or
-                             re.search(r'^[\t ]*$', line))][0]
-                fisrtLine = firstLine.upper().split()
-                if not ('SUBROUTINE' in fisrtLine or 'FUNCTION' in firstLine):
-                    # Needs to be wrapped in a program-unit
-                    moduleAdded = True
-                    content = 'MODULE FOO\n' + content + '\nEND MODULE FOO'
-                file.write(content.encode('UTF8'))
-        else:
-            filename = file.name
-            file.write(fortranSource.encode('UTF-8'))
-        xml = pyfxtran.run(filename, ['-o', '-'] + parserOptions)
-        xml = ET.fromstring(xml, parser=ET.XMLParser(encoding='UTF-8'))
-        if renamed:
-            xml.find('./{*}file').attrib['name'] = fortranSource
-        if moduleAdded:
-            file = xml.find('./{*}file')
-            programUnit = file.find('./{*}program-unit')
-            # all nodes inside program-unit except 'MODULE' and 'END MODULE'
-            for node in programUnit[1:-1]:
-                file.append(node)
-            # pylint: disable-next=undefined-loop-variable
-            node.tail = node.tail[:-1]  # remove '\n' added before 'END MODULE'
-            file.remove(programUnit)
+    if os.path.exists(fortranSource):
+        # newline='': fxtran gets the content as it is in the file
+        with open(fortranSource, 'r', encoding='utf-8', newline='') as src:
+            content = src.read()
+        # The file name sets the source form (it is not read)
+        formName = fortranSource
+        if wrapH and fortranSource.endswith('.h'):
+            formName = fortranSource + '.F90'
+            # renaming is enough for .h files containing SUBROUTINE or FUNCTION
+            # but if the file contains a code fragment, it must be included in a
+            # program-unit
+            firstLine = [line for line in content.split('\n')
+                         if not (re.search(r'^[\t ]*!', line) or
+                         re.search(r'^[\t ]*$', line))][0]
+            fisrtLine = firstLine.upper().split()
+            if not ('SUBROUTINE' in fisrtLine or 'FUNCTION' in firstLine):
+                # Needs to be wrapped in a program-unit
+                moduleAdded = True
+                content = 'MODULE FOO\n' + content + '\nEND MODULE FOO'
+        options.append(formName)
+    else:
+        content = fortranSource
+    try:
+        xml = fxtran.run(*options, content)
+    except fxtran.error as err:
+        source = fortranSource if os.path.exists(fortranSource) else '\n' + fortranSource
+        raise PYFTError(f'fxtran failed to parse {source}\n{err}') from err
+    xml = ET.fromstring(xml, parser=ET.XMLParser(encoding='UTF-8'))
+    if os.path.exists(fortranSource):
+        xml.find('./{*}file').attrib['name'] = fortranSource
+    if moduleAdded:
+        file = xml.find('./{*}file')
+        programUnit = file.find('./{*}program-unit')
+        # all nodes inside program-unit except 'MODULE' and 'END MODULE'
+        for node in programUnit[1:-1]:
+            file.append(node)
+        # pylint: disable-next=undefined-loop-variable
+        node.tail = node.tail[:-1]  # remove '\n' added before 'END MODULE'
+        file.remove(programUnit)
 
     includesDone = False
-    if len(set(['-no-include', '-noinclude']).intersection(parserOptions)) == 0:
+    if addIncludes:
         # fxtran has included the files but:
         # - it doesn't have removed the INCLUDE "file.h" statement
         # - it included the file with its file node

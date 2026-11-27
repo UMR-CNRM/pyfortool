@@ -905,7 +905,7 @@ class Applications():
                     scope.insertStatement(scope.indent(ifMPPDBend), first=False)
 
     @debugDecor
-    def addStack(self, model, stopScopes, parserOptions=None, wrapH=False):
+    def addStack(self, model, stopScopes, wrapH=False):
         """
         Transform automatic arrays to stack-allocated arrays for GPU.
 
@@ -918,8 +918,6 @@ class Applications():
             Target model: 'MESONH' or 'AROME'.
         stopScopes : list of str
             Scope paths where to stop recursion when adding stack arguments.
-        parserOptions : list, optional
-            Parser options for fxtran.
         wrapH : bool, optional
             Whether to wrap .h files.
 
@@ -965,7 +963,7 @@ class Applications():
                     scope.addArgInTree('YDSTACK', 'TYPE (STACK), INTENT(IN) :: YDSTACK', -1,
                                        stopScopes, moduleVarList=[('STACK_MOD', ['STACK'])],
                                        otherNames=['YLSTACK'],
-                                       parserOptions=parserOptions, wrapH=wrapH)
+                                       wrapH=wrapH)
                     # And we need the SOF subroutine
                     scope.addModuleVar([('STACK_MOD', 'SOF')])
 
@@ -1027,11 +1025,11 @@ class Applications():
 
     @debugDecor
     @updateVarList
-    def removeIJDim(self, stopScopes, parserOptions=None, wrapH=False, simplify=False):
+    def removeIJDim(self, stopScopes, wrapH=False, simplify=False):
         """
         Transform routines to be called in a loop on columns
         :param stopScopes: scope paths where we stop to add the D argument (if needed)
-        :param parserOptions, wrapH: see the PYFT class
+        :param wrapH: see the PYFT class
         :param simplify: try to simplify code (remove useless dimensions in call)
 
         ComputeInSingleColumn :
@@ -1280,7 +1278,7 @@ class Applications():
             if len(indexRemoved) > 0:
                 scope.addArgInTree('D', 'TYPE(DIMPHYEX_t), INTENT(IN) :: D',
                                    0, stopScopes, moduleVarList=[('MODD_DIMPHYEX', ['DIMPHYEX_t'])],
-                                   parserOptions=parserOptions, wrapH=wrapH)
+                                   wrapH=wrapH)
             # Check loop index presence at declaration of the scope
             scope.addVar([[loopIndex, 'INTEGER :: ' + loopIndex, None]
                           for loopIndex in indexRemoved

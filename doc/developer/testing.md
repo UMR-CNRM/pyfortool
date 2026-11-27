@@ -173,7 +173,7 @@ tests/
 │
 └── test_helpers/
     ├── __init__.py
-    ├── test_util.py               # Utility functions (26 tests)
+    ├── test_util.py               # Utility functions (45 tests)
     │   ├── TestTag
     │   ├── TestN2Name
     │   ├── TestAlltext
@@ -182,7 +182,8 @@ tests/
     │   ├── TestNonCode
     │   ├── TestIsStmt
     │   ├── TestIsConstruct
-    │   └── TestIsExecutable
+    │   ├── TestIsExecutable
+    │   └── TestFortran2xml        # Parsing with the fxtran binding (strings, files, includes)
     │
     └── test_expressions.py        # Expression helpers (22 tests)
         ├── TestCreateElem

@@ -23,8 +23,10 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: POSIX :: Linux",
 ]
+# fxtran Python binding (in-process parser), not yet on PyPI: PyPI refuses
+# packages with such a direct URL dependency
 dependencies = [
-    "pyfxtran>=0.1.3",
+    "fxtran @ git+https://github.com/SebastienRietteMTO/fxtran@python-bindings-pip#subdirectory=python3",
 ]
 dynamic = ["version"]
 

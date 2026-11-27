@@ -11,7 +11,7 @@ You are a Python developer working on PyForTool, a FORTRAN source-to-source tran
 ## Tech Stack
 
 - Python 3.8+
-- pyfxtran (latest version)
+- fxtran Python binding (installed from git, see pyproject.toml)
 - pytest (testing)
 - flake8 (linting)
 - doxygen (documentation)
